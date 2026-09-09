@@ -79,16 +79,18 @@
   .nav-links{display:flex;gap:24px;align-items:center}
   .nav-link{font-size:12px;color:rgba(255,255,255,0.55);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;background:none;border:none;text-decoration:none;white-space:nowrap}
   .nav-link:hover{color:#fff}
-  .lang-btn{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;flex-shrink:0}
+  .lang-btn{font-size:11px;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;flex-shrink:0}
   .lang-btn.active{background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.6)}
 
   /* HAMBURGER MENU */
   .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
   .hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all 0.3s}
-  .mobile-menu{display:none;flex-direction:column;background:#0A1628;border-top:1px solid rgba(255,255,255,0.08);padding:16px 24px;gap:16px}
+  .mobile-menu{display:none;flex-direction:column;background:#1C3A5C;border-top:2px solid #8FA8C8;padding:20px 24px;gap:14px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
   .mobile-menu.open{display:flex}
-  .mobile-menu a,.mobile-menu button{font-size:14px;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;text-decoration:none;background:none;border:none;cursor:pointer;text-align:left;letter-spacing:1px;padding:4px 0}
-  .mobile-lang{display:flex;gap:8px;margin-top:8px}
+  .mobile-menu a,.mobile-menu button{font-size:15px;color:#E8F0F8;font-family:Arial,sans-serif;text-decoration:none;background:none;border:none;cursor:pointer;text-align:left;letter-spacing:1px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .mobile-menu a:last-of-type{border-bottom:none}
+  .mobile-lang{display:flex;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15)}
+  .mobile-lang .lang-btn{padding:8px 22px;font-size:12px}
 
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}

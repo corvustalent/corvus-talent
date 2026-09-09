@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corvus Talent — Talento certero.</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:Georgia,serif;color:#1a1a1a}
+  .section{padding:64px 80px}
+  .label{font-size:11px;letter-spacing:4px;color:#8FA8C8;margin-bottom:12px;font-family:Arial,sans-serif}
+  .h1{font-size:52px;font-weight:700;line-height:1.1;margin-bottom:16px}
+  .h2{font-size:32px;font-weight:700;margin-bottom:8px}
+  .h3{font-size:19px;font-weight:700;margin-bottom:10px}
+  .sub{font-size:16px;line-height:1.8;color:#8FA8C8;margin-bottom:28px}
+  .sub-dark{font-size:15px;line-height:1.8;color:#555;margin-bottom:20px}
+  .divider{height:2px;background:#8FA8C8;width:48px;margin-bottom:28px;opacity:0.4}
+  .btn-white{display:inline-block;background:#fff;color:#0A1628;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:none;letter-spacing:1px;text-decoration:none}
+  .btn-outline{display:inline-block;background:transparent;color:#fff;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.4);text-decoration:none}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:20px 80px;background:#0A1628;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:100}
+  .nav-brand{font-size:16px;font-weight:700;color:#fff;letter-spacing:3px;text-decoration:none}
+  .nav-links{display:flex;gap:28px;align-items:center}
+  .nav-link{font-size:12px;color:rgba(255,255,255,0.55);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;background:none;border:none;text-decoration:none}
+  .nav-link:hover{color:#fff}
+  .lang-btn{font-size:11px;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px}
+  .lang-btn.active{background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.6)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .card-navy{background:#142038;border:0.5px solid #1E3A5F;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .card-featured{background:#1A3050;border:2px solid #fff;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .badge{display:inline-block;background:rgba(143,168,200,0.2);color:#8FA8C8;font-size:10px;padding:4px 12px;border-radius:20px;font-family:Arial,sans-serif;letter-spacing:1px;margin-bottom:12px}
+  .price{font-size:34px;font-weight:700;color:#fff;margin:14px 0 4px}
+  .price-label{font-size:11px;color:#8FA8C8;font-family:Arial,sans-serif;letter-spacing:1px}
+  .feature{font-size:13px;color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .feature-dark{font-size:13px;color:#444;font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .dot{width:5px;height:5px;border-radius:50%;background:#8FA8C8;margin-top:8px;flex-shrink:0}
+  .dot-dark{width:5px;height:5px;border-radius:50%;background:#0A1628;margin-top:8px;flex-shrink:0}
+  .card-spacer{flex:1}
+  .btn-pay{display:block;width:100%;margin-top:20px;padding:12px;border-radius:6px;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-align:center;text-decoration:none;cursor:pointer;border:none}
+  .btn-pay-primary{background:#fff;color:#0A1628}
+  .btn-pay-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.5)}
+  .btn-wa{display:flex;align-items:center;justify-content:center;gap:8px}
+  .contact-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .contact-icon{font-size:20px;color:#8FA8C8}
+  .contact-text{font-size:15px;color:rgba(255,255,255,0.8);font-family:Arial,sans-serif}
+  .avatar{width:72px;height:72px;border-radius:50%;background:#142038;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;letter-spacing:2px;flex-shrink:0;border:2px solid rgba(255,255,255,0.15)}
+  .skill-tag{font-size:11px;background:#0A1628;color:#fff;padding:5px 14px;border-radius:20px;font-family:Arial,sans-serif}
+  .srv-icon{font-size:28px;margin-bottom:14px}
+  @media(max-width:768px){
+    .section{padding:48px 24px}
+    nav{padding:16px 24px}
+    .nav-links{gap:12px}
+    .grid-2,.grid-3{grid-template-columns:1fr}
+    .h1{font-size:36px}
+    .h2{font-size:26px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#">CORVUS TALENT</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#servicios" id="nav-servicios">Servicios</a>
+    <a class="nav-link" href="#precios" id="nav-precios">Precios</a>
+    <a class="nav-link" href="#sobre" id="nav-sobre">Sobre mí</a>
+    <a class="nav-link" href="#contacto" id="nav-contacto">Contacto</a>
+    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="section" style="background:#0A1628;padding-top:96px;padding-bottom:96px">
+  <div class="label" id="hero-label">ASESORÍA DE CARRERA IT</div>
+  <div class="h1" style="color:#fff" id="hero-h1">Conseguí el trabajo<br>que merecés.</div>
+  <div class="sub" id="hero-sub">Te acompañamos en cada etapa de tu búsqueda laboral — desde el CV hasta la entrevista — para que llegues al trabajo que querés.</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap">
+    <a class="btn-white" href="#precios" id="hero-btn1">Ver packs</a>
+    <a class="btn-outline" href="#contacto" id="hero-btn2">Contacto</a>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="section" style="background:#F5F7FA" id="servicios">
+  <div class="label" id="srv-label">SERVICIOS</div>
+  <div class="h2" style="color:#0A1628" id="srv-h2">Todo lo que necesitás para tu búsqueda</div>
+  <div class="divider"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="srv-icon">📄</div>
+      <div class="h3" style="color:#0A1628" id="srv-1-title">CV profesional</div>
+      <div class="sub-dark" id="srv-1-desc">Redactamos tu CV desde cero o lo optimizamos, adaptado a ATS y al mercado IT. Sin fotos, sin columnas — diseñado para pasar filtros y llegar a la entrevista.</div>
+    </div>
+    <div class="card">
+      <div class="srv-icon">💼</div>
+      <div class="h3" style="color:#0A1628" id="srv-2-title">Optimización LinkedIn</div>
+      <div class="sub-dark" id="srv-2-desc">Headline, banner, resumen y experiencia optimizados para que los recruiters te encuentren. Incluye activación estratégica del Open to Work.</div>
+    </div>
+    <div class="card">
+      <div class="srv-icon">✉️</div>
+      <div class="h3" style="color:#0A1628" id="srv-3-title">Cover letter en inglés</div>
+      <div class="sub-dark" id="srv-3-desc">Carta de presentación redactada en inglés profesional para postulaciones en el exterior. Adaptada a cada empresa y puesto.</div>
+    </div>
+    <div class="card">
+      <div class="srv-icon">🎯</div>
+      <div class="h3" style="color:#0A1628" id="srv-4-title">Simulación de entrevista</div>
+      <div class="sub-dark" id="srv-4-desc">Sesión de roleplay 1-on-1 simulando una entrevista real — técnica o de RRHH. Feedback detallado para que llegues preparado.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRECIOS -->
+<section class="section" style="background:#0A1628" id="precios">
+  <div class="label" id="price-label">PACKS</div>
+  <div class="h2" style="color:#fff" id="price-h2">Elegí el pack que mejor se adapta</div>
+  <div class="divider"></div>
+  <div class="grid-3">
+    <div class="card-navy">
+      <div class="badge" id="p1-badge">ESENCIAL ATS</div>
+      <div class="price">$35.000</div>
+      <div class="price-label">ARS</div>
+      <div style="margin-top:18px;flex:1">
+        <div class="feature"><div class="dot"></div><span id="p1-f1">CV profesional optimizado</span></div>
+        <div class="feature"><div class="dot"></div><span id="p1-f2">Perfil LinkedIn optimizado</span></div>
+        <div class="feature" style="border:none"><div class="dot"></div><span id="p1-f3">Entrega asincrónica</span></div>
+      </div>
+      <a href="https://mpago.la/2dVR4r2" target="_blank" class="btn-pay btn-pay-primary" id="p1-btn">
+        <span id="p1-btn-text">Contratar ahora</span>
+      </a>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif;text-align:center" id="p1-note">Pago seguro vía MercadoPago</div>
+    </div>
+    <div class="card-featured">
+      <div class="badge" id="p2-badge">PRO ESTRATÉGICO ★</div>
+      <div class="price">$55.000</div>
+      <div class="price-label">ARS</div>
+      <div style="margin-top:18px;flex:1">
+        <div class="feature"><div class="dot"></div><span id="p2-f1">Todo lo del Pack Esencial</span></div>
+        <div class="feature"><div class="dot"></div><span id="p2-f2">Sesión 1-on-1 de 60 minutos</span></div>
+        <div class="feature" style="border:none"><div class="dot"></div><span id="p2-f3">Estrategia personalizada</span></div>
+      </div>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20contratar%20el%20Pack%20Pro%20Estrat%C3%A9gico%20de%20Corvus%20Talent." target="_blank" class="btn-pay btn-pay-primary btn-wa" id="p2-btn">
+        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span id="p2-btn-text">Consultar disponibilidad</span>
+      </a>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif;text-align:center" id="p2-note">Coordinamos sesión antes del pago</div>
+    </div>
+    <div class="card-navy">
+      <div class="badge" id="p3-badge">PREMIUM PITCH</div>
+      <div class="price">$85.000</div>
+      <div class="price-label">ARS</div>
+      <div style="margin-top:18px;flex:1">
+        <div class="feature"><div class="dot"></div><span id="p3-f1">Todo lo del Pack Pro</span></div>
+        <div class="feature"><div class="dot"></div><span id="p3-f2">Simulación de entrevista</span></div>
+        <div class="feature" style="border:none"><div class="dot"></div><span id="p3-f3">30 días soporte por WhatsApp</span></div>
+      </div>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20contratar%20el%20Pack%20Premium%20Pitch%20de%20Corvus%20Talent." target="_blank" class="btn-pay btn-pay-outline btn-wa" id="p3-btn">
+        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span id="p3-btn-text">Consultar disponibilidad</span>
+      </a>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif;text-align:center" id="p3-note">Coordinamos sesión antes del pago</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;font-size:11px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="price-note">* Precios en ARS sujetos a revisión mensual.</div>
+</section>
+
+<!-- SOBRE MÍ -->
+<section class="section" style="background:#F5F7FA" id="sobre">
+  <div class="label" id="about-label">SOBRE MÍ</div>
+  <div style="display:flex;gap:28px;align-items:flex-start">
+    <div class="avatar">AL</div>
+    <div>
+      <div class="h2" style="color:#0A1628;margin-bottom:4px">Alejandro Leitner</div>
+      <div style="font-size:13px;color:#8FA8C8;font-family:Arial,sans-serif;letter-spacing:1px;margin-bottom:18px" id="about-title">Founder · Corvus Talent</div>
+      <div class="sub-dark" id="about-desc">Técnico en Recursos Humanos con más de 6 años de experiencia en Recruiting y Sourcing IT. Sé exactamente qué buscan los recruiters — porque soy uno de ellos. Actualmente cursando la Licenciatura en Filosofía en la UNR, integrando enfoques estratégicos y humanos en el acompañamiento de carrera.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="skill-tag">+6 años en IT Recruiting</span>
+        <span class="skill-tag">HiredScore</span>
+        <span class="skill-tag">Workday</span>
+        <span class="skill-tag">HR Analytics</span>
+        <span class="skill-tag">ATS Expert</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="section" style="background:#0A1628" id="contacto">
+  <div class="label" id="contact-label">CONTACTO</div>
+  <div class="h2" style="color:#fff" id="contact-h2">Hablemos</div>
+  <div class="divider"></div>
+  <div style="max-width:460px">
+    <div class="contact-row"><i class="ti ti-mail contact-icon"></i><div class="contact-text">corvus.talent@gmail.com</div></div>
+    <div class="contact-row"><i class="ti ti-brand-instagram contact-icon"></i><div class="contact-text">@corvustalent</div></div>
+    <div class="contact-row"><i class="ti ti-brand-whatsapp contact-icon"></i><div class="contact-text">+54 341 271 2847</div></div>
+    <div class="contact-row" style="border:none"><i class="ti ti-map-pin contact-icon"></i><div class="contact-text" id="contact-loc">Rosario, Argentina · Remote-ready</div></div>
+  </div>
+  <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap">
+    <a class="btn-white" href="mailto:corvus.talent@gmail.com" id="contact-btn">Escribinos</a>
+    <a class="btn-outline" href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20consultar%20sobre%20los%20servicios%20de%20Corvus%20Talent." target="_blank" style="display:flex;align-items:center;gap:6px" id="contact-wa">
+      <i class="ti ti-brand-whatsapp"></i><span id="contact-wa-text">WhatsApp</span>
+    </a>
+  </div>
+</section>
+
+<footer style="padding:24px 80px;background:#0A1628;border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="footer-text">© 2025 Corvus Talent · Talento certero.</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif">Rosario, Argentina</div>
+  </div>
+</footer>
+
+<script>
+const t={
+  es:{
+    'nav-servicios':'Servicios','nav-precios':'Precios','nav-sobre':'Sobre mí','nav-contacto':'Contacto',
+    'hero-label':'ASESORÍA DE CARRERA IT','hero-h1':'Conseguí el trabajo<br>que merecés.',
+    'hero-sub':'Te acompañamos en cada etapa de tu búsqueda laboral — desde el CV hasta la entrevista — para que llegues al trabajo que querés.',
+    'hero-btn1':'Ver packs','hero-btn2':'Contacto',
+    'srv-label':'SERVICIOS','srv-h2':'Todo lo que necesitás para tu búsqueda',
+    'srv-1-title':'CV profesional','srv-1-desc':'Redactamos tu CV desde cero o lo optimizamos, adaptado a ATS y al mercado IT. Sin fotos, sin columnas — diseñado para pasar filtros y llegar a la entrevista.',
+    'srv-2-title':'Optimización LinkedIn','srv-2-desc':'Headline, banner, resumen y experiencia optimizados para que los recruiters te encuentren. Incluye activación estratégica del Open to Work.',
+    'srv-3-title':'Cover letter en inglés','srv-3-desc':'Carta de presentación redactada en inglés profesional para postulaciones en el exterior. Adaptada a cada empresa y puesto.',
+    'srv-4-title':'Simulación de entrevista','srv-4-desc':'Sesión de roleplay 1-on-1 simulando una entrevista real — técnica o de RRHH. Feedback detallado para que llegués preparado.',
+    'price-label':'PACKS','price-h2':'Elegí el pack que mejor se adapta',
+    'p1-badge':'ESENCIAL ATS','p1-f1':'CV profesional optimizado','p1-f2':'Perfil LinkedIn optimizado','p1-f3':'Entrega asincrónica','p1-btn-text':'Contratar ahora','p1-note':'Pago seguro vía MercadoPago',
+    'p2-badge':'PRO ESTRATÉGICO ★','p2-f1':'Todo lo del Pack Esencial','p2-f2':'Sesión 1-on-1 de 60 minutos','p2-f3':'Estrategia personalizada','p2-btn-text':'Consultar disponibilidad','p2-note':'Coordinamos sesión antes del pago',
+    'p3-badge':'PREMIUM PITCH','p3-f1':'Todo lo del Pack Pro','p3-f2':'Simulación de entrevista','p3-f3':'30 días soporte por WhatsApp','p3-btn-text':'Consultar disponibilidad','p3-note':'Coordinamos sesión antes del pago',
+    'price-note':'* Precios en ARS sujetos a revisión mensual.',
+    'about-label':'SOBRE MÍ','about-title':'Founder · Corvus Talent',
+    'about-desc':'Técnico en Recursos Humanos con más de 6 años de experiencia en Recruiting y Sourcing IT. Sé exactamente qué buscan los recruiters — porque soy uno de ellos. Actualmente cursando la Licenciatura en Filosofía en la UNR, integrando enfoques estratégicos y humanos en el acompañamiento de carrera.',
+    'contact-label':'CONTACTO','contact-h2':'Hablemos','contact-loc':'Rosario, Argentina · Remote-ready','contact-btn':'Escribinos','contact-wa-text':'WhatsApp',
+    'footer-text':'© 2025 Corvus Talent · Talento certero.'
+  },
+  en:{
+    'nav-servicios':'Services','nav-precios':'Pricing','nav-sobre':'About','nav-contacto':'Contact',
+    'hero-label':'IT CAREER ADVISORY','hero-h1':'Land the job<br>you deserve.',
+    'hero-sub':'We guide you through every step of your job search — from your CV to the interview — so you get the job you want.',
+    'hero-btn1':'View packs','hero-btn2':'Contact',
+    'srv-label':'SERVICES','srv-h2':'Everything you need for your job search',
+    'srv-1-title':'Professional CV','srv-1-desc':'We write your CV from scratch or optimize it — ATS-ready and tailored to the IT market. No photos, no columns — built to pass filters and land interviews.',
+    'srv-2-title':'LinkedIn optimization','srv-2-desc':'Headline, banner, summary and experience optimized so recruiters find you. Includes strategic Open to Work activation.',
+    'srv-3-title':'English cover letter','srv-3-desc':'Professional cover letter in English for international applications. Tailored to each company and role.',
+    'srv-4-title':'Interview simulation','srv-4-desc':'1-on-1 roleplay session simulating a real interview — technical or HR. Detailed feedback so you arrive prepared.',
+    'price-label':'PACKS','price-h2':'Choose the plan that fits you best',
+    'p1-badge':'ATS ESSENTIAL','p1-f1':'Professional CV optimized','p1-f2':'LinkedIn profile optimized','p1-f3':'Async delivery','p1-btn-text':'Get started','p1-note':'Secure payment via MercadoPago',
+    'p2-badge':'PRO STRATEGIC ★','p2-f1':'Everything in Essential','p2-f2':'1-on-1 session (60 min)','p2-f3':'Personalized strategy','p2-btn-text':'Check availability','p2-note':'We coordinate before payment',
+    'p3-badge':'PREMIUM PITCH','p3-f1':'Everything in Pro','p3-f2':'Interview simulation','p3-f3':'30-day WhatsApp support','p3-btn-text':'Check availability','p3-note':'We coordinate before payment',
+    'price-note':'* ARS prices subject to monthly review.',
+    'about-label':'ABOUT','about-title':'Founder · Corvus Talent',
+    'about-desc':'HR Technician with over 6 years of experience in IT Recruiting and Sourcing. I know exactly what recruiters look for — because I am one. Currently pursuing a Philosophy degree at UNR, integrating strategic and human-centered approaches to career coaching.',
+    'contact-label':'CONTACT','contact-h2':"Let's talk",'contact-loc':'Rosario, Argentina · Remote-ready','contact-btn':'Get in touch','contact-wa-text':'WhatsApp',
+    'footer-text':'© 2025 Corvus Talent · Talento certero.'
+  }
+};
+function setLang(lang){
+  Object.keys(t[lang]).forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=t[lang][id]});
+  document.getElementById('btn-es').classList.toggle('active',lang==='es');
+  document.getElementById('btn-en').classList.toggle('active',lang==='en');
+}
+</script>
+</body>
+</html>

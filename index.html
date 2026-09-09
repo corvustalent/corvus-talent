@@ -3,7 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Corvus Talent — Talento certero.</title>
+<title>Corvus Talent — Asesoría de Carrera IT | Talento certero.</title>
+
+<!-- SEO -->
+<meta name="description" content="Corvus Talent te ayuda a conseguir el trabajo que merecés. CV profesional, optimización de LinkedIn, cover letters en inglés y simulación de entrevistas IT. Rosario, Argentina.">
+<meta name="keywords" content="CV profesional Argentina, optimización LinkedIn, entrevista IT, cover letter inglés, asesoría carrera IT, búsqueda laboral, trabajo remoto, Rosario">
+<meta name="author" content="Alejandro Leitner — Corvus Talent">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://corvustalent.com.ar">
+
+<!-- Open Graph (para WhatsApp, Facebook, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://corvustalent.com.ar">
+<meta property="og:title" content="Corvus Talent — Conseguí el trabajo que merecés.">
+<meta property="og:description" content="CV profesional, LinkedIn, cover letters en inglés y simulación de entrevistas IT. Asesoría de carrera especializada en el mercado tecnológico.">
+<meta property="og:image" content="https://corvustalent.com.ar/og-image.png">
+<meta property="og:locale" content="es_AR">
+<meta property="og:site_name" content="Corvus Talent">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Corvus Talent — Talento certero.">
+<meta name="twitter:description" content="CV profesional, LinkedIn, cover letters en inglés y simulación de entrevistas IT.">
+<meta name="twitter:image" content="https://corvustalent.com.ar/og-image.png">
+
+<!-- Schema.org JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Corvus Talent",
+  "description": "Asesoría de carrera especializada en el mercado IT. CV profesional, optimización de LinkedIn, cover letters en inglés y simulación de entrevistas.",
+  "url": "https://corvustalent.com.ar",
+  "telephone": "+5493412712847",
+  "email": "corvus.talent@gmail.com",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Rosario",
+    "addressRegion": "Santa Fe",
+    "addressCountry": "AR"
+  },
+  "founder": {
+    "@type": "Person",
+    "name": "Alejandro Leitner",
+    "jobTitle": "IT Recruiter & Career Advisor"
+  },
+  "sameAs": [
+    "https://www.instagram.com/corvustalent"
+  ],
+  "priceRange": "$$$",
+  "areaServed": "Argentina",
+  "serviceType": ["CV Writing", "LinkedIn Optimization", "Interview Coaching", "Cover Letter Writing"]
+}
+</script>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
@@ -19,13 +72,24 @@
   .divider{height:2px;background:#8FA8C8;width:48px;margin-bottom:28px;opacity:0.4}
   .btn-white{display:inline-block;background:#fff;color:#0A1628;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:none;letter-spacing:1px;text-decoration:none}
   .btn-outline{display:inline-block;background:transparent;color:#fff;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.4);text-decoration:none}
+
+  /* NAV DESKTOP */
   nav{display:flex;justify-content:space-between;align-items:center;padding:20px 80px;background:#0A1628;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:100}
-  .nav-brand{font-size:16px;font-weight:700;color:#fff;letter-spacing:3px;text-decoration:none}
-  .nav-links{display:flex;gap:28px;align-items:center}
-  .nav-link{font-size:12px;color:rgba(255,255,255,0.55);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;background:none;border:none;text-decoration:none}
+  .nav-brand{font-size:16px;font-weight:700;color:#fff;letter-spacing:3px;text-decoration:none;flex-shrink:0}
+  .nav-links{display:flex;gap:24px;align-items:center}
+  .nav-link{font-size:12px;color:rgba(255,255,255,0.55);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;background:none;border:none;text-decoration:none;white-space:nowrap}
   .nav-link:hover{color:#fff}
-  .lang-btn{font-size:11px;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px}
+  .lang-btn{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;flex-shrink:0}
   .lang-btn.active{background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.6)}
+
+  /* HAMBURGER MENU */
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+  .hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all 0.3s}
+  .mobile-menu{display:none;flex-direction:column;background:#0A1628;border-top:1px solid rgba(255,255,255,0.08);padding:16px 24px;gap:16px}
+  .mobile-menu.open{display:flex}
+  .mobile-menu a,.mobile-menu button{font-size:14px;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;text-decoration:none;background:none;border:none;cursor:pointer;text-align:left;letter-spacing:1px;padding:4px 0}
+  .mobile-lang{display:flex;gap:8px;margin-top:8px}
+
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
   .card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:28px;display:flex;flex-direction:column}
@@ -49,13 +113,20 @@
   .avatar{width:72px;height:72px;border-radius:50%;background:#142038;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;letter-spacing:2px;flex-shrink:0;border:2px solid rgba(255,255,255,0.15)}
   .skill-tag{font-size:11px;background:#0A1628;color:#fff;padding:5px 14px;border-radius:20px;font-family:Arial,sans-serif}
   .srv-icon{font-size:28px;margin-bottom:14px}
+
   @media(max-width:768px){
     .section{padding:48px 24px}
     nav{padding:16px 24px}
-    .nav-links{gap:12px}
+    .nav-links{display:none}
+    .hamburger{display:flex}
     .grid-2,.grid-3{grid-template-columns:1fr}
-    .h1{font-size:36px}
-    .h2{font-size:26px}
+    .h1{font-size:34px}
+    .h2{font-size:24px}
+    .h3{font-size:17px}
+    .sub{font-size:15px}
+    .price{font-size:28px}
+    .avatar{width:56px;height:56px;font-size:18px}
+    footer{padding:20px 24px !important}
   }
 </style>
 </head>
@@ -71,9 +142,22 @@
     <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
   </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
-<!-- HERO -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#servicios" onclick="closeMenu()" id="m-servicios">Servicios</a>
+  <a href="#precios" onclick="closeMenu()" id="m-precios">Precios</a>
+  <a href="#sobre" onclick="closeMenu()" id="m-sobre">Sobre mí</a>
+  <a href="#contacto" onclick="closeMenu()" id="m-contacto">Contacto</a>
+  <div class="mobile-lang">
+    <button class="lang-btn active" id="m-btn-es" onclick="setLang('es');closeMenu()">ES</button>
+    <button class="lang-btn" id="m-btn-en" onclick="setLang('en');closeMenu()">EN</button>
+  </div>
+</div>
+
 <section class="section" style="background:#0A1628;padding-top:96px;padding-bottom:96px">
   <div class="label" id="hero-label">ASESORÍA DE CARRERA IT</div>
   <div class="h1" style="color:#fff" id="hero-h1">Conseguí el trabajo<br>que merecés.</div>
@@ -84,7 +168,6 @@
   </div>
 </section>
 
-<!-- SERVICIOS -->
 <section class="section" style="background:#F5F7FA" id="servicios">
   <div class="label" id="srv-label">SERVICIOS</div>
   <div class="h2" style="color:#0A1628" id="srv-h2">Todo lo que necesitás para tu búsqueda</div>
@@ -113,7 +196,6 @@
   </div>
 </section>
 
-<!-- PRECIOS -->
 <section class="section" style="background:#0A1628" id="precios">
   <div class="label" id="price-label">PACKS</div>
   <div class="h2" style="color:#fff" id="price-h2">Elegí el pack que mejor se adapta</div>
@@ -165,12 +247,11 @@
   <div style="margin-top:20px;font-size:11px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="price-note">* Precios en ARS sujetos a revisión mensual.</div>
 </section>
 
-<!-- SOBRE MÍ -->
 <section class="section" style="background:#F5F7FA" id="sobre">
   <div class="label" id="about-label">SOBRE MÍ</div>
-  <div style="display:flex;gap:28px;align-items:flex-start">
+  <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap">
     <div class="avatar">AL</div>
-    <div>
+    <div style="flex:1;min-width:200px">
       <div class="h2" style="color:#0A1628;margin-bottom:4px">Alejandro Leitner</div>
       <div style="font-size:13px;color:#8FA8C8;font-family:Arial,sans-serif;letter-spacing:1px;margin-bottom:18px" id="about-title">Founder · Corvus Talent</div>
       <div class="sub-dark" id="about-desc">Técnico en Recursos Humanos con más de 6 años de experiencia en Recruiting y Sourcing IT. Sé exactamente qué buscan los recruiters — porque soy uno de ellos. Actualmente cursando la Licenciatura en Filosofía en la UNR, integrando enfoques estratégicos y humanos en el acompañamiento de carrera.</div>
@@ -185,7 +266,6 @@
   </div>
 </section>
 
-<!-- CONTACTO -->
 <section class="section" style="background:#0A1628" id="contacto">
   <div class="label" id="contact-label">CONTACTO</div>
   <div class="h2" style="color:#fff" id="contact-h2">Hablemos</div>
@@ -205,16 +285,24 @@
 </section>
 
 <footer style="padding:24px 80px;background:#0A1628;border-top:1px solid rgba(255,255,255,0.08)">
-  <div style="display:flex;justify-content:space-between;align-items:center">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="footer-text">© 2025 Corvus Talent · Talento certero.</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif">Rosario, Argentina</div>
   </div>
 </footer>
 
 <script>
+function toggleMenu(){
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+function closeMenu(){
+  document.getElementById('mobile-menu').classList.remove('open');
+}
+
 const t={
   es:{
     'nav-servicios':'Servicios','nav-precios':'Precios','nav-sobre':'Sobre mí','nav-contacto':'Contacto',
+    'm-servicios':'Servicios','m-precios':'Precios','m-sobre':'Sobre mí','m-contacto':'Contacto',
     'hero-label':'ASESORÍA DE CARRERA IT','hero-h1':'Conseguí el trabajo<br>que merecés.',
     'hero-sub':'Te acompañamos en cada etapa de tu búsqueda laboral — desde el CV hasta la entrevista — para que llegues al trabajo que querés.',
     'hero-btn1':'Ver packs','hero-btn2':'Contacto',
@@ -235,6 +323,7 @@ const t={
   },
   en:{
     'nav-servicios':'Services','nav-precios':'Pricing','nav-sobre':'About','nav-contacto':'Contact',
+    'm-servicios':'Services','m-precios':'Pricing','m-sobre':'About','m-contacto':'Contact',
     'hero-label':'IT CAREER ADVISORY','hero-h1':'Land the job<br>you deserve.',
     'hero-sub':'We guide you through every step of your job search — from your CV to the interview — so you get the job you want.',
     'hero-btn1':'View packs','hero-btn2':'Contact',
@@ -254,10 +343,13 @@ const t={
     'footer-text':'© 2025 Corvus Talent · Talento certero.'
   }
 };
+
 function setLang(lang){
   Object.keys(t[lang]).forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=t[lang][id]});
   document.getElementById('btn-es').classList.toggle('active',lang==='es');
   document.getElementById('btn-en').classList.toggle('active',lang==='en');
+  document.getElementById('m-btn-es').classList.toggle('active',lang==='es');
+  document.getElementById('m-btn-en').classList.toggle('active',lang==='en');
 }
 </script>
 </body>

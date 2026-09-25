@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corvit — Preparate para tu entrevista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
+    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
+    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
+    --green:#4ADE80;--red:#F87171;--yellow:#FBBF24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column}
+  nav{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+  .nav-brand{font-family:Georgia,serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--white)}
+  .nav-brand span{color:var(--slate)}
+  .nav-tag{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase}
+  main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+  .screen{display:none;width:100%;max-width:560px;opacity:0;transform:translateY(16px)}
+  .screen.active{display:flex;flex-direction:column;animation:fadeUp 0.35s ease forwards}
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+  .welcome-title{font-family:Georgia,serif;font-size:clamp(32px,6vw,48px);font-weight:400;line-height:1.2;margin-bottom:16px}
+  .welcome-title em{color:var(--slate);font-style:italic}
+  .welcome-sub{font-size:15px;color:var(--slate);line-height:1.7;margin-bottom:40px;max-width:420px}
+  .module-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;margin-bottom:32px}
+  .module-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:24px 20px;cursor:pointer;transition:border-color 0.2s,background 0.2s,transform 0.15s;text-align:left}
+  .module-card:hover{border-color:var(--slate);background:var(--navy-light);transform:translateY(-2px)}
+  .module-card.selected{border-color:var(--white);background:var(--navy-light)}
+  .module-icon{font-size:28px;margin-bottom:12px}
+  .module-name{font-size:14px;font-weight:600;color:var(--white);margin-bottom:6px}
+  .module-desc{font-size:12px;color:var(--slate);line-height:1.5}
+  .field-label{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+  .select-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:32px}
+  .select-chip{background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;font-size:13px;color:var(--white);text-align:left;transition:all 0.15s;font-family:inherit}
+  .select-chip:hover{border-color:var(--slate);transform:translateY(-1px)}
+  .select-chip.selected{border-color:var(--white);background:var(--navy-light)}
+  .chip-icon{font-size:16px;margin-bottom:6px;display:block}
+  .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px}
+  .q-header{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+  .q-top-row{display:flex;justify-content:space-between;align-items:center}
+  .q-count{font-size:12px;color:var(--slate)}
+  .q-bar-wrap{height:4px;background:var(--navy-mid);border-radius:2px}
+  .q-bar{height:100%;background:var(--slate);border-radius:2px;transition:width 0.4s ease}
+  .timer-row{display:flex;align-items:center;gap:8px}
+  .timer-display{font-size:13px;font-weight:600;color:var(--slate);background:var(--navy-mid);border:1px solid var(--border);border-radius:20px;padding:4px 12px;min-width:56px;text-align:center;transition:color 0.3s}
+  .timer-display.warning{color:var(--yellow);border-color:rgba(251,191,36,0.4)}
+  .timer-display.danger{color:var(--red);border-color:rgba(248,113,113,0.4);animation:pulse 0.5s ease infinite alternate}
+  @keyframes pulse{to{opacity:0.6}}
+  .fav-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:13px;color:var(--gray);font-family:inherit;transition:all 0.15s;display:flex;align-items:center;gap:5px}
+  .fav-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+  .fav-btn.active{border-color:var(--yellow);color:var(--yellow);background:rgba(251,191,36,0.08)}
+  .q-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px}
+  .q-label{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+  .q-text{font-family:Georgia,serif;font-size:clamp(17px,3vw,22px);line-height:1.5;color:var(--white)}
+  .mc-options{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+  .mc-option{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;font-size:14px;color:var(--white);text-align:left;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;gap:12px}
+  .mc-option:hover:not(:disabled){border-color:var(--slate);background:var(--navy-light)}
+  .mc-option:disabled{cursor:default}
+  .mc-option.correct{border-color:var(--green);background:rgba(74,222,128,0.08);color:var(--green)}
+  .mc-option.wrong{border-color:var(--red);background:rgba(248,113,113,0.08);color:var(--red)}
+  .mc-option.reveal-correct{border-color:var(--green);background:rgba(74,222,128,0.05)}
+  .mc-letter{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;transition:all 0.2s}
+  .mc-option.correct .mc-letter{background:var(--green);border-color:var(--green);color:var(--navy)}
+  .mc-option.wrong .mc-letter{background:var(--red);border-color:var(--red);color:var(--white)}
+  .mc-option.reveal-correct .mc-letter{background:var(--green);border-color:var(--green);color:var(--navy)}
+  .explanation-box{background:rgba(143,168,200,0.06);border-left:3px solid var(--slate);border-radius:0 8px 8px 0;padding:14px 16px;font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7;margin-bottom:16px;display:none;animation:fadeUp 0.25s ease forwards}
+  .explanation-box.visible{display:block}
+  .explanation-box strong{color:var(--white)}
+  .ai-feedback{background:rgba(143,168,200,0.06);border-left:3px solid #4ADE80;border-radius:0 8px 8px 0;padding:14px 16px;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:16px;display:none}
+  .ai-feedback.visible{display:block}
+  .ai-feedback-label{font-size:10px;color:#4ADE80;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .ai-feedback-text{}
+  .ai-thinking{color:var(--slate);font-style:italic;font-size:13px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s}
+  .btn-primary{background:var(--white);color:var(--navy)}
+  .btn-primary:hover{background:var(--off-white);transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+  .btn-ghost{background:transparent;color:var(--slate);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--slate);color:var(--white)}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap}
+  .back-btn{background:none;border:none;color:var(--slate);font-size:13px;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:32px;padding:0;transition:color 0.15s}
+  .back-btn:hover{color:var(--white)}
+  .results-header{text-align:center;margin-bottom:32px}
+  .results-score-ring{width:120px;height:120px;border-radius:50%;border:4px solid var(--navy-mid);margin:0 auto 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+  .results-score-ring svg{position:absolute;top:-4px;left:-4px;transform:rotate(-90deg)}
+  .results-score-ring svg circle{fill:none;stroke-width:4;stroke-linecap:round}
+  .results-score-num{font-family:Georgia,serif;font-size:36px;font-weight:700;position:relative;z-index:1}
+  .results-score-label{font-size:11px;color:var(--slate);position:relative;z-index:1}
+  .results-title{font-family:Georgia,serif;font-size:24px;margin-bottom:8px}
+  .results-sub{font-size:14px;color:var(--slate)}
+  .results-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+  .stat-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+  .stat-num{font-family:Georgia,serif;font-size:28px;color:var(--slate)}
+  .stat-label{font-size:11px;color:var(--gray);margin-top:4px}
+  .fav-section{margin-bottom:24px}
+  .fav-section-title{font-size:12px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .fav-item{background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:8px;line-height:1.5}
+  .review-list{margin-bottom:24px}
+  .review-item{background:var(--navy-mid);border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:3px solid transparent}
+  .review-item.correct{border-left-color:var(--green)}
+  .review-item.wrong{border-left-color:var(--red)}
+  .review-q{font-size:13px;color:var(--white);margin-bottom:6px;font-weight:500}
+  .review-result{font-size:12px;color:var(--gray)}
+  .corvus-cta{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .cta-text{font-size:13px;color:var(--slate);line-height:1.5}
+  .cta-text strong{color:var(--white);display:block;margin-bottom:4px}
+  .limit-banner{background:rgba(143,168,200,0.08);border:1px solid var(--border);border-radius:10px;padding:16px 20px;text-align:center;margin-top:16px}
+  .limit-banner p{font-size:13px;color:var(--slate);margin-bottom:12px}
+  .limit-banner strong{color:var(--white)}
+  footer{padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .footer-brand{font-size:12px;color:var(--gray)}
+  .footer-brand span{color:var(--slate)}
+  .footer-link{font-size:12px;color:var(--gray);text-decoration:none}
+  .footer-link:hover{color:var(--slate)}
+  .cv-section{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:2px}
+  .cv-section-title{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .cv-section-body{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7}
+  .cv-score{font-family:Georgia,serif;font-size:48px;font-weight:700;text-align:center;margin:8px 0 4px}
+  .cv-score-label{font-size:11px;color:var(--slate);text-align:center;letter-spacing:2px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">CORV<span>IT</span></div>
+  <div class="nav-tag" id="nav-module-tag"></div>
+</nav>
+<main>
+  <div class="screen active" id="screen-welcome">
+    <p class="welcome-title">Llegá preparado<br><em>a tu próxima entrevista.</em></p>
+    <p class="welcome-sub">Corvit te da las preguntas reales que hacen en las entrevistas — con múltiple choice, feedback de IA y análisis de tu CV.</p>
+    <p class="field-label">¿Qué querés hacer?</p>
+    <div class="module-grid">
+      <div class="module-card" onclick="selectModule('candidato')" id="card-candidato">
+        <div class="module-icon">🎯</div>
+        <div class="module-name">Candidato</div>
+        <div class="module-desc">Buscás trabajo y querés prepararte para la entrevista</div>
+      </div>
+      <div class="module-card" onclick="selectModule('entrevistador')" id="card-entrevistador">
+        <div class="module-icon">💼</div>
+        <div class="module-name">Entrevistador</div>
+        <div class="module-desc">Vas a entrevistar a alguien y querés las mejores preguntas</div>
+      </div>
+    </div>
+    <div style="width:100%;margin-bottom:32px">
+      <div class="module-card" onclick="goToCVFeedback()" id="card-cv" style="display:flex;align-items:center;gap:16px;padding:20px 24px">
+        <div style="font-size:28px">📄</div>
+        <div>
+          <div class="module-name">Analizá tu CV con IA</div>
+          <div class="module-desc">Subí tu CV en PDF y recibí feedback profesional — errores ATS, puntos fuertes y sugerencias concretas</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-continue-module" onclick="goToRubro()" disabled>Continuar con preguntas</button>
+  </div>
+
+  <div class="screen" id="screen-cv">
+    <button class="back-btn" onclick="goBack('screen-welcome')">← Volver</button>
+    <p class="field-label">ANÁLISIS DE CV CON IA</p>
+    <div class="q-card" style="margin-bottom:16px">
+      <div class="q-label">📄 Subí tu CV en PDF</div>
+      <p style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:16px">La IA va a analizar tu CV como lo haría un recruiter IT senior: errores ATS, estructura, logros, keywords y más.</p>
+      <label id="cv-upload-label" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px dashed var(--border);border-radius:10px;padding:28px;cursor:pointer;transition:border-color 0.2s;gap:8px">
+        <span style="font-size:28px">⬆️</span>
+        <span style="font-size:13px;color:var(--slate)" id="cv-upload-text">Hacé clic para seleccionar tu CV en PDF</span>
+        <input type="file" accept=".pdf" id="cv-file-input" style="display:none" onchange="handleCVUpload(event)">
+      </label>
+    </div>
+    <button class="btn btn-primary" id="btn-analyze-cv" onclick="analyzeCVWithAI()" disabled style="margin-bottom:16px">Analizar con IA</button>
+
+    <div id="cv-loading" style="display:none;text-align:center;padding:24px">
+      <div style="font-size:28px;margin-bottom:12px">🔍</div>
+      <p style="font-size:14px;color:var(--slate)" id="cv-loading-text">Analizando tu CV...</p>
+    </div>
+
+    <div id="cv-results" style="display:none;flex-direction:column;gap:12px"></div>
+  </div>
+    <button class="back-btn" onclick="goBack('screen-welcome')">← Volver</button>
+    <p class="field-label">¿Cuál es tu rubro?</p>
+    <div class="select-grid" id="rubro-grid"></div>
+    <button class="btn btn-primary" id="btn-continue-rubro" onclick="goToRol()" disabled>Continuar</button>
+  </div>
+
+  <div class="screen" id="screen-rol">
+    <button class="back-btn" onclick="goBack('screen-rubro')">← Volver</button>
+    <p class="field-label">¿Cuál es tu rol?</p>
+    <div class="role-grid" id="rol-grid"></div>
+    <button class="btn btn-primary" id="btn-continue-rol" onclick="startQuestions()" disabled>Ver preguntas</button>
+  </div>
+
+  <div class="screen" id="screen-question">
+    <div class="q-header">
+      <div class="q-top-row">
+        <div class="q-count" id="q-count"></div>
+        <div class="timer-row">
+          <button class="fav-btn" id="fav-btn" onclick="toggleFav()">☆ Guardar</button>
+          <div class="timer-display" id="timer-display">2:00</div>
+        </div>
+      </div>
+      <div class="q-bar-wrap"><div class="q-bar" id="q-bar"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-label" id="q-label"></div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <div id="mc-container">
+      <div class="mc-options" id="mc-options"></div>
+      <div class="explanation-box" id="explanation-box"></div>
+      <div class="ai-feedback" id="ai-feedback">
+        <div class="ai-feedback-label">✦ Feedback personalizado</div>
+        <div class="ai-feedback-text" id="ai-feedback-text"></div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" disabled>Siguiente →</button>
+      <button class="btn btn-ghost" onclick="finishSession()">Ver resultados</button>
+    </div>
+    <div class="limit-banner" id="limit-banner" style="display:none">
+      <p>Llegaste al límite de <strong>5 preguntas gratis</strong> por hoy.</p>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20Corvit%20Premium." target="_blank" class="btn btn-primary" style="text-decoration:none;display:inline-flex">Conocer Premium</a>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-results">
+    <div class="results-header">
+      <div class="results-score-ring" id="score-ring">
+        <svg width="128" height="128" viewBox="0 0 128 128">
+          <circle cx="64" cy="64" r="58" stroke="rgba(143,168,200,0.15)" stroke-width="4"/>
+          <circle cx="64" cy="64" r="58" stroke="#8FA8C8" stroke-width="4" id="score-arc" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+        </svg>
+        <div class="results-score-num" id="score-num">0%</div>
+        <div class="results-score-label">correctas</div>
+      </div>
+      <div class="results-title" id="results-title">¡Sesión completa!</div>
+      <div class="results-sub" id="results-sub"></div>
+    </div>
+    <div class="results-stats">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">preguntas</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">correctas</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-favs">0</div><div class="stat-label">favoritas ★</div></div>
+    </div>
+    <div class="fav-section" id="fav-section" style="display:none">
+      <div class="fav-section-title">★ Preguntas guardadas</div>
+      <div id="fav-list"></div>
+    </div>
+    <div class="review-list" id="review-list"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="resetApp()">Practicar de nuevo</button>
+    </div>
+    <div class="corvus-cta">
+      <div class="cta-text">
+        <strong>¿Querés una simulación real?</strong>
+        En Corvus Talent hacemos entrevistas 1-on-1 con feedback personalizado.
+      </div>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20una%20simulaci%C3%B3n%20de%20entrevista%20con%20Corvus%20Talent." target="_blank" class="btn btn-primary" style="text-decoration:none">Escribinos</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-brand">CORVIT · by <span>Corvus Talent</span></div>
+  <a href="/" target="_blank" class="footer-link">corvustalent.com.ar</a>
+</footer>
+
+<script>
+const rubros=[
+  {id:'it',name:'Tecnología IT',icon:'💻'},
+  {id:'rrhh',name:'Recursos Humanos',icon:'👥'},
+  {id:'ventas',name:'Ventas',icon:'📈'},
+  {id:'marketing',name:'Marketing',icon:'📣'},
+  {id:'admin',name:'Administración',icon:'📋'},
+  {id:'finanzas',name:'Finanzas',icon:'💰'},
+  {id:'legal',name:'Legal / Derecho',icon:'⚖️'},
+  {id:'docencia',name:'Docencia',icon:'📚'},
+  {id:'diseno',name:'Diseño Gráfico',icon:'🎨'},
+  {id:'salud',name:'Salud',icon:'🏥'},
+  {id:'ingenieria',name:'Ingeniería',icon:'⚙️'},
+  {id:'logistica',name:'Logística',icon:'📦'},
+  {id:'turismo',name:'Turismo y Hotelería',icon:'🏨'},
+  {id:'atencion',name:'Atención al Cliente',icon:'🤝'},
+];
+
+const roles={
+  it:['Desarrollador Frontend','Desarrollador Backend','Full Stack Developer','Data Analyst','DevOps Engineer','QA Engineer','Product Manager','UX/UI Designer','AI Engineer','Desarrollador de IA','Responsible AI Specialist'],
+  rrhh:['Recruiter','HR Business Partner','HR Analyst','Talent Acquisition','Compensation & Benefits'],
+  ventas:['Sales Executive','Account Manager','Business Development','SDR / BDR','Sales Manager'],
+  marketing:['Marketing Analyst','Community Manager','Content Manager','SEO Specialist','Growth Hacker'],
+  admin:['Administrativo','Asistente Ejecutivo','Office Manager','Coordinador de Proyectos'],
+  finanzas:['Analista Financiero','Contador','Controller','Treasury Analyst','CFO Junior'],
+  legal:['Abogado Corporativo','Abogado Laboral','Abogado de Familia','Escribano'],
+  docencia:['Docente de Nivel Primario','Docente de Nivel Secundario','Docente Universitario','Coordinador Pedagógico','Tutor / Acompañante Educativo'],
+  diseno:['Diseñador Gráfico','Director de Arte','Motion Designer','Diseñador UX/UI','Diseñador Editorial'],
+  salud:['Enfermero/a','Médico/a Clínico/a','Farmacéutico/a','Kinesiólogo/a','Nutricionista','Psicólogo/a','Instrumentador/a Quirúrgico/a'],
+  ingenieria:['Ingeniero Civil','Ingeniero Industrial','Ingeniero Mecánico','Ingeniero Eléctrico','Ingeniero Químico','Project Manager de Obra'],
+  logistica:['Coordinador de Logística','Analista de Supply Chain','Jefe de Depósito','Operador Logístico','Planner de Producción','Despachante de Aduana'],
+  turismo:['Recepcionista de Hotel','Agente de Viajes','Coordinador de Eventos','Guía de Turismo','Jefe de Recepción','Revenue Manager'],
+  atencion:['Agente de Atención al Cliente','Customer Success Manager','Supervisor de Call Center','Soporte Técnico','Community Manager de Soporte'],
+};
+
+const Q={
+  candidato:{
+    general:[
+      {q:"Te piden 'Contame sobre vos'. ¿Cuál es la mejor respuesta?",type:'mc',options:[{text:"Contás tu historia de vida con todos los detalles",correct:false},{text:"Presentás en 90 segundos tu rol, un logro clave y por qué te interesa el puesto",correct:true},{text:"Decís que todo está en el CV y preguntás si lo leyeron",correct:false},{text:"Listás todas tus habilidades técnicas sin contexto",correct:false}],a:"'Contame sobre vos' es tu elevator pitch. Breve, relevante y conectado con el puesto.",tip:"Estructura: quién soy → qué hice (logro concreto) → por qué estoy acá. No más de 90 segundos."},
+      {q:"'¿Por qué querés trabajar acá?' ¿Qué respuesta genera mejor impresión?",type:'mc',options:[{text:"'Porque necesito trabajo y este puesto me queda bien'",correct:false},{text:"'Porque pagan bien y el horario me conviene'",correct:false},{text:"'Me interesa el producto y cómo el equipo está usando tecnología X para resolverlo'",correct:true},{text:"'Porque es una empresa grande y da estabilidad'",correct:false}],a:"Las empresas quieren candidatos que eligieron postularse. Mostrar que investigaste es una señal de interés genuino.",tip:"Mencioná algo específico: producto, tecnología, cultura, noticia reciente. 20 minutos de investigación hacen la diferencia."},
+      {q:"¿Cuál es la función del método STAR en una entrevista?",type:'mc',options:[{text:"Describir tus habilidades técnicas en detalle",correct:false},{text:"Estructurar respuestas con Situación, Tarea, Acción y Resultado",correct:true},{text:"Ordenar tu CV cronológicamente",correct:false},{text:"Preparar preguntas para el entrevistador",correct:false}],a:"STAR es un framework para responder preguntas de comportamiento de forma estructurada y convincente.",tip:"Siempre cerrá con el Resultado — es lo que más recuerdan los entrevistadores."},
+      {q:"¿Qué respuesta es más efectiva cuando te preguntan tu mayor debilidad?",type:'mc',options:[{text:"'Soy muy perfeccionista'",correct:false},{text:"'No tengo debilidades significativas'",correct:false},{text:"Nombrar una debilidad real y explicar qué estás haciendo para mejorarla",correct:true},{text:"Cambiar el tema hacia tus fortalezas",correct:false}],a:"Los recruiters buscan autoconsciencia y capacidad de crecimiento. Una debilidad real bien trabajada es mucho más poderosa que una evasiva.",tip:"'Suelo asumir demasiado sin delegar. Estoy trabajando en confiar más en mi equipo.' Mucho mejor que 'soy muy perfeccionista'."},
+      {q:"¿Cuándo es apropiado preguntar sobre el salario en una primera entrevista?",type:'mc',options:[{text:"Al inicio, para no perder tiempo si no encaja",correct:false},{text:"Solo si el entrevistador lo menciona primero",correct:false},{text:"Cuando el entrevistador pregunta tus expectativas, o al final si hay interés mutuo claro",correct:true},{text:"Nunca en la primera entrevista",correct:false}],a:"El timing importa. Preguntar muy temprano puede parecer que solo te interesa el dinero.",tip:"Si te preguntan, dá una banda: 'Entre X e Y según el paquete completo.' Investigá el mercado antes."},
+      {q:"'¿Dónde te ves en 5 años?' ¿Cuál es la respuesta más estratégica?",type:'mc',options:[{text:"'En tu puesto, aprendiendo de vos'",correct:false},{text:"'No sé, depende de muchas cosas'",correct:false},{text:"'Con mi propia empresa en el mismo rubro'",correct:false},{text:"'Liderando proyectos de mayor complejidad, con más responsabilidad técnica y de equipo'",correct:true}],a:"Buscan saber si tenés dirección y si el puesto encaja con tu plan.",tip:"Hablá de crecimiento dentro del área. Evitá 'en tu puesto' y 'con mi propia empresa'."},
+    ],
+    it:[
+      {q:"¿Qué significa que un CV es 'ATS-friendly'?",type:'mc',options:[{text:"Que tiene un diseño visual atractivo con gráficos y colores",correct:false},{text:"Que está optimizado para ser leído por software de filtrado automático",correct:true},{text:"Que está traducido al inglés",correct:false},{text:"Que tiene más de dos páginas de contenido",correct:false}],a:"ATS filtra CVs automáticamente. Un CV ATS-friendly tiene formato simple, sin columnas ni imágenes, y usa las keywords del aviso.",tip:"El 75% de los CVs son descartados por el ATS antes de llegar a un humano."},
+      {q:"Al describir un proyecto técnico, ¿qué elemento es más importante incluir?",type:'mc',options:[{text:"Todos los detalles técnicos del código",correct:false},{text:"El nombre de las herramientas y frameworks que usaste",correct:false},{text:"Tu rol específico, las decisiones que tomaste y el impacto medible",correct:true},{text:"Que fue un proyecto complejo y difícil",correct:false}],a:"El recruiter quiere entender cómo pensás y qué rol jugaste — no solo qué stack usaste.",tip:"Estructura: qué problema resolvía → qué decisiones tomé → qué resultado tuvo."},
+      {q:"¿Cuál refleja mejor cómo mantenerse actualizado en IT?",type:'mc',options:[{text:"Ver videos de YouTube ocasionalmente",correct:false},{text:"Seguir cursos, participar en comunidades y tener proyectos personales activos",correct:true},{text:"Leer novedades en redes sociales",correct:false},{text:"Confiar en que el trabajo diario te mantiene actualizado",correct:false}],a:"Los candidatos más valorados aprenden de forma autónoma y sistemática, no solo reactivamente.",tip:"Mencioná fuentes concretas y un ejemplo reciente. Es mucho más creíble."},
+      {q:"Te piden estimar el tiempo de desarrollo de una nueva funcionalidad. ¿Cómo lo abordás?",type:'mc',options:[{text:"Dás el número más bajo posible para parecer eficiente",correct:false},{text:"Dás un número muy alto para cubrirte ante imprevistos",correct:false},{text:"Descomponés la tarea, estimás cada parte con margen de incertidumbre y comunicás los supuestos",correct:true},{text:"Decís que es imposible estimar sin ver el código primero",correct:false}],a:"La estimación de tareas es una habilidad crítica. Descomponer, estimar con margen y comunicar supuestos muestra madurez.",tip:"Mencioná técnicas concretas: story points, planning poker. Y siempre aclará qué suposiciones hiciste."},
+      {q:"¿Qué harías si encontrás un bug crítico en producción el viernes a las 6pm?",type:'mc',options:[{text:"Lo dejás para el lunes porque ya es fin de semana",correct:false},{text:"Avisás al equipo, evaluás el impacto, implementás un fix o rollback y documentás el incidente",correct:true},{text:"Lo arreglás solo sin avisar a nadie",correct:false},{text:"Esperás a ver si alguien más lo reporta",correct:false}],a:"Los bugs críticos en producción requieren comunicación inmediata y acción coordinada.",tip:"Notificá → evaluá impacto → fix o rollback → postmortem. Eso es lo que buscan en candidatos senior."},
+      {q:"¿Cómo manejás el feedback negativo de un code review sobre código que escribiste?",type:'mc',options:[{text:"Lo defendés siempre porque vos sabés por qué lo hiciste así",correct:false},{text:"Aceptás todo sin cuestionarlo para evitar conflictos",correct:false},{text:"Escuchás, entendés el razonamiento, preguntás si no estás de acuerdo y decidís en base a argumentos técnicos",correct:true},{text:"Pedís que otro revise el código antes de responder",correct:false}],a:"El code review es una conversación técnica, no un juicio personal. Debatir con argumentos es señal de madurez.",tip:"Una respuesta que muestre que pudiste cambiar de opinión ante un buen argumento técnico es muy valiosa."},
+    ],
+    ai:[
+      {q:"¿Cuál es la diferencia clave entre ML tradicional y un LLM?",type:'mc',options:[{text:"Los LLMs solo sirven para generar texto",correct:false},{text:"El ML tradicional aprende para tareas específicas; los LLMs son modelos generativos entrenados en grandes corpus para múltiples tareas",correct:true},{text:"No hay diferencia real entre ambos",correct:false},{text:"Los LLMs son más baratos de entrenar",correct:false}],a:"El ML tradicional entrena modelos especializados. Los LLMs son modelos fundacionales de propósito general.",tip:"Mostrá que entendés cuándo usar cada enfoque según caso de uso, costo y latencia."},
+      {q:"¿Para qué caso es más adecuado RAG en lugar de fine-tuning?",type:'mc',options:[{text:"Cuando querés que el modelo aprenda un nuevo idioma",correct:false},{text:"Cuando necesitás que responda sobre documentación interna o datos que cambian frecuentemente",correct:true},{text:"Cuando el modelo necesita mejorar su razonamiento matemático",correct:false},{text:"Cuando querés reducir el tamaño del modelo en producción",correct:false}],a:"RAG es ideal cuando el conocimiento cambia frecuentemente. El fine-tuning adapta estilo o capacidades, no inyecta conocimiento actualizable.",tip:"Explicá el flujo: embedding → vector DB → retrieval → generación."},
+      {q:"¿Cuál de estas técnicas NO es efectiva para mitigar alucinaciones en LLMs?",type:'mc',options:[{text:"Usar RAG para grounding en datos reales",correct:false},{text:"Aumentar la temperatura del modelo para generar respuestas más creativas",correct:true},{text:"Implementar chain-of-thought prompting",correct:false},{text:"Agregar validación humana en el loop",correct:false}],a:"Aumentar la temperatura genera respuestas más variadas pero más propensas a alucinaciones.",tip:"Para reducir alucinaciones: temperatura baja + RAG + prompts estructurados."},
+      {q:"¿Qué consideración es más crítica al desplegar un modelo de IA en producción?",type:'mc',options:[{text:"Que el modelo tenga la mayor cantidad de parámetros posible",correct:false},{text:"Que haya pasado evaluaciones de performance, equidad, latencia y tenga un plan de monitoreo continuo",correct:true},{text:"Que esté construido con el framework más popular",correct:false},{text:"Que el equipo de desarrollo lo haya aprobado internamente",correct:false}],a:"Un modelo en producción puede degradarse o fallar ante distribuciones nuevas. El monitoreo continuo no es opcional.",tip:"Métricas de negocio + métricas técnicas + alertas de distribution shift + plan de rollback."},
+    ],
+    rrhh:[
+      {q:"Tenés 50 candidatos para revisar en 2 días. ¿Cuál es el primer paso?",type:'mc',options:[{text:"Empezar a llamar a todos en orden de llegada",correct:false},{text:"Definir criterios de descarte claros con el hiring manager antes de revisar un solo CV",correct:true},{text:"Pedir una extensión del plazo",correct:false},{text:"Seleccionar los primeros 10 CVs al azar",correct:false}],a:"Sin criterios claros, el proceso es inconsistente y sesgado. Alinear con el hiring manager ahorra tiempo y mejora la calidad.",tip:"Mencioná también el uso del ATS para filtrar automáticamente."},
+      {q:"¿Cómo le explicás a un hiring manager que el candidato ideal no existe en el mercado?",type:'mc',options:[{text:"No se lo decís y seguís buscando indefinidamente",correct:false},{text:"Le decís que es imposible cubrir el puesto",correct:false},{text:"Presentás datos de mercado, mostrás perfiles reales disponibles y proponés ajustar requisitos o compensación",correct:true},{text:"Publicás el aviso igual y esperás",correct:false}],a:"El recruiter es un asesor estratégico. Usar datos de mercado para calibrar expectativas es una de las habilidades más valoradas.",tip:"Mencioná herramientas concretas: LinkedIn Talent Insights, encuestas salariales. Los datos convencen más que la opinión."},
+      {q:"Un candidato finalista rechaza la oferta en el último momento. ¿Qué hacés?",type:'mc',options:[{text:"Cerrás el proceso porque no hay más candidatos válidos",correct:false},{text:"Le pedís que reconsidere sin entender por qué rechazó",correct:false},{text:"Le preguntás el motivo, evaluás si hay posibilidad de ajuste y reactivás candidatos anteriores en paralelo",correct:true},{text:"Empezás el proceso desde cero",correct:false}],a:"El rechazo de una oferta es información valiosa. Entender el motivo puede revelar problemas sistémicos.",tip:"Siempre mantenés caliente a los candidatos finalistas hasta que el elegido empiece. Un proceso no cierra hasta que el candidato está sentado en su silla."},
+      {q:"¿Qué es el employer branding y por qué impacta en el reclutamiento?",type:'mc',options:[{text:"Es el logo y los colores que usa la empresa en sus avisos",correct:false},{text:"Es la reputación de la empresa como empleador, que afecta la calidad y cantidad de candidatos espontáneos",correct:true},{text:"Es el proceso de onboarding de nuevos empleados",correct:false},{text:"Es la compensación y beneficios que ofrece la empresa",correct:false}],a:"El employer branding determina si los mejores candidatos quieren trabajar en tu empresa antes de que los contactes.",tip:"Una marca empleadora fuerte reduce el costo y el tiempo de reclutamiento."},
+    ],
+    ventas:[
+      {q:"¿Cuál es la primera acción correcta ante una objeción de precio?",type:'mc',options:[{text:"Ofrecer un descuento inmediatamente",correct:false},{text:"Ignorar la objeción y seguir presentando",correct:false},{text:"Escuchar, validar la objeción y entender si es real o un pretexto antes de responder",correct:true},{text:"Terminar la reunión y dar tiempo para reflexionar",correct:false}],a:"Las objeciones de precio suelen ser señales de que el valor no está claro, no de que el precio sea alto.",tip:"'Entiendo que el precio es una consideración importante. ¿Qué esperaría ver como retorno?' Abre el diálogo sin ceder."},
+      {q:"¿Cuál es la diferencia entre un lead calificado y uno no calificado?",type:'mc',options:[{text:"Un lead calificado es el que ya compró antes",correct:false},{text:"Un lead calificado cumple criterios de necesidad, presupuesto, autoridad y timing",correct:true},{text:"Un lead calificado es el que respondió el primer email",correct:false},{text:"No hay diferencia real",correct:false}],a:"Invertir tiempo en leads no calificados es uno de los errores más costosos en ventas. El framework BANT es el más usado.",tip:"Mostrar que entendés la diferencia entre volumen y calidad de leads es señal de madurez comercial."},
+      {q:"Llevás 3 meses sin llegar a tu cuota. ¿Cómo lo explicás en una entrevista?",type:'mc',options:[{text:"Culpás al producto, al mercado o a la economía",correct:false},{text:"Lo negás y decís que siempre cumpliste",correct:false},{text:"Lo reconocés, explicás el contexto, describís qué cambios hiciste y qué aprendiste",correct:true},{text:"Evitás el tema y hablás de tus mejores meses",correct:false}],a:"Los recruiters de ventas saben que todos los vendedores tienen meses malos. Evalúan cómo reaccionaste.",tip:"Contexto → qué hice diferente → resultado de ese cambio. La honestidad con autocrítica vende."},
+      {q:"¿Qué técnica usarías para reactivar un cliente que no te responde hace 3 semanas?",type:'mc',options:[{text:"Seguir mandando el mismo email hasta que responda",correct:false},{text:"Darlo por perdido y enfocarte en nuevos prospectos",correct:false},{text:"Cambiar el canal, el mensaje y el valor — quizás con un insight nuevo relevante para su negocio",correct:true},{text:"Llamarlo directamente sin aviso previo",correct:false}],a:"Si alguien no responde, el mensaje o el momento no fueron correctos. Cambiar el canal y ofrecer nuevo valor es más efectivo.",tip:"Un mensaje de ruptura bien ejecutado suele tener alta tasa de respuesta."},
+    ],
+    marketing:[
+      {q:"¿Cuál de estas es una métrica de conversión, no de awareness?",type:'mc',options:[{text:"Alcance de la campaña",correct:false},{text:"Impresiones totales",correct:false},{text:"Costo por adquisición (CPA)",correct:true},{text:"Frecuencia de exposición",correct:false}],a:"CPA mide cuánto cuesta conseguir una conversión real. Alcance e impresiones miden visibilidad, no acción.",tip:"Mostrá que entendés el funnel completo y qué métrica importa en cada etapa."},
+      {q:"¿Qué es el A/B testing y cuándo tiene sentido aplicarlo?",type:'mc',options:[{text:"Es comparar dos productos distintos para elegir cuál lanzar",correct:false},{text:"Es probar dos variantes con audiencias equivalentes para identificar cuál performa mejor con evidencia estadística",correct:true},{text:"Es una técnica de segmentación de audiencias",correct:false},{text:"Es el proceso de revisar una campaña antes de publicarla",correct:false}],a:"El A/B testing elimina las opiniones y las reemplaza por datos. Solo tiene sentido con volumen estadísticamente significativo.",tip:"Error común: hacer A/B testing con audiencias chicas y sacar conclusiones."},
+      {q:"¿Cómo definís el público objetivo cuando el cliente dice 'quiero llegar a todos'?",type:'mc',options:[{text:"Configurás la campaña para el mayor alcance posible",correct:false},{text:"Le explicás que 'todos' no es una audiencia y trabajás para definir buyer personas basadas en datos reales",correct:true},{text:"Lo dividís en hombres y mujeres de todas las edades",correct:false},{text:"Usás los segmentos default de la plataforma",correct:false}],a:"'Llegar a todos' es la forma más cara e ineficiente de hacer marketing. Definir buyer personas con datos es el primer paso.",tip:"Preguntá: '¿Quién es tu cliente actual más rentable?' '¿Qué problema le resolvés?' Eso construye una audiencia real."},
+      {q:"Un post orgánico tuvo 10x más alcance de lo esperado. ¿Qué hacés?",type:'mc',options:[{text:"Lo celebrás y seguís con el plan original",correct:false},{text:"Analizás por qué funcionó, identificás los elementos replicables y ajustás la estrategia de contenido",correct:true},{text:"Lo promovés inmediatamente con pauta para maximizar el alcance",correct:false},{text:"Esperás a ver si el siguiente post también performa bien",correct:false}],a:"El éxito inesperado es tan informativo como el fracaso. Entender qué lo generó permite replicarlo sistemáticamente.",tip:"Mostrá orientación a datos: formato, tema, timing, copy — qué combinación funcionó."},
+    ],
+    admin:[
+      {q:"Tenés tres tareas urgentes al mismo tiempo. ¿Cuál es la mejor estrategia?",type:'mc',options:[{text:"Hacer las tres en paralelo para avanzar en todas",correct:false},{text:"Elegir la más fácil primero",correct:false},{text:"Comunicar proactivamente a los involucrados, priorizar por impacto y negociar plazos si es necesario",correct:true},{text:"Esperar a que alguna pierda urgencia",correct:false}],a:"La gestión del tiempo no es solo organización personal — es comunicación. Avisar antes de que algo se retrase es mucho mejor que pedir disculpas después.",tip:"Mencioná una herramienta concreta (Notion, Trello) y mostrá que tenés un sistema."},
+      {q:"Tu jefe te pide un informe urgente mientras terminás otro con deadline inminente. ¿Qué hacés?",type:'mc',options:[{text:"Abandonás lo que estabas haciendo y empezás el informe",correct:false},{text:"Le explicás el contexto, mostrás tus prioridades y pedís que decida cuál es más urgente",correct:true},{text:"Hacés los dos a la vez aunque queden incompletos",correct:false},{text:"Le decís que no podés hacerlo",correct:false}],a:"La gestión de prioridades requiere comunicación ascendente. Mostrar tu carga y pedir que la jerarquía decida es más profesional.",tip:"'Estoy terminando X con entrega a las 17hs. ¿El informe puede esperar o preferís que priorice este?' — Así se maneja."},
+      {q:"¿Qué herramienta o método usás para no olvidar ningún vencimiento o tarea pendiente?",type:'mc',options:[{text:"La memoria y los post-its en el escritorio",correct:false},{text:"Un sistema digital de gestión de tareas con fechas límite, recordatorios y categorización por prioridad",correct:true},{text:"El email como lista de pendientes",correct:false},{text:"Preguntarle a un colega que recuerde por mí",correct:false}],a:"El volumen de tareas en roles administrativos hace imposible confiar en la memoria. Un sistema externo confiable es lo que diferencia.",tip:"Mencioná herramientas concretas: Notion, Todoist, Google Tasks. Describí cómo priorizás y revisás los pendientes diariamente."},
+      {q:"Cometiste un error en un documento oficial ya enviado. ¿Cómo lo manejás?",type:'mc',options:[{text:"Esperás a que alguien más lo detecte",correct:false},{text:"Lo corregís en futuros documentos sin mencionar el error anterior",correct:false},{text:"Informás inmediatamente a tu superior, explicás el error y proponés una solución concreta",correct:true},{text:"Contactás directamente al receptor sin avisar internamente",correct:false}],a:"Reportar un error propio antes de que lo descubran otros es señal de integridad y profesionalismo.",tip:"La forma en que manejás los errores propios dice más de tu carácter que los logros."},
+    ],
+    finanzas:[
+      {q:"Una empresa reporta utilidad positiva pero no puede pagar sus deudas. ¿Qué está pasando?",type:'mc',options:[{text:"El contador cometió un error",correct:false},{text:"La empresa tiene un problema de flujo de caja: es rentable pero no tiene liquidez suficiente",correct:true},{text:"La empresa tiene demasiados activos fijos",correct:false},{text:"Los impuestos son demasiado altos",correct:false}],a:"Rentabilidad y liquidez son conceptos distintos. Una empresa puede ser rentable en papel pero quedarse sin caja si cobra tarde.",tip:"Clásica pregunta de finanzas básicas. Debés poder explicarlo con un ejemplo concreto."},
+      {q:"¿Qué indica un ratio de endeudamiento (deuda/patrimonio) muy alto?",type:'mc',options:[{text:"Que la empresa es muy rentable",correct:false},{text:"Que la empresa financia gran parte de sus activos con deuda, aumentando el riesgo financiero",correct:true},{text:"Que la empresa tiene muchos activos fijos",correct:false},{text:"Que la empresa está en quiebra inminente",correct:false}],a:"Un ratio alto no es necesariamente malo — depende del sector y del costo de la deuda. Pero sí indica mayor riesgo y menor margen ante caídas de ingresos.",tip:"Contextualizá siempre los ratios con el sector."},
+      {q:"Te dan un balance para analizar en 10 minutos. ¿Por dónde empezás?",type:'mc',options:[{text:"Por el estado de resultados",correct:false},{text:"Por las notas al pie del balance",correct:false},{text:"Por los indicadores clave: liquidez, endeudamiento, rentabilidad sobre patrimonio y flujo de caja operativo",correct:true},{text:"Por el activo total",correct:false}],a:"Con 10 minutos, los ratios clave dan el diagnóstico más rápido.",tip:"Mostrá que tenés un proceso de análisis sistemático, no que leés el balance de forma aleatoria."},
+      {q:"¿Cuál es la diferencia entre costo fijo y variable, y por qué importa?",type:'mc',options:[{text:"Los fijos son los importantes y los variables secundarios",correct:false},{text:"Los fijos no cambian con el volumen de producción; los variables sí. Esto determina el punto de equilibrio y las decisiones de precio y escala",correct:true},{text:"Los fijos se pagan mensualmente y los variables eventualmente",correct:false},{text:"No hay diferencia real en la práctica contable",correct:false}],a:"Entender la estructura de costos es fundamental para calcular el punto de equilibrio y evaluar la viabilidad de escalar.",tip:"Una empresa con costos fijos altos necesita mayor volumen para ser rentable."},
+    ],
+    legal:[
+      {q:"Un cliente te pide asesoramiento sobre un contrato con cláusulas abusivas. ¿Cuál es tu primer paso?",type:'mc',options:[{text:"Decirle inmediatamente que el contrato es nulo y que no lo firme",correct:false},{text:"Analizar el contrato completo, identificar las cláusulas problemáticas y presentar un análisis con opciones concretas",correct:true},{text:"Derivarlo a otro abogado especializado sin revisar nada",correct:false},{text:"Pedirle que firme y luego impugnar las cláusulas en sede judicial",correct:false}],a:"El asesoramiento legal requiere análisis completo antes de dar una opinión. Un dictamen apresurado puede generar responsabilidad profesional.",tip:"En entrevistas legales, mostrá que pensás en términos de riesgo-beneficio y que siempre presentás opciones al cliente, no solo diagnósticos."},
+      {q:"¿Cuál es la diferencia entre nulidad absoluta y relativa en derecho argentino?",type:'mc',options:[{text:"No hay diferencia práctica, ambas invalidan el acto de la misma forma",correct:false},{text:"La nulidad absoluta puede declararse de oficio y no es confirmable; la relativa solo puede invocarla la parte protegida y es confirmable",correct:true},{text:"La nulidad absoluta aplica solo a contratos comerciales",correct:false},{text:"La nulidad relativa es más grave que la absoluta",correct:false}],a:"Distinción fundamental del CCCN (Arts. 386-388). La nulidad absoluta protege el orden público. La relativa protege intereses particulares y es subsanable.",tip:"Nulidad absoluta: actos ilícitos. Nulidad relativa: vicios del consentimiento (error, dolo, violencia)."},
+      {q:"Redactás un contrato y el cliente quiere incluir una cláusula penal muy elevada. ¿Qué hacés?",type:'mc',options:[{text:"La incluís tal como el cliente la pide",correct:false},{text:"Te negás porque las cláusulas penales elevadas son siempre nulas",correct:false},{text:"La incluís pero informás sobre la facultad judicial de reducirla si es excesiva (Art. 794 CCCN) y documentás el asesoramiento",correct:true},{text:"La reemplazás por una cláusula estándar sin consultar",correct:false}],a:"El Art. 794 del CCCN faculta al juez a reducir la pena cuando es desproporcionada. El abogado debe informar los riesgos y documentar el asesoramiento.",tip:"Documentar el asesoramiento dado al cliente te protege como profesional."},
+      {q:"¿Cuál es el plazo de prescripción general de las acciones personales en el CCCN?",type:'mc',options:[{text:"5 años",correct:false},{text:"10 años",correct:false},{text:"3 años",correct:false},{text:"2 años, salvo disposición especial en contrario",correct:true}],a:"El Art. 2560 fija 5 años como plazo genérico, pero los Arts. 2561 y 2562 fijan 3 y 2 años para las acciones más frecuentes (responsabilidad civil, vicios redhibitorios). En la práctica, el de 2 años es el más aplicado.",tip:"El CCCN reformó los plazos respecto al Código de Vélez — muchos se acortaron."},
+      {q:"Un cliente en proceso de divorcio quiere quedarse con la vivienda familiar. ¿Qué opciones tiene?",type:'mc',options:[{text:"Solo puede quedarse si la compró antes del matrimonio",correct:false},{text:"Puede solicitar atribución del uso, compensar económicamente al otro cónyuge, o acordar la venta y distribución",correct:true},{text:"Si hay hijos menores, automáticamente se le asigna al progenitor conviviente",correct:false},{text:"La vivienda siempre debe venderse y dividirse en partes iguales",correct:false}],a:"El CCCN ofrece múltiples alternativas: atribución del uso (Art. 443), compensación económica, o acuerdo de partes. La atribución no es automática aunque haya hijos.",tip:"Mostrá que conocés las herramientas del CCCN y que pensás en soluciones prácticas, no solo en el litigio como primera opción."},
+    ],
+    docencia:[
+      {q:"Te preguntan cómo manejás un aula con alumnos de distintos niveles. ¿Cuál es la mejor respuesta?",type:'mc',options:[{text:"Avanzás al ritmo del alumno más lento para no dejar a nadie atrás",correct:false},{text:"Implementás estrategias de diferenciación: distintos materiales, actividades por niveles y acompañamiento personalizado",correct:true},{text:"Avanzás al ritmo del grupo mayoritario y los que no llegan reciben apoyo extra en casa",correct:false},{text:"Agrupás a los alumnos por nivel y les das contenido completamente diferente",correct:false}],a:"La diferenciación pedagógica implica adaptar la enseñanza sin separar ni etiquetar a los alumnos, manteniendo los mismos objetivos con distintos caminos.",tip:"Mencioná estrategias concretas: trabajo en estaciones, actividades con distintos niveles de complejidad, uso de pares como recursos de aprendizaje."},
+      {q:"Un alumno muestra conductas disruptivas de forma reiterada. ¿Cuál es tu primer paso?",type:'mc',options:[{text:"Lo mandás a dirección para que lo sancionen",correct:false},{text:"Ignorás la conducta para no darle protagonismo",correct:false},{text:"Buscás entender la causa, hablás con el alumno en privado y coordinás con el equipo de orientación y la familia",correct:true},{text:"Lo separás del grupo permanentemente",correct:false}],a:"La conducta disruptiva siempre tiene una causa. El abordaje pedagógico efectivo implica investigar, dialogar y trabajar en red — no solo sancionar.",tip:"Mostrar que pensás en el alumno como sujeto con contexto (familiar, emocional, social) diferencia a los docentes con vocación real."},
+      {q:"¿Cómo planificás una clase para que los alumnos participen activamente?",type:'mc',options:[{text:"Hacés preguntas al final de la explicación para verificar que entendieron",correct:false},{text:"Diseñás actividades donde los alumnos construyen el conocimiento: debates, resolución de problemas, trabajo colaborativo",correct:true},{text:"Usás presentaciones con mucho contenido visual para mantener la atención",correct:false},{text:"Les pedís que tomen apuntes durante tu explicación",correct:false}],a:"El aprendizaje activo es más efectivo que la transmisión pasiva. Los entrevistadores valoran candidatos que diseñan experiencias de aprendizaje.",tip:"Mencioná metodologías concretas: aula invertida, aprendizaje basado en proyectos, Socratic seminar."},
+      {q:"¿Cómo evaluás el aprendizaje más allá de las notas?",type:'mc',options:[{text:"Solo con exámenes escritos al final de cada unidad",correct:false},{text:"Con evaluación continua: observación, participación, autoevaluación, portfolios y distintos formatos de producción",correct:true},{text:"Con exámenes orales porque son más precisos",correct:false},{text:"La nota del examen final es el único indicador válido",correct:false}],a:"La evaluación formativa (durante el proceso) es tan importante como la sumativa. Los mejores docentes usan múltiples instrumentos.",tip:"Mostrá que entendés la diferencia entre evaluar para calificar y evaluar para enseñar."},
+      {q:"¿Cómo integrás la tecnología en tu práctica docente?",type:'mc',options:[{text:"Usás el proyector para mostrar presentaciones en PowerPoint",correct:false},{text:"Integrás herramientas digitales como recurso pedagógico cuando agregan valor real al aprendizaje, no como fin en sí mismas",correct:true},{text:"Evitás la tecnología porque distrae a los alumnos",correct:false},{text:"Pedís a los alumnos que investiguen en internet como actividad central",correct:false}],a:"La tecnología educativa bien usada potencia el aprendizaje; mal usada, solo agrega ruido.",tip:"Mencioná herramientas concretas y por qué: Padlet, Kahoot, videos para invertir el aula. El 'para qué' importa más que el 'qué'."},
+    ],
+    diseno:[
+      {q:"Te piden revisar el trabajo de un cliente y no te gusta estéticamente. ¿Cómo lo manejás?",type:'mc',options:[{text:"Le decís directamente que el diseño está mal y proponés el tuyo",correct:false},{text:"Lo aprobás sin decir nada para evitar conflictos",correct:false},{text:"Separás tu gusto personal de los objetivos del cliente y comunicás tu perspectiva con argumentos, no con opiniones",correct:true},{text:"Le explicás que el cliente no tiene criterio",correct:false}],a:"El diseño gráfico es comunicación visual al servicio de un objetivo. El gusto personal del diseñador es secundario al propósito del cliente.",tip:"'Me gusta / no me gusta' no es feedback — 'no comunica el mensaje porque X' sí lo es."},
+      {q:"¿Cómo manejás múltiples proyectos con deadlines simultáneos?",type:'mc',options:[{text:"Trabajás en todos a la vez para avanzar en paralelo",correct:false},{text:"Priorizás por deadline, comunicás el estado de cada proyecto proactivamente y avisás con anticipación si algo no va a llegar",correct:true},{text:"Entregás primero el que más te gusta creativamente",correct:false},{text:"Pedís extensiones en todos los proyectos para tener margen",correct:false}],a:"La gestión de tiempos y la comunicación proactiva son tan importantes como el talento creativo.",tip:"Mencioná herramientas concretas: Notion, Trello, Google Calendar."},
+      {q:"Un cliente aprueba un diseño con un error de impresión grave. ¿Qué hacés?",type:'mc',options:[{text:"Lo mandás a producción porque el cliente lo aprobó",correct:false},{text:"Se lo señalás antes de producir, explicás las consecuencias y documentás que informaste",correct:true},{text:"Lo corregís sin avisarle para no preocuparlo",correct:false},{text:"Lo mandás igual y esperás a ver si el error se nota",correct:false}],a:"La responsabilidad técnica del diseñador no termina con la aprobación del cliente. Si sabés que hay un error, informar es tu obligación profesional.",tip:"Documentar que informaste (por email) te protege como profesional."},
+      {q:"¿Cómo presentás una propuesta a un cliente sin formación visual?",type:'mc',options:[{text:"Le explicás los términos técnicos para que entienda el trabajo",correct:false},{text:"Contextualizás cada decisión en función de los objetivos del cliente: cómo cada elección ayuda a comunicar su mensaje",correct:true},{text:"Le mostrás el diseño final y esperás su reacción sin explicar nada",correct:false},{text:"Le pedís que confíe en tu criterio profesional",correct:false}],a:"Un cliente no técnico necesita entender el 'por qué' detrás de cada decisión, no el 'cómo'.",tip:"'Elegí este color porque tu público asocia este tono con X' en vez de 'usé un azul análogo con alto contraste'."},
+      {q:"¿Qué considerás primero al arrancar un proyecto de diseño desde cero?",type:'mc',options:[{text:"La paleta de colores que va a usar el proyecto",correct:false},{text:"El brief: objetivo, público objetivo, tono de comunicación y contexto de uso del material",correct:true},{text:"Las referencias visuales que te inspiran",correct:false},{text:"El software que vas a usar según el tipo de entrega",correct:false}],a:"El diseño sin brief es decoración. Antes de abrir cualquier programa, entender el objetivo y el contexto define todas las decisiones visuales posteriores.",tip:"'Arranco por el brief porque si no entiendo a quién le hablo y para qué, cualquier solución puede ser arbitraria.'"},
+    ],
+    salud:[
+      {q:"Un paciente se niega a seguir el tratamiento indicado. ¿Cuál es tu primer paso?",type:'mc',options:[{text:"Documentás la negativa y lo derivás a otro profesional",correct:false},{text:"Respetás su autonomía, explorás sus razones, informás los riesgos y documentás el proceso en la historia clínica",correct:true},{text:"Insistís hasta que acepte porque es por su bien",correct:false},{text:"Avisás a la familia sin consultar al paciente",correct:false}],a:"La autonomía del paciente es un principio ético fundamental. El profesional de salud debe informar, no imponer.",tip:"En entrevistas de salud, mostrar que conocés el consentimiento informado y el marco ético es tan importante como el conocimiento técnico."},
+      {q:"¿Qué es el triaje y cuándo se aplica?",type:'mc',options:[{text:"Es el proceso de derivación entre especialidades dentro de un hospital",correct:false},{text:"Es la clasificación de pacientes según la urgencia de su atención para priorizar recursos limitados",correct:true},{text:"Es el protocolo de alta médica para pacientes estables",correct:false},{text:"Es el sistema de turnos en guardia",correct:false}],a:"El triaje es fundamental en urgencias y emergencias. Permite atender primero a quien más lo necesita cuando los recursos son limitados.",tip:"Mencioná las categorías del triaje (rojo, naranja, amarillo, verde, negro) si aplicás a roles de guardia o emergencias."},
+      {q:"¿Cómo manejás una situación donde cometiste un error en la atención de un paciente?",type:'mc',options:[{text:"No lo mencionás si el paciente no lo notó",correct:false},{text:"Lo reportás internamente pero no al paciente para no generar angustia",correct:false},{text:"Lo reportás al equipo, comunicás al paciente con transparencia, tomás las medidas correctivas necesarias y documentás el incidente",correct:true},{text:"Esperás a ver si tiene consecuencias antes de actuar",correct:false}],a:"La cultura de seguridad del paciente requiere reporte inmediato de errores. La transparencia protege al paciente y al profesional.",tip:"Los sistemas de salud modernos valoran la cultura de reporte sin castigo. Mostrar que entendés esto diferencia a candidatos maduros."},
+      {q:"¿Qué implica el trabajo interdisciplinario en salud?",type:'mc',options:[{text:"Que cada profesional trabaja de forma independiente en su área",correct:false},{text:"Que el médico coordina y los demás ejecutan sus indicaciones",correct:false},{text:"Que distintos profesionales aportan su mirada específica para una atención integral del paciente, con comunicación y objetivos compartidos",correct:true},{text:"Que todos los profesionales hacen las mismas tareas para cubrirse entre sí",correct:false}],a:"El trabajo interdisciplinario mejora los resultados clínicos. Cada profesional aporta desde su especificidad, no en jerarquía sino en complementariedad.",tip:"Mencioná experiencias concretas de trabajo en equipo con otros profesionales de salud — médicos, enfermeros, trabajadores sociales, kinesiólogos."},
+      {q:"¿Cómo te actualizás en las últimas evidencias y protocolos de tu área?",type:'mc',options:[{text:"Con la experiencia clínica diaria es suficiente",correct:false},{text:"Seguís revistas científicas, participás en capacitaciones y aplicás medicina basada en evidencia",correct:true},{text:"Esperás las actualizaciones que bajan de la institución donde trabajás",correct:false},{text:"Consultás con colegas de mayor experiencia cuando surge una duda",correct:false}],a:"La medicina y las ciencias de la salud avanzan rápido. La actualización continua es parte de la responsabilidad profesional, no una opción.",tip:"Mencioná fuentes concretas: PubMed, UpToDate, guías de sociedades científicas, congresos. La especificidad suma mucho."},
+    ],
+    ingenieria:[
+      {q:"¿Cómo manejás cambios de alcance en un proyecto de obra o ingeniería en curso?",type:'mc',options:[{text:"Los absorbés sin documentar para no generar conflictos con el cliente",correct:false},{text:"Te negás a cualquier cambio porque altera el contrato original",correct:false},{text:"Evaluás el impacto en costo, plazo y recursos, lo documentás mediante una orden de cambio y lo comunicás al cliente antes de ejecutar",correct:true},{text:"Los ejecutás y ajustás el presupuesto al final",correct:false}],a:"Los cambios de alcance son inevitables en proyectos de ingeniería. Gestionarlos formalmente protege al cliente y al profesional.",tip:"Mostrá que conocés el proceso de change order o solicitud de cambio. La gestión documental es tan importante como la ejecución técnica."},
+      {q:"¿Qué es el camino crítico en la gestión de proyectos?",type:'mc',options:[{text:"La tarea más costosa del proyecto",correct:false},{text:"La secuencia de tareas que determina la duración mínima del proyecto — cualquier retraso en ella retrasa el proyecto completo",correct:true},{text:"El conjunto de tareas de mayor riesgo técnico",correct:false},{text:"El cronograma aprobado por el cliente",correct:false}],a:"El camino crítico (CPM) es fundamental para priorizar recursos y detectar dónde un retraso impacta el plazo total.",tip:"Mencioná herramientas concretas que usás: MS Project, Primavera, GanttProject. Y mostrá que entendés la diferencia entre holgura libre y total."},
+      {q:"¿Cómo abordás un problema técnico que no tiene una solución clara o precedente conocido?",type:'mc',options:[{text:"Aplicás la solución más estándar disponible aunque no sea ideal",correct:false},{text:"Escalás al superior inmediatamente sin intentar resolverlo",correct:false},{text:"Definís el problema con precisión, investigás precedentes, consultás con especialistas, evaluás alternativas y tomás decisiones documentadas",correct:true},{text:"Improvisás en campo y documentás después",correct:false}],a:"La ingeniería requiere pensamiento sistemático ante la incertidumbre. El proceso de resolución de problemas importa tanto como la solución.",tip:"Describí un caso real donde tuviste que resolver algo sin precedente claro. La metodología que seguiste dice más que el resultado."},
+      {q:"¿Qué es la gestión de riesgos en un proyecto de ingeniería?",type:'mc',options:[{text:"El seguro de responsabilidad civil del profesional",correct:false},{text:"La identificación, evaluación y mitigación de eventos que podrían afectar el costo, plazo o calidad del proyecto",correct:true},{text:"El análisis de las condiciones climáticas antes de iniciar una obra",correct:false},{text:"El control de calidad de materiales y procesos",correct:false}],a:"La gestión de riesgos es proactiva, no reactiva. Identificar y mitigar antes de que ocurran los problemas es lo que diferencia a los ingenieros senior.",tip:"Mencioná la matriz de probabilidad e impacto y cómo priorizás riesgos. Si aplicás a PM de obra, esto es imprescindible."},
+      {q:"¿Cómo garantizás la seguridad en obra durante la ejecución de trabajos de riesgo?",type:'mc',options:[{text:"Confiás en la experiencia de los operarios para que tomen sus precauciones",correct:false},{text:"Entregás los EPP al inicio y asumís que se usan correctamente",correct:false},{text:"Implementás procedimientos escritos, realizás capacitaciones, inspeccionás el cumplimiento y parás los trabajos ante condiciones inseguras",correct:true},{text:"Seguís las normas solo cuando hay fiscalización externa",correct:false}],a:"La seguridad en obra no es burocracia — es responsabilidad legal y ética del profesional a cargo.",tip:"Mencioná normativa específica: Ley 19587, resoluciones SRT. Y mostrá que la seguridad es parte de tu proceso, no una formalidad."},
+    ],
+    logistica:[
+      {q:"¿Cómo manejás una rotura de stock de un insumo crítico en plena operación?",type:'mc',options:[{text:"Esperás a que el proveedor habitual reponga sin hacer nada más",correct:false},{text:"Parás la operación y esperás instrucciones",correct:false},{text:"Activás proveedores alternativos, comunicás el impacto a los equipos afectados, priorizás el stock disponible y analizás la causa para evitar que se repita",correct:true},{text:"Usás stock de otro producto como sustituto sin avisar",correct:false}],a:"Una rotura de stock requiere acción inmediata en múltiples frentes: resolver el corto plazo y analizar el proceso para el largo plazo.",tip:"Mostrá que tenés un plan de contingencia y que sabés comunicar impactos hacia arriba y hacia los lados."},
+      {q:"¿Qué es el FIFO y cuándo es crítico aplicarlo?",type:'mc',options:[{text:"Un sistema de inventario donde el último producto que entra es el primero en salir",correct:false},{text:"Un sistema donde el primer producto que entra es el primero en salir, crítico para productos con fecha de vencimiento",correct:true},{text:"Un método de conteo de inventario mediante muestreo aleatorio",correct:false},{text:"Un protocolo de picking para pedidos urgentes",correct:false}],a:"FIFO (First In, First Out) es esencial para productos perecederos, farmacéuticos y alimenticios. Ignorarlo genera vencimientos y pérdidas.",tip:"Complementá con FEFO (First Expired, First Out) para productos con fechas de vencimiento distintas al orden de ingreso."},
+      {q:"¿Cómo medís la eficiencia de una operación logística?",type:'mc',options:[{text:"Con la cantidad de pedidos despachados por día",correct:false},{text:"Con KPIs integrados: costo por unidad, tasa de error, tiempo de ciclo, nivel de servicio y rotación de inventario",correct:true},{text:"Con la satisfacción del cliente final únicamente",correct:false},{text:"Con el presupuesto vs. gasto real del área",correct:false}],a:"Una operación logística eficiente se mide en múltiples dimensiones. Un solo indicador no da el panorama completo.",tip:"Mencioná los KPIs que seguiste en tu experiencia anterior y cómo los usabas para tomar decisiones. Los datos concretos suman mucho."},
+      {q:"¿Qué es el lead time y cómo impacta en la planificación?",type:'mc',options:[{text:"Es el tiempo que tarda un cliente en pagar una factura",correct:false},{text:"Es el tiempo total desde que se genera un pedido hasta que el producto está disponible — impacta directamente en los niveles de stock de seguridad",correct:true},{text:"Es el tiempo de tránsito entre el depósito y el punto de entrega",correct:false},{text:"Es el plazo máximo de vencimiento de los productos almacenados",correct:false}],a:"El lead time es uno de los parámetros más críticos en la planificación de compras e inventarios. Subestimarlo genera roturas; sobreestimarlo genera exceso de stock.",tip:"Mostrá que entendés la relación entre lead time, punto de reorden y stock de seguridad. Es la base de cualquier sistema de reposición."},
+      {q:"¿Cómo manejás una entrega urgente cuando el transportista habitual no está disponible?",type:'mc',options:[{text:"Le avisás al cliente que no vas a poder cumplir",correct:false},{text:"Buscás alternativas: transportistas de emergencia, empresas de mensajería, coordinación interna — y comunicás el estado en tiempo real",correct:true},{text:"Posponés la entrega para el próximo ciclo disponible",correct:false},{text:"Derivás el problema al área comercial",correct:false}],a:"La logística de urgencia requiere red de contactos, creatividad y comunicación proactiva. Rendirse ante el primer obstáculo no es una opción.",tip:"Describí un caso real donde resolviste una entrega crítica con recursos alternativos. La historia concreta es más convincente que la respuesta genérica."},
+    ],
+    turismo:[
+      {q:"Un huésped llega al hotel y su habitación no está disponible por un overbooking. ¿Cómo lo manejás?",type:'mc',options:[{text:"Le decís que no hay nada que puedas hacer y lo derivás a tu supervisor",correct:false},{text:"Le ofrecés disculpas, le explicás la situación con honestidad, le ofrecés alternativas concretas (upgrade, hotel de categoría similar, compensación) y te asegurás de que se vaya satisfecho",correct:true},{text:"Le decís que vuelva en unas horas sin ofrecerle nada",correct:false},{text:"Le pedís que espere en el lobby sin darle información",correct:false}],a:"El overbooking es una crisis de servicio. La respuesta profesional convierte un cliente enojado en uno que recuerda cómo lo trataron bien en un momento difícil.",tip:"La fórmula: reconocimiento + disculpa + solución concreta + compensación. Nunca culpes al sistema frente al cliente."},
+      {q:"¿Qué es el revenue management y por qué importa en hotelería?",type:'mc',options:[{text:"Es el control de gastos del hotel para mantener la rentabilidad",correct:false},{text:"Es la estrategia de precios dinámicos que maximiza el ingreso por habitación disponible según la demanda",correct:true},{text:"Es el sistema de gestión de reservas del hotel",correct:false},{text:"Es el proceso de selección de proveedores de servicios",correct:false}],a:"El revenue management (o yield management) es central en hotelería moderna. Permite cobrar más en temporada alta y atraer demanda en baja con precios competitivos.",tip:"Mencioná el RevPAR (Revenue Per Available Room) como la métrica clave. Si aplicás a roles de gestión, es imprescindible conocerlo."},
+      {q:"¿Cómo manejás una queja de un cliente durante su estadía?",type:'mc',options:[{text:"Lo escuchás, le decís que lo vas a reportar y seguís con tu trabajo",correct:false},{text:"Lo escuchás activamente, le pedís disculpas sin ponerte defensivo, resolvés el problema en el momento si podés y hacés seguimiento para confirmar que quedó satisfecho",correct:true},{text:"Le explicás las políticas del hotel para que entienda por qué no podés hacer nada",correct:false},{text:"Lo derivás al sector correspondiente sin hacer seguimiento",correct:false}],a:"Una queja bien manejada puede convertir a un cliente insatisfecho en uno fiel. El seguimiento es lo que diferencia al servicio mediocre del excelente.",tip:"LAST: Listen, Apologize, Solve, Thank. Es el modelo más usado en hotelería y turismo para resolución de quejas."},
+      {q:"¿Qué información básica debe conocer un agente de viajes antes de recomendar un destino?",type:'mc',options:[{text:"El precio más bajo disponible para ese destino",correct:false},{text:"Las necesidades, presupuesto, intereses y restricciones del cliente, además de las condiciones actuales del destino (visas, sanidad, seguridad)",correct:true},{text:"Los destinos más populares del momento",correct:false},{text:"Las comisiones que ofrece cada proveedor",correct:false}],a:"La venta de viajes es asesoramiento, no catálogo. Un agente que no conoce a su cliente no puede recomendar bien.",tip:"Mostrá que pensás en el viaje ideal para ese cliente específico, no en el producto más fácil de vender. Eso construye relaciones a largo plazo."},
+      {q:"¿Cómo manejás la coordinación de un evento con múltiples proveedores y cambios de último momento?",type:'mc',options:[{text:"Trabajás con un solo proveedor para simplificar la coordinación",correct:false},{text:"Tenés un plan de contingencia por proveedor, comunicación fluida con todos, checklist actualizado y capacidad de tomar decisiones rápidas en campo",correct:true},{text:"Seguís el plan original sin cambios aunque las circunstancias varíen",correct:false},{text:"Delegás la coordinación en los proveedores y supervisás el resultado final",correct:false}],a:"La coordinación de eventos es gestión bajo presión. Los imprevistos son la norma, no la excepción.",tip:"Describí un evento específico donde algo salió mal y cómo lo resolviste en el momento. La experiencia real con soluciones concretas es lo más valorado."},
+    ],
+    atencion:[
+      {q:"Un cliente llama furioso por un problema que ya fue reportado varias veces sin solución. ¿Qué hacés?",type:'mc',options:[{text:"Le explicás el proceso interno y le pedís paciencia",correct:false},{text:"Le transferís al área técnica sin dar más contexto",correct:false},{text:"Validás su frustración, revisás el historial del caso, te hacés responsable de la resolución y le das un compromiso concreto de seguimiento",correct:true},{text:"Le ofrecés un descuento para cerrar la situación",correct:false}],a:"Un cliente que fue ignorado repetidamente necesita sentir que alguien se hace cargo. La empatía y el compromiso concreto son más valiosos que las disculpas vacías.",tip:"Nunca culpes a otros departamentos frente al cliente. 'Nosotros' resuelve — 'ellos' o 'el sistema' generan más frustración."},
+      {q:"¿Cuál es la diferencia entre atención reactiva y proactiva al cliente?",type:'mc',options:[{text:"La reactiva es por teléfono y la proactiva es por email",correct:false},{text:"La reactiva responde problemas que el cliente reporta; la proactiva anticipa necesidades y contacta al cliente antes de que surja el problema",correct:true},{text:"La proactiva es más cara y solo aplica a clientes premium",correct:false},{text:"No hay diferencia real, son términos distintos para lo mismo",correct:false}],a:"La atención proactiva genera fidelización. Contactar al cliente antes de que tenga un problema demuestra que la empresa se preocupa por su experiencia.",tip:"Ejemplos de proactividad: avisar un retraso antes de que el cliente pregunte, ofrecer una solución antes de que haya queja, hacer seguimiento post-venta."},
+      {q:"¿Cómo manejás varios canales de atención simultáneamente (chat, email, teléfono) sin perder calidad?",type:'mc',options:[{text:"Priorizás el teléfono porque es el canal más urgente siempre",correct:false},{text:"Atendés en orden de llegada sin importar el canal",correct:false},{text:"Priorizás según urgencia y SLA de cada canal, usás templates para respuestas frecuentes y mantenés actualizado el estado de cada caso en el sistema",correct:true},{text:"Te enfocás en un canal a la vez y pausás los demás",correct:false}],a:"La gestión multicanal requiere organización, herramientas y criterios claros de priorización. La calidad no puede sacrificarse por el volumen.",tip:"Mencioná herramientas concretas que usaste: Zendesk, Freshdesk, HubSpot, Intercom. Y describí cómo gestionabas los SLAs."},
+      {q:"Un cliente pide algo que está fuera de la política de la empresa. ¿Cómo lo manejás?",type:'mc',options:[{text:"Le decís 'no puedo hacer nada, es la política' y cerrás el caso",correct:false},{text:"Hacés una excepción sin consultar para no perder al cliente",correct:false},{text:"Le explicás lo que sí podés ofrecerle dentro de las políticas, buscás alternativas creativas y escalás si el caso lo justifica",correct:true},{text:"Le prometés revisar las políticas y le avisás cuando cambien",correct:false}],a:"'No' nunca es suficiente como respuesta. Siempre hay que ofrecer lo que sí se puede hacer, dentro del marco de la empresa.",tip:"La fórmula: 'Lo que sí puedo hacer es...' en vez de 'No puedo hacer eso porque...'. El enfoque en soluciones reduce el conflicto."},
+      {q:"¿Qué métrica es más relevante para medir la calidad de la atención al cliente?",type:'mc',options:[{text:"El tiempo de respuesta únicamente",correct:false},{text:"La cantidad de casos cerrados por día",correct:false},{text:"Una combinación de NPS, CSAT, tiempo de resolución y tasa de recontacto",correct:true},{text:"El porcentaje de llamadas atendidas antes del primer minuto",correct:false}],a:"Ninguna métrica aislada da el panorama completo. NPS mide lealtad, CSAT mide satisfacción puntual, el tiempo de resolución mide eficiencia y la tasa de recontacto mide la calidad de la solución.",tip:"Mostrá que entendés qué mide cada métrica y cuándo priorizar una sobre otra según el objetivo del negocio."},
+    ],
+    general:[
+      {q:"Un candidato describe su mayor desafío. ¿Qué estructura indica mayor madurez?",type:'mc',options:[{text:"Una respuesta larga y detallada que demuestra cuánto sufrió",correct:false},{text:"Una respuesta que describe su rol específico, las acciones que tomó y el resultado concreto",correct:true},{text:"Una respuesta que culpa al entorno o a sus compañeros",correct:false},{text:"Una respuesta que minimiza el desafío para no parecer débil",correct:false}],a:"La estructura STAR revela candidatos que procesan sus experiencias de forma reflexiva y pueden comunicarlas con claridad.",tip:"Rojo: respuesta vaga, culpa a otros. Verde: reconoce su rol, acciones concretas, resultado y aprendizaje."},
+      {q:"¿Qué señal indica que un candidato no fue honesto en su CV?",type:'mc',options:[{text:"Tiene un gap de empleo de varios meses",correct:false},{text:"No puede explicar con detalle los proyectos que dice haber liderado",correct:true},{text:"Cambió de trabajo más de tres veces en cinco años",correct:false},{text:"Tiene más experiencia de la que requiere el puesto",correct:false}],a:"La inconsistencia entre el CV y las respuestas al profundizar es la señal más confiable de exageración.",tip:"Preguntá siempre: '¿Podés contarme en detalle tu rol específico en ese proyecto?' Las respuestas vagas son señal."},
+      {q:"¿Qué pregunta es más efectiva para evaluar cultura fit?",type:'mc',options:[{text:"'¿Sos una persona de equipo o preferís trabajar solo?'",correct:false},{text:"'Describime un ambiente de trabajo en el que te hayas sentido muy cómodo y otro en el que no.'",correct:true},{text:"'¿Te gustaría trabajar en esta empresa?'",correct:false},{text:"'¿Cuáles son tus hobbies fuera del trabajo?'",correct:false}],a:"Las preguntas abiertas sobre experiencias pasadas revelan preferencias reales. Las directas invitan a respuestas socialmente deseables.",tip:"Seguí con: '¿Qué hacías vos en ese ambiente que te gustaba/disgustaba?' para obtener evidencia de comportamiento."},
+      {q:"Un candidato muy prometedor no pasó el proceso. ¿Cuál es la mejor forma de comunicárselo?",type:'mc',options:[{text:"Enviar un email genérico de 'avanzamos con otro perfil'",correct:false},{text:"No contactarlo para evitar una conversación incómoda",correct:false},{text:"Dar feedback honesto y específico sobre por qué no avanzó y qué podría mejorar",correct:true},{text:"Decirle que fue una decisión del equipo sin dar más contexto",correct:false}],a:"El feedback honesto es un diferencial enorme para la marca empleadora. Los candidatos recuerdan más cómo los trataron en el rechazo que en la selección.",tip:"Un buen feedback incluye: qué valoraste + qué no encajó + qué podría mejorar. No lleva más de 5 minutos."},
+    ],
+    it:[
+      {q:"¿Qué indica que un candidato IT tiene pensamiento de sistema más allá de su código?",type:'mc',options:[{text:"Que conoce más de cinco lenguajes de programación",correct:false},{text:"Que puede articular cómo su trabajo impacta en otros equipos y en el producto final",correct:true},{text:"Que tiene un perfil de GitHub muy activo",correct:false},{text:"Que tiene certificaciones de las principales clouds",correct:false}],a:"El pensamiento sistémico es lo que diferencia un buen desarrollador de un gran desarrollador.",tip:"Preguntá: '¿Podés describirme cómo la funcionalidad que desarrollaste impactó en el negocio o en otros equipos?'"},
+      {q:"Un desarrollador entrega código que funciona pero es difícil de mantener. ¿Cómo lo abordás en el code review?",type:'mc',options:[{text:"Lo aprobás porque funciona y no querés generar conflictos",correct:false},{text:"Lo rechazás sin explicación",correct:false},{text:"Señalás el problema con contexto, sugerís una alternativa y explicás por qué importa la mantenibilidad",correct:true},{text:"Lo escalás directamente al tech lead",correct:false}],a:"El code review es una oportunidad de aprendizaje, no solo un filtro de calidad.",tip:"Verde: balance entre reconocimiento y corrección, tono constructivo, siempre con el 'por qué'."},
+      {q:"¿Cómo diferenciás a un candidato que domina una tecnología de uno que solo la conoce superficialmente?",type:'mc',options:[{text:"Preguntando cuántos años de experiencia tiene",correct:false},{text:"Pidiéndole que explique las limitaciones y trade-offs de la tecnología, no solo sus ventajas",correct:true},{text:"Verificando que tenga certificaciones oficiales",correct:false},{text:"Preguntando cuántos proyectos hizo con esa tecnología",correct:false}],a:"Quien domina una tecnología conoce sus debilidades. Alguien que solo la conoce superficialmente tiende a describirla como perfecta para todo.",tip:"Preguntá: '¿Cuándo NO usarías esta tecnología?' Las respuestas revelan profundidad real."},
+      {q:"Un candidato IT senior pide un salario 30% por encima del rango. ¿Qué hacés?",type:'mc',options:[{text:"Lo descartás inmediatamente",correct:false},{text:"Aceptás su expectativa sin consultar al hiring manager",correct:false},{text:"Entendés qué justifica esa expectativa, evaluás si el perfil lo amerita y consultás si hay flexibilidad",correct:true},{text:"Le decís el rango máximo de entrada para ver si acepta",correct:false}],a:"Los mejores candidatos IT frecuentemente están por encima del rango inicial. Descartarlos sin análisis hace perder talento valioso.",tip:"Preguntate: '¿Cuánto vale para el negocio tener a esta persona vs. al candidato que entra dentro del rango?'"},
+    ],
+    ai:[
+      {q:"¿Qué pregunta es más efectiva para evaluar la madurez técnica de un AI Engineer?",type:'mc',options:[{text:"'¿Qué frameworks de ML conocés?'",correct:false},{text:"'Describime una decisión de arquitectura que tomaste y las alternativas que descartaste.'",correct:true},{text:"'¿Cuántos modelos de ML has entrenado?'",correct:false},{text:"'¿Qué es el overfitting?'",correct:false}],a:"La selección de arquitectura y el razonamiento detrás de las decisiones técnicas revela profundidad real. Las preguntas de definición solo evalúan memoria.",tip:"Seguí con: '¿Cómo mediste que esa fue la mejor decisión?' para evaluar orientación a métricas."},
+      {q:"Detectás que el modelo en producción genera outputs sesgados. ¿Cuál es el primer paso?",type:'mc',options:[{text:"Reentrenar el modelo inmediatamente con más datos",correct:false},{text:"Documentar el hallazgo y esperar a la próxima reunión de equipo",correct:false},{text:"Escalar inmediatamente, analizar el alcance del impacto y evaluar si hay que pausar el modelo",correct:true},{text:"Agregar un disclaimer en la interfaz",correct:false}],a:"Un modelo sesgado puede estar causando daño real ahora mismo. El primer paso siempre es contener el daño, luego diagnosticar y corregir.",tip:"Verde: escalamiento, análisis de impacto, plan de remediación. Rojo: lo trata como problema técnico menor."},
+      {q:"¿Qué señal indica que un candidato de Responsible AI entiende el campo más allá de la teoría?",type:'mc',options:[{text:"Que puede definir todos los principios de IA ética de memoria",correct:false},{text:"Que puede describir un sesgo real que encontró en datos o en un modelo y qué hizo al respecto",correct:true},{text:"Que conoce todos los frameworks regulatorios existentes",correct:false},{text:"Que tiene un paper publicado sobre el tema",correct:false}],a:"La experiencia práctica con sesgos reales es más valiosa que el conocimiento teórico.",tip:"Pedí siempre un ejemplo concreto: '¿Podés contarme de un caso real donde hayas detectado o mitigado un sesgo en un sistema?'"},
+    ],
+    rrhh:[
+      {q:"¿Cuál de estas prácticas reduce mejor el sesgo inconsciente en un proceso de selección?",type:'mc',options:[{text:"Confiar en la intuición del entrevistador más senior",correct:false},{text:"Usar entrevistas estructuradas con criterios predefinidos iguales para todos los candidatos",correct:true},{text:"Seleccionar solo candidatos referidos por el equipo actual",correct:false},{text:"Hacer las entrevistas siempre en el mismo horario",correct:false}],a:"Las entrevistas estructuradas con criterios predefinidos son la técnica más respaldada por evidencia para reducir sesgos.",tip:"Complementar con paneles diversos, scoring ciego del CV y calibración de criterios entre entrevistadores."},
+      {q:"Un manager pide incorporar a alguien 'como él' culturalmente. ¿Cómo lo manejás?",type:'mc',options:[{text:"Buscás candidatos con el mismo perfil demográfico que el manager",correct:false},{text:"Aceptás la descripción y la usás como criterio de búsqueda",correct:false},{text:"Explorás qué comportamientos y valores específicos busca, y los convertís en criterios objetivos y evaluables",correct:true},{text:"Le decís que no podés buscar por cultura fit porque es subjetivo",correct:false}],a:"'Alguien como yo' es una señal de alerta de sesgo de afinidad. Tu rol es traducir esa percepción en competencias concretas.",tip:"Preguntá: '¿Qué comportamientos específicos valorás de alguien de tu equipo que encaja bien?'"},
+      {q:"¿Cómo medís el éxito de un proceso de reclutamiento más allá de cubrir la posición?",type:'mc',options:[{text:"Con el tiempo que tardaste en presentar los primeros candidatos",correct:false},{text:"Con métricas como time-to-hire, calidad del hire (retención a 6/12 meses) y satisfacción del hiring manager",correct:true},{text:"Con la cantidad de CVs recibidos",correct:false},{text:"Con el feedback de los candidatos rechazados",correct:false}],a:"Cubrir la posición es el objetivo mínimo. Un proceso exitoso implica hacerlo rápido, con calidad y a un costo razonable.",tip:"Time-to-hire + retención a 12 meses son los KPIs más usados para medir calidad de reclutamiento."},
+    ],
+    ventas:[
+      {q:"¿Qué señal indica que un candidato de ventas tiene mentalidad de hunter y no solo de farmer?",type:'mc',options:[{text:"Que tiene muchos años de experiencia en ventas",correct:false},{text:"Que puede describir con entusiasmo cómo identifica y abre nuevas cuentas desde cero",correct:true},{text:"Que tiene una cartera grande de clientes actuales",correct:false},{text:"Que conoce bien el producto que vendía",correct:false}],a:"Hunter y farmer son perfiles distintos. El hunter disfruta la prospección; el farmer prefiere desarrollar cuentas existentes.",tip:"Preguntá: '¿Qué proporción del tiempo preferís dedicar a nuevos prospectos vs. clientes actuales?'"},
+      {q:"Un candidato dice que cerró muchas ventas pero no recuerda sus métricas. ¿Qué hacés?",type:'mc',options:[{text:"Lo aceptás porque las métricas no son lo más importante",correct:false},{text:"Lo descartás por falta de orientación a resultados",correct:false},{text:"Pedís órdenes de magnitud: ¿qué ticket promedio, cuántos clientes por mes, cuál era la cuota?",correct:true},{text:"Le pedís comprobantes de sus ventas",correct:false}],a:"Un vendedor orientado a resultados sabe sus números, aunque no los recuerde con exactitud decimal.",tip:"Preguntá en órdenes de magnitud: '¿Vendías más de 10 clientes por mes o menos?'"},
+      {q:"¿Qué pregunta revela mejor si un candidato sabe manejar el rechazo en ventas?",type:'mc',options:[{text:"'¿Te afecta cuando un cliente te dice que no?'",correct:false},{text:"'Contame de una venta que perdiste y qué hiciste después'",correct:true},{text:"'¿Cuántos rechazos recibís por semana?'",correct:false},{text:"'¿Tenés mucha tolerancia a la frustración?'",correct:false}],a:"La pregunta situacional revela si el candidato aprende del rechazo y sigue adelante sin dramatizar ni minimizar.",tip:"Seguí con: '¿Volviste a intentarlo con ese cliente más adelante?' Revela persistencia real."},
+    ],
+    marketing:[
+      {q:"¿Qué señal indica que un candidato de marketing tiene orientación real a resultados?",type:'mc',options:[{text:"Que habla de sus campañas con entusiasmo y creatividad",correct:false},{text:"Que puede conectar cada acción de marketing con una métrica de negocio específica",correct:true},{text:"Que tiene experiencia en muchos canales distintos",correct:false},{text:"Que trabajó en empresas grandes con presupuestos importantes",correct:false}],a:"El marketing que no se conecta con resultados de negocio es un costo, no una inversión.",tip:"Preguntá siempre: '¿Qué impacto tuvo en el negocio?' Si solo responde en métricas de vanidad, es señal de alerta."},
+      {q:"Un candidato dice que creció el 300% en engagement. ¿Qué pregunta hacés?",type:'mc',options:[{text:"'¿En qué red social fue eso?'",correct:false},{text:"'¿Ese crecimiento se tradujo en leads, ventas u otro objetivo de negocio?'",correct:true},{text:"'¿Cómo lo lograste técnicamente?'",correct:false},{text:"'¿En cuánto tiempo fue ese crecimiento?'",correct:false}],a:"El engagement es una métrica intermedia. Lo que importa es si se convirtió en algo con valor de negocio real.",tip:"Las métricas de vanidad son fáciles de mejorar. Buscá candidatos que entiendan que sin conversión, el engagement no vale nada."},
+      {q:"¿Cómo evaluás si un candidato sabe trabajar con presupuestos ajustados?",type:'mc',options:[{text:"Preguntando si trabajó en startups o empresas chicas",correct:false},{text:"Pidiéndole que describa una campaña exitosa con recursos muy limitados y qué prioridades tomó",correct:true},{text:"Verificando que no haya trabajado solo en empresas con grandes presupuestos",correct:false},{text:"Preguntando cuál es el presupuesto mínimo con el que puede trabajar",correct:false}],a:"La creatividad con recursos limitados se evalúa pidiendo un caso concreto donde el candidato debió priorizar.",tip:"Seguí con: '¿Qué dejaste afuera con ese presupuesto y por qué?' Revela criterio de priorización real."},
+    ],
+    admin:[
+      {q:"Un candidato administrativo dice que es muy organizado. ¿Cómo lo verificás?",type:'mc',options:[{text:"Le creés porque lo dice con convicción",correct:false},{text:"Le pedís que describa su sistema de gestión de tareas con un ejemplo concreto de la semana anterior",correct:true},{text:"Le preguntás si usa alguna app de organización",correct:false},{text:"Lo ponés a prueba con una evaluación de personalidad",correct:false}],a:"'Soy organizado' es una de las afirmaciones más comunes y menos verificables. Pedir evidencia concreta y reciente es la única forma de distinguir a quien realmente lo es.",tip:"Seguí con: '¿Qué pasaría si te tomás una semana de vacaciones — cómo dejás el trabajo?' La respuesta revela sistemas reales."},
+      {q:"¿Qué señal indica que un candidato administrativo comunica bien hacia arriba?",type:'mc',options:[{text:"Que habla bien y tiene buena presencia",correct:false},{text:"Que puede describir situaciones donde dio malas noticias a tiempo y propuso soluciones en vez de solo problemas",correct:true},{text:"Que nunca tuvo conflictos con sus jefes anteriores",correct:false},{text:"Que tiene experiencia trabajando con directivos",correct:false}],a:"La comunicación ascendente efectiva implica dar información a tiempo (aunque sea mala) y siempre con propuesta de solución.",tip:"Preguntá: 'Contame de una situación donde tuviste que comunicarle a tu jefe que algo no iba a salir como esperaba. ¿Cómo lo manejaste?'"},
+    ],
+    finanzas:[
+      {q:"Un analista encontró un error en un reporte ya presentado al directorio. ¿Qué esperás que haga?",type:'mc',options:[{text:"Corregirlo silenciosamente en la próxima versión",correct:false},{text:"Esperar a que alguien más lo detecte",correct:false},{text:"Notificarte inmediatamente con el impacto del error y una propuesta de corrección",correct:true},{text:"Consultar con un colega antes de decirte nada",correct:false}],a:"En finanzas, la integridad y la comunicación proactiva de errores es crítica. Un error silenciado siempre es peor que uno reportado a tiempo.",tip:"Lo que evaluás es integridad bajo presión. Reportar antes de que lo descubran otros es siempre la decisión correcta."},
+      {q:"¿Qué pregunta revela mejor si un candidato de finanzas piensa estratégicamente?",type:'mc',options:[{text:"'¿Sabés usar Excel avanzado?'",correct:false},{text:"'¿Podés contarme de un análisis financiero que hiciste que cambió una decisión de negocio?'",correct:true},{text:"'¿Conocés los principios contables básicos?'",correct:false},{text:"'¿Cuántos reportes hacías por semana?'",correct:false}],a:"El pensamiento estratégico en finanzas se evidencia cuando el análisis impacta decisiones reales de negocio.",tip:"Seguí con: '¿Cuál fue la decisión tomada y cuál fue el resultado?' Eso cierra el loop entre análisis e impacto real."},
+      {q:"Un candidato de finanzas dice que siempre cumplió los deadlines. ¿Es suficiente para evaluarlo positivamente?",type:'mc',options:[{text:"Sí, cumplir deadlines es lo más importante en finanzas",correct:false},{text:"No, cumplir deadlines es el mínimo esperado — lo que diferencia es el valor que generó con esa información",correct:true},{text:"Sí, en finanzas la puntualidad es una habilidad diferencial",correct:false},{text:"No, porque probablemente exagera",correct:false}],a:"Cumplir deadlines es condición necesaria pero no suficiente. Lo que diferencia es transformar datos en insights que guíen decisiones.",tip:"Profundizá: '¿Podés contarme de un reporte donde tu análisis aportó una perspectiva que el equipo no tenía?'"},
+    ],
+    legal:[
+      {q:"¿Qué pregunta revela mejor si un abogado sabe trabajar bajo presión de plazos judiciales?",type:'mc',options:[{text:"'¿Te estresás fácilmente con los plazos?'",correct:false},{text:"'Contame de una situación donde tuviste un plazo procesal muy ajustado y cómo lo manejaste'",correct:true},{text:"'¿Sabés organizar tu agenda?'",correct:false},{text:"'¿Usás calendario para tus vencimientos?'",correct:false}],a:"Los plazos procesales son fatales en derecho. Una pregunta situacional revela cómo el candidato opera bajo presión real.",tip:"Seguí con: '¿Qué sistema usás para controlar tus vencimientos procesales?' Los mejores candidatos tienen un sistema concreto."},
+      {q:"Un abogado candidato dice que nunca perdió un caso. ¿Qué hacés?",type:'mc',options:[{text:"Lo tomás como señal de excelencia y avanzás",correct:false},{text:"Profundizás preguntando por casos difíciles, apelaciones desfavorables o acuerdos que no eran el resultado ideal",correct:true},{text:"Lo descartás inmediatamente por ser deshonesto",correct:false},{text:"Aceptás la respuesta y evaluás su conocimiento técnico",correct:false}],a:"Ningún abogado con experiencia real gana todos sus casos. Esta afirmación puede indicar falta de experiencia o falta de honestidad.",tip:"Reformulá: '¿Podés contarme de un caso donde el resultado no fue el que esperabas y qué aprendiste?'"},
+      {q:"¿Qué evalúa mejor la capacidad de un abogado corporativo para proteger a la empresa?",type:'mc',options:[{text:"Que conozca de memoria todos los artículos del CCCN",correct:false},{text:"Que identifique proactivamente riesgos legales antes de que se conviertan en problemas",correct:true},{text:"Que tenga experiencia en litigios ganados",correct:false},{text:"Que haya trabajado en un estudio jurídico grande",correct:false}],a:"El derecho corporativo preventivo vale mucho más que el litigioso. Un abogado que detecta riesgos antes ahorra dinero, tiempo y reputación.",tip:"Preguntá: '¿Podés describir una situación donde identificaste un riesgo legal antes de que se convirtiera en un problema?'"},
+      {q:"¿Qué señal indica que un abogado laboral tiene experiencia real en negociación colectiva?",type:'mc',options:[{text:"Que conozca los convenios colectivos más importantes del sector",correct:false},{text:"Que pueda describir una negociación paritaria en la que participó, con los intereses de cada parte y cómo se llegó al acuerdo",correct:true},{text:"Que haya representado empresas en conflictos con sindicatos",correct:false},{text:"Que tenga posgrado en derecho laboral",correct:false}],a:"La negociación colectiva es un proceso político y jurídico complejo. La experiencia real se evidencia en la capacidad de articular intereses en conflicto.",tip:"Seguí con: '¿Cuál fue el punto más difícil de negociar y cómo se resolvió?'"},
+      {q:"¿Cómo evaluás si un escribano candidato maneja bien conflictos entre partes durante una escritura?",type:'mc',options:[{text:"Preguntando si conoce el protocolo notarial de memoria",correct:false},{text:"Preguntando cómo manejó una situación donde las partes no llegaban a un acuerdo durante el acto escriturario",correct:true},{text:"Verificando que tenga matrícula habilitante vigente",correct:false},{text:"Evaluando su velocidad para redactar escrituras",correct:false}],a:"El escribano no es solo un fedatario — es un mediador técnico entre partes con intereses distintos.",tip:"Buscá que describa cómo mantuvo la neutralidad dentro del marco legal."},
+    ],
+    docencia:[
+      {q:"¿Qué pregunta revela mejor la práctica pedagógica real de un docente?",type:'mc',options:[{text:"'¿Conocés el diseño curricular del nivel?'",correct:false},{text:"'Describime una clase donde algo no salió como planeabas y cómo lo resolviste en el momento'",correct:true},{text:"'¿Cuántos años de experiencia tenés frente al aula?'",correct:false},{text:"'¿Usás tecnología en tus clases?'",correct:false}],a:"La capacidad de adaptación en el aula revela la madurez pedagógica real. Los mejores docentes saben improvisar con criterio cuando el plan falla.",tip:"Seguí con: '¿Qué aprendiste de esa situación y qué cambiarías la próxima vez?' Revela reflexividad."},
+      {q:"¿Qué señal indica que un docente tiene verdadera vocación más allá del conocimiento de su materia?",type:'mc',options:[{text:"Que tiene muchos años de experiencia",correct:false},{text:"Que habla de sus alumnos con nombre y muestra genuino interés en su desarrollo individual",correct:true},{text:"Que tiene posgrados y capacitaciones en su área",correct:false},{text:"Que nunca faltó a sus clases",correct:false}],a:"La vocación docente se evidencia en la mirada sobre el alumno como sujeto individual. Un docente que recuerda casos concretos y sus procesos revela compromiso real.",tip:"Preguntá: '¿Podés contarme de un alumno que te haya marcado y por qué?' Las respuestas revelan el nivel de involucramiento real."},
+      {q:"Un docente dice que sus alumnos siempre aprenden. ¿Cómo lo evaluás?",type:'mc',options:[{text:"Lo tomás como señal de excelencia docente",correct:false},{text:"Profundizás preguntando cómo mide el aprendizaje y qué hace con los alumnos que no llegan a los objetivos",correct:true},{text:"Lo descartás porque nadie puede afirmar eso honestamente",correct:false},{text:"Le pedís evidencia como actas de calificaciones",correct:false}],a:"La afirmación de que 'todos aprenden siempre' puede indicar falta de reflexividad o criterios de evaluación poco rigurosos.",tip:"Preguntá: '¿Qué hacés cuando un alumno llega al final de la unidad sin haber alcanzado los objetivos?' Revela si tiene estrategias reales."},
+      {q:"¿Cómo evaluás si un docente puede trabajar en equipo con sus colegas?",type:'mc',options:[{text:"Preguntando si tiene buena relación con sus compañeros",correct:false},{text:"Pidiéndole que describa un proyecto interdisciplinario o articulación que haya coordinado con otros docentes",correct:true},{text:"Verificando que no haya tenido conflictos documentados",correct:false},{text:"Preguntando si participa de las reuniones de personal",correct:false}],a:"El trabajo docente contemporáneo requiere articulación y planificación conjunta. La evidencia de trabajo colaborativo real es más valiosa que la declaración de ser buen compañero.",tip:"Seguí con: '¿Cuál fue el mayor desafío de ese trabajo conjunto y cómo lo resolvieron?'"},
+    ],
+    diseno:[
+      {q:"¿Qué indica que un diseñador entiende el diseño como comunicación y no solo como estética?",type:'mc',options:[{text:"Que su portfolio tiene un estilo visual muy definido",correct:false},{text:"Que puede explicar cada decisión de diseño en función de los objetivos de comunicación del proyecto",correct:true},{text:"Que trabajó con marcas reconocidas",correct:false},{text:"Que domina muchos programas de diseño",correct:false}],a:"El diseño que no puede ser argumentado más allá del gusto estético es decoración.",tip:"En la revisión del portfolio, preguntá: '¿Por qué tomaste esta decisión de color/tipografía/composición?' La argumentación revela más que el resultado visual."},
+      {q:"Un diseñador entrega un trabajo fuera del estilo de la marca. ¿Cómo lo manejás?",type:'mc',options:[{text:"Lo aprobás si te parece estéticamente mejor",correct:false},{text:"Se lo señalás con los lineamientos del manual de marca como referencia y explicás por qué importa la consistencia",correct:true},{text:"Lo descartás sin más explicación",correct:false},{text:"Lo aceptás para no limitar su creatividad",correct:false}],a:"La identidad de marca es un sistema de comunicación consistente. Desviarse del manual no es creatividad — es un error de criterio.",tip:"Aprovechá para evaluar cómo recibe el feedback. La receptividad es una de las habilidades más importantes en diseño profesional."},
+      {q:"¿Qué señal indica que un diseñador puede trabajar bien bajo presión de tiempo?",type:'mc',options:[{text:"Que dice que trabaja bien bajo presión en su CV",correct:false},{text:"Que puede describir un proyecto con deadline muy ajustado, cómo priorizó y qué sacrificó para llegar",correct:true},{text:"Que nunca pidió extensiones de plazo",correct:false},{text:"Que trabaja más horas que el resto del equipo",correct:false}],a:"Lo que se evalúa es la capacidad de tomar decisiones de priorización: qué se puede simplificar, qué no puede fallar y cómo se comunica el trade-off.",tip:"Seguí con: '¿Qué habrías hecho diferente si hubieras tenido más tiempo?' Revela si tiene estándares claros de calidad."},
+    ],
+    salud:[
+      {q:"¿Qué pregunta revela mejor si un profesional de salud tiene vocación real más allá del conocimiento técnico?",type:'mc',options:[{text:"'¿Por qué elegiste esta especialidad?'",correct:false},{text:"'Contame de un paciente que te haya marcado y por qué'",correct:true},{text:"'¿Cuántos años de experiencia tenés en el área?'",correct:false},{text:"'¿Tenés posgrados o especializaciones?'",correct:false}],a:"La vocación en salud se evidencia en la mirada sobre el paciente como persona. Quien recuerda casos concretos y su impacto tiene un compromiso real con la profesión.",tip:"Seguí con: '¿Qué cambió en tu forma de trabajar después de esa experiencia?' Revela reflexividad y crecimiento profesional."},
+      {q:"Un profesional de salud candidato dice que nunca cometió un error clínico. ¿Qué hacés?",type:'mc',options:[{text:"Lo tomás como señal de excelencia y avanzás",correct:false},{text:"Profundizás preguntando por situaciones de alta presión, decisiones difíciles o casos donde el resultado no fue el esperado",correct:true},{text:"Lo descartás inmediatamente por ser deshonesto",correct:false},{text:"Verificás con sus referencias",correct:false}],a:"Todo profesional de salud con experiencia real ha enfrentado situaciones complejas o resultados inesperados. Quien dice que nunca tuvo uno puede carecer de reflexividad o de experiencia real.",tip:"Reformulá: '¿Podés contarme de una situación clínica donde tuviste que tomar una decisión difícil con información incompleta?' Es más fácil de responder y más revelador."},
+      {q:"¿Cómo evaluás si un candidato de salud puede trabajar bien bajo presión?",type:'mc',options:[{text:"Preguntando si se estresa fácilmente",correct:false},{text:"Pidiéndole que describa una guardia o situación de emergencia concreta y cómo tomó decisiones en ese contexto",correct:true},{text:"Evaluando si tiene experiencia en guardia en su CV",correct:false},{text:"Preguntando cuántos pacientes atendía por turno",correct:false}],a:"La presión en salud es real y constante. La evidencia de cómo alguien tomó decisiones en condiciones reales de urgencia es más valiosa que la respuesta a 'soy bueno bajo presión'.",tip:"Buscá que describa el proceso de toma de decisiones, no solo el resultado. '¿Qué prioridad tuviste en ese momento y por qué?' revela el razonamiento clínico real."},
+    ],
+    ingenieria:[
+      {q:"¿Qué pregunta revela mejor si un ingeniero candidato piensa en términos de sistema y no solo de componentes?",type:'mc',options:[{text:"'¿Qué software de diseño dominás?'",correct:false},{text:"'Describime un proyecto donde una decisión técnica tuya impactó en otras áreas o en el resultado final del conjunto'",correct:true},{text:"'¿Cuántos proyectos lideraste?'",correct:false},{text:"'¿Conocés las normas aplicables a tu área?'",correct:false}],a:"El pensamiento sistémico diferencia a los ingenieros que ejecutan de los que diseñan y lideran. Ver las interdependencias es la habilidad clave en proyectos complejos.",tip:"Seguí con: '¿Qué habrías hecho diferente sabiendo lo que sabés hoy?' Revela capacidad de aprendizaje y autocrítica técnica."},
+      {q:"¿Cómo evaluás si un candidato puede gestionar a un equipo de obra o técnico?",type:'mc',options:[{text:"Verificando que haya sido jefe o supervisor en su CV",correct:false},{text:"Pidiéndole que describa cómo manejó un conflicto entre miembros del equipo o una situación donde alguien no cumplió",correct:true},{text:"Preguntando cuántas personas tuvo a cargo",correct:false},{text:"Evaluando si tiene formación en liderazgo",correct:false}],a:"La gestión de equipos técnicos tiene particularidades propias: alta presión, turnos rotativos, trabajo físico y decisiones de seguridad. La evidencia de cómo manejó personas en ese contexto es lo más revelador.",tip:"Buscá que hable de situaciones específicas con acciones concretas. Quien solo describe en abstracto ('comunicás bien, delegás claramente') probablemente no tuvo experiencia real de liderazgo."},
+      {q:"Un ingeniero candidato minimiza sistemáticamente los riesgos durante la entrevista. ¿Qué señal da?",type:'mc',options:[{text:"Que es optimista y tiene actitud positiva ante los proyectos",correct:false},{text:"Que puede tener dificultad para identificar problemas antes de que ocurran, lo que es un riesgo en roles de gestión",correct:true},{text:"Que tiene mucha confianza en sus capacidades técnicas",correct:false},{text:"Que prefiere no preocupar al entrevistador con problemas potenciales",correct:false}],a:"En ingeniería, identificar riesgos proactivamente es parte del trabajo. Un candidato que minimiza o no ve los riesgos puede generar problemas serios en proyectos reales.",tip:"Preguntá directamente: '¿Cuáles son los tres riesgos más comunes en proyectos de tu tipo y cómo los mitigás?' La calidad de la respuesta revela experiencia real."},
+    ],
+    logistica:[
+      {q:"¿Qué señal indica que un candidato de logística tiene orientación real a la mejora continua?",type:'mc',options:[{text:"Que conoce muchas herramientas de gestión logística",correct:false},{text:"Que puede describir un proceso que mejoró, cómo lo midió antes y después, y qué impacto tuvo en la operación",correct:true},{text:"Que trabaja muchas horas y siempre está disponible",correct:false},{text:"Que tiene experiencia en varias empresas del sector",correct:false}],a:"La mejora continua en logística se evidencia en proyectos concretos con métricas reales. Quien nunca mejoró un proceso no tiene orientación real a la eficiencia.",tip:"Seguí con: '¿Qué resistencia encontraste al implementar esa mejora y cómo la manejaste?' Revela habilidades de gestión del cambio."},
+      {q:"¿Cómo evaluás si un candidato de logística puede manejar la presión de una operación de alto volumen?",type:'mc',options:[{text:"Preguntando si trabaja bien bajo presión",correct:false},{text:"Pidiéndole que describa el día más caótico que vivió en operaciones y cómo lo gestionó",correct:true},{text:"Verificando que haya trabajado en empresas grandes",correct:false},{text:"Evaluando si conoce los principales sistemas WMS del mercado",correct:false}],a:"La logística de alto volumen tiene sus propias características: picos de demanda, errores en cadena, presión de tiempos. La experiencia real en ese entorno no se puede fingir.",tip:"Buscá que describa no solo lo que pasó sino las decisiones que tomó y en qué orden. El proceso de priorización bajo presión revela madurez operativa."},
+      {q:"¿Qué pregunta revela mejor si un candidato entiende la logística como parte del negocio y no solo como operación?",type:'mc',options:[{text:"'¿Cuántos despachos hacías por día?'",correct:false},{text:"'¿Podés describir cómo una decisión logística que tomaste impactó en el resultado comercial o financiero de la empresa?'",correct:true},{text:"'¿Conocés los Incoterms?'",correct:false},{text:"'¿Qué sistemas de gestión logística usaste?'",correct:false}],a:"La logística que no se conecta con el negocio es un costo; la que lo hace es una ventaja competitiva. Los candidatos que ven esa conexión son los más valiosos.",tip:"Seguí con: '¿Cómo medías el impacto de tus decisiones en los resultados del área?' Revela orientación a métricas de negocio."},
+    ],
+    turismo:[
+      {q:"¿Qué señal indica que un candidato de turismo tiene orientación genuina al servicio?",type:'mc',options:[{text:"Que sonríe mucho y tiene buena presencia",correct:false},{text:"Que puede describir una situación donde sacrificó su comodidad o fue más allá de sus funciones para resolver un problema de un cliente",correct:true},{text:"Que habla varios idiomas",correct:false},{text:"Que tiene experiencia en hoteles de alta categoría",correct:false}],a:"La orientación al servicio no es actitud — es comportamiento. La evidencia de haber ido más allá cuando fue necesario es la señal más confiable.",tip:"Seguí con: '¿Qué pasaría si ese esfuerzo extra no hubiera sido reconocido por tu jefe?' Revela si la motivación es intrínseca o externa."},
+      {q:"¿Cómo evaluás si un candidato puede manejar la estacionalidad del sector turístico?",type:'mc',options:[{text:"Preguntando si le gusta trabajar en temporada alta",correct:false},{text:"Pidiéndole que describa cómo gestionó su tiempo y energía durante un pico de demanda y qué hizo en temporada baja",correct:true},{text:"Verificando que haya trabajado en destinos con alta estacionalidad",correct:false},{text:"Evaluando si acepta trabajar fines de semana y feriados",correct:false}],a:"La estacionalidad es una realidad estructural del turismo. Quienes la manejan bien tienen estrategias tanto para el pico como para el valle.",tip:"Buscá que hable de cómo usó la temporada baja para prepararse, capacitarse o mejorar procesos. El candidato maduro no solo sobrevive el pico — aprovecha el valle."},
+      {q:"Un candidato de hotelería dice que siempre tuvo clientes satisfechos. ¿Qué pregunta hacés?",type:'mc',options:[{text:"Lo tomás como señal de excelencia y avanzás",correct:false},{text:"Profundizás: '¿Podés contarme de la queja más difícil que recibiste y cómo la resolviste?'",correct:true},{text:"Lo descartás porque nadie puede afirmarlo honestamente",correct:false},{text:"Le pedís referencias de clientes para verificarlo",correct:false}],a:"Todo profesional de turismo con experiencia real recibió quejas. Quien no puede describir ninguna probablemente no tuvo exposición real al cliente o no reflexionó sobre esas situaciones.",tip:"Lo que evaluás no es la queja sino la respuesta: ¿empatizó? ¿resolvió? ¿aprendió? Eso revela el nivel de madurez en servicio al cliente."},
+    ],
+    atencion:[
+      {q:"¿Qué señal indica que un candidato de atención al cliente tiene genuina orientación al servicio y no solo cumple su trabajo?",type:'mc',options:[{text:"Que es amable y paciente durante la entrevista",correct:false},{text:"Que puede describir una situación donde fue más allá del protocolo para resolver el problema de un cliente",correct:true},{text:"Que nunca se enojó con un cliente",correct:false},{text:"Que tiene mucha tolerancia a la frustración",correct:false}],a:"La orientación al servicio real se evidencia en comportamientos concretos, no en actitudes declaradas. Ir más allá del protocolo cuando la situación lo requiere es la señal más confiable.",tip:"Seguí con: '¿Cómo sabés que el cliente quedó satisfecho después de esa situación?' Revela si hay seguimiento real o solo intención."},
+      {q:"¿Cómo evaluás si un candidato puede manejar clientes agresivos o abusivos sin perder la compostura?",type:'mc',options:[{text:"Preguntando si tiene paciencia",correct:false},{text:"Pidiéndole que describa la interacción más difícil que tuvo con un cliente y cómo la manejó emocionalmente y profesionalmente",correct:true},{text:"Evaluando su tono de voz durante la entrevista",correct:false},{text:"Preguntando cuántos años tiene en atención al cliente",correct:false}],a:"El manejo de clientes difíciles es una habilidad que se aprende y se puede evaluar con evidencia concreta. La respuesta emocional y la respuesta profesional son dos dimensiones distintas.",tip:"Buscá que distinga entre lo que sintió y lo que hizo. 'Me frustré, pero lo que hice fue...' es más maduro y honesto que 'nunca me afectan los clientes difíciles'."},
+      {q:"¿Qué métrica usarías para evaluar la performance de un agente de atención al cliente?",type:'mc',options:[{text:"Principalmente el tiempo de llamada promedio para maximizar eficiencia",correct:false},{text:"Una combinación de CSAT, FCR (First Contact Resolution), tiempo de manejo y tasa de escalamiento",correct:true},{text:"La cantidad de casos cerrados por día",correct:false},{text:"El NPS de la empresa a nivel general",correct:false}],a:"Ninguna métrica aislada captura la performance completa. FCR (resolución en el primer contacto) es especialmente valiosa porque mide calidad real, no solo velocidad.",tip:"Verificá que el candidato entienda qué mide cada indicador y cómo influye en él desde su posición. Los que piensan en métricas son más fáciles de gestionar y desarrollar."},
+    ],
+  }
+};
+
+// ── LÍMITES DIARIOS ───────────────────────────────────────────
+const LIMITS = { game: 5, cv: 2 };
+
+function getUsageKey(type) { return `corvit_${type}_usage`; }
+
+function getDailyUsage(type) {
+  try {
+    const raw = localStorage.getItem(getUsageKey(type));
+    if (!raw) return 0;
+    const { date, count } = JSON.parse(raw);
+    return date === new Date().toDateString() ? count : 0;
+  } catch(e) { return 0; }
+}
+
+function incrementDailyUsage(type) {
+  try {
+    const today = new Date().toDateString();
+    const count = getDailyUsage(type) + 1;
+    localStorage.setItem(getUsageKey(type), JSON.stringify({ date: today, count }));
+    return count;
+  } catch(e) { return 1; }
+}
+
+function getRemainingDaily(type) {
+  return Math.max(0, LIMITS[type] - getDailyUsage(type));
+}
+
+const LETTERS=['A','B','C','D'];
+let state={module:null,rubro:null,rol:null,questions:[],currentQ:0,answers:[],favorites:new Set(),freeLimit:5,timerInterval:null,timerSeconds:120};
+let sampleAPI=null;
+// Runtime de Claude (artifact en claude.ai)
+if(typeof claude !== 'undefined' && claude.use) {
+  claude.use('sample').then(api=>{sampleAPI=api;});
+}
+
+function startTimer(){
+  clearInterval(state.timerInterval);
+  state.timerSeconds=120;
+  updateTimerDisplay();
+  state.timerInterval=setInterval(()=>{
+    state.timerSeconds--;
+    updateTimerDisplay();
+    if(state.timerSeconds<=0){clearInterval(state.timerInterval);document.getElementById('btn-next').disabled=false;}
+  },1000);
+}
+function updateTimerDisplay(){
+  const el=document.getElementById('timer-display');
+  const m=Math.floor(state.timerSeconds/60);
+  const s=state.timerSeconds%60;
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  el.classList.remove('warning','danger');
+  if(state.timerSeconds<=30&&state.timerSeconds>10)el.classList.add('warning');
+  if(state.timerSeconds<=10)el.classList.add('danger');
+}
+function stopTimer(){clearInterval(state.timerInterval);}
+
+function toggleFav(){
+  const idx=state.currentQ;
+  const btn=document.getElementById('fav-btn');
+  if(state.favorites.has(idx)){state.favorites.delete(idx);btn.innerHTML='☆ Guardar';btn.classList.remove('active');}
+  else{state.favorites.add(idx);btn.innerHTML='★ Guardada';btn.classList.add('active');}
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.animation='none';});
+  const el=document.getElementById(id);
+  el.style.animation='none';el.classList.add('active');
+  void el.offsetWidth;el.style.animation='';
+  window.scrollTo(0,0);
+}
+function goBack(target){stopTimer();showScreen(target);}
+
+function selectModule(mod){
+  state.module=mod;
+  document.querySelectorAll('.module-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('card-'+mod).classList.add('selected');
+  document.getElementById('btn-continue-module').disabled=false;
+  document.getElementById('nav-module-tag').textContent=mod==='candidato'?'Candidatos':'Entrevistadores';
+}
+function goToCVFeedback(){showScreen('screen-cv');}
+
+let cvBase64=null;
+function handleCVUpload(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  document.getElementById('cv-upload-text').textContent='✓ '+file.name;
+  document.getElementById('cv-upload-label').style.borderColor='var(--slate)';
+  document.getElementById('btn-analyze-cv').disabled=false;
+  const reader=new FileReader();
+  reader.onload=e=>{cvBase64=e.target.result.split(',')[1];};
+  reader.readAsDataURL(file);
+}
+
+async function analyzeCVWithAI(){
+  if(!cvBase64)return;
+  if(getRemainingDaily('cv')<=0){showDailyLimitScreen('cv');return;}
+  incrementDailyUsage('cv');
+  document.getElementById('btn-analyze-cv').disabled=true;
+  document.getElementById('cv-loading').style.display='block';
+  document.getElementById('cv-results').style.display='none';
+  document.getElementById('cv-results').innerHTML='';
+  const loadingMsgs=['Leyendo tu CV...','Analizando estructura y formato...','Evaluando keywords y ATS...','Preparando feedback...'];
+  let msgIdx=0;
+  const msgInterval=setInterval(()=>{
+    msgIdx=(msgIdx+1)%loadingMsgs.length;
+    document.getElementById('cv-loading-text').textContent=loadingMsgs[msgIdx];
+  },2000);
+  try{
+    const rawText=await callCVAnalysisAI(cvBase64);
+    clearInterval(msgInterval);
+    document.getElementById('cv-loading').style.display='none';
+    let data;
+    try{
+      const clean=rawText.replace(/```json|```/g,'').trim();
+      data=JSON.parse(clean);
+    }catch(e){throw new Error('parse_error');}
+    const scoreColor=data.score_color==='green'?'#4ADE80':data.score_color==='yellow'?'#FBBF24':'#F87171';
+    const resultsEl=document.getElementById('cv-results');
+    resultsEl.style.display='flex';
+    resultsEl.innerHTML=`
+      <div class="cv-section" style="text-align:center">
+        <div class="cv-score" style="color:${scoreColor}">${data.score}/100</div>
+        <div class="cv-score-label">SCORE DE TU CV</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-top:12px">${data.resumen}</p>
+      </div>
+      <div class="cv-section">
+        <div class="cv-section-title" style="color:#4ADE80">✓ Fortalezas</div>
+        <div class="cv-section-body">${data.fortalezas.map(f=>'• '+f).join('<br>')}</div>
+      </div>
+      <div class="cv-section">
+        <div class="cv-section-title" style="color:#F87171">✗ Problemas ATS detectados</div>
+        <div class="cv-section-body">${data.problemas_ats.map(p=>'• '+p).join('<br>')}</div>
+      </div>
+      <div class="cv-section">
+        <div class="cv-section-title" style="color:#FBBF24">↑ Mejoras sugeridas</div>
+        <div class="cv-section-body">${data.mejoras.map(m=>'• '+m).join('<br>')}</div>
+      </div>
+      <div class="cv-section">
+        <div class="cv-section-title" style="color:var(--slate)">🔑 Keywords que podrían faltarte</div>
+        <div class="cv-section-body">${data.keywords_faltantes.map(k=>'<span style="background:rgba(143,168,200,0.15);border-radius:20px;padding:3px 12px;display:inline-block;margin:3px;font-size:12px">'+k+'</span>').join('')}</div>
+      </div>
+      <div class="cv-section" style="border-color:rgba(143,168,200,0.4)">
+        <div class="cv-section-title" style="color:var(--white)">💡 Lo más importante</div>
+        <div class="cv-section-body">${data.conclusion}</div>
+      </div>
+      <div class="corvus-cta">
+        <div class="cta-text">
+          <strong>La IA detectó los problemas. Nosotros los resolvemos.</strong>
+          En Corvus Talent reescribimos tu CV de forma profesional y ATS-friendly. Pack Esencial desde $35.000 ARS.
+        </div>
+        <a href="https://wa.me/5493412712847?text=Hola%2C%20analicé%20mi%20CV%20con%20Corvit%20y%20quiero%20optimizarlo%20profesionalmente%20con%20Corvus%20Talent." target="_blank" class="btn btn-primary" style="text-decoration:none">Quiero mejorar mi CV</a>
+      </div>
+      <button class="btn btn-ghost" onclick="resetCV()" style="margin-top:8px">Analizar otro CV</button>
+    `;
+  }catch(e){
+    clearInterval(msgInterval);
+    document.getElementById('cv-loading').style.display='none';
+    document.getElementById('cv-results').style.display='flex';
+    document.getElementById('cv-results').innerHTML='<div class="cv-section"><div class="cv-section-title" style="color:#F87171">⚠ Error al analizar</div><div class="cv-section-body">No pudimos analizar el CV. Asegurate de que el PDF tenga texto seleccionable (no sea una imagen escaneada) e intentá de nuevo.</div></div><button class="btn btn-ghost" onclick="resetCV()" style="margin-top:8px">Intentar de nuevo</button>';
+    document.getElementById('btn-analyze-cv').disabled=false;
+  }
+}
+
+function resetCV(){
+  cvBase64=null;
+  document.getElementById('cv-file-input').value='';
+  document.getElementById('cv-upload-text').textContent='Hacé clic para seleccionar tu CV en PDF';
+  document.getElementById('cv-upload-label').style.borderColor='';
+  document.getElementById('btn-analyze-cv').disabled=true;
+  document.getElementById('cv-results').style.display='none';
+  document.getElementById('cv-results').innerHTML='';
+}
+
+async function callFeedbackAI(question, chosen, correct, correctAnswer, context, module) {
+  if(sampleAPI) {
+    const mod = module === 'candidato' ? 'candidato que está preparando una entrevista' : 'entrevistador que está aprendiendo a evaluar candidatos';
+    const prompt = `Sos un recruiter IT senior con 10 años de experiencia. Un ${mod} respondió esta pregunta:\n\nPregunta: "${question}"\nRespuesta elegida: "${chosen}"\nEra ${correct?'CORRECTA':'INCORRECTA'}.\nRespuesta correcta: "${correctAnswer}"\nContexto: ${context}\n\nDá un feedback breve y personalizado (2-3 oraciones máximo). No uses bullets ni headers.`;
+    const result = await sampleAPI(prompt, { modelTier: 'quick' });
+    return result.text || '';
+  }
+  const res = await fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, chosen, correct, correctAnswer, context, module })
+  });
+  const data = await res.json();
+  if(data.error) throw new Error(data.error);
+  return data.text || '';
+}
+
+async function callCVAnalysisAI(cvBase64) {
+  if(sampleAPI) {
+    const prompt = `Analizá el CV adjunto como recruiter IT senior. Devolvé SOLO un JSON con: score (0-100), score_color ("green"/"yellow"/"red"), resumen, fortalezas (array), problemas_ats (array), mejoras (array), keywords_faltantes (array), conclusion.`;
+    const result = await sampleAPI({
+      role: 'user',
+      content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: cvBase64 } },
+        { type: 'text', text: prompt }
+      ]
+    }, { modelTier: 'default' });
+    return result.text || '';
+  }
+  const res = await fetch('/api/analyze-cv', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cvBase64 })
+  });
+  const data = await res.json();
+  if(data.error) throw new Error(data.error);
+  return data.text || '';
+}
+
+function goToRubro(){if(!state.module)return;renderRubros();showScreen('screen-rubro');}
+
+function renderRubros(){
+  const grid=document.getElementById('rubro-grid');
+  grid.innerHTML=rubros.map(r=>`<button class="select-chip" onclick="selectRubro('${r.id}')" id="rubro-${r.id}"><span class="chip-icon">${r.icon}</span>${r.name}</button>`).join('');
+}
+function selectRubro(id){
+  state.rubro=id;state.rol=null;
+  document.querySelectorAll('#rubro-grid .select-chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('rubro-'+id).classList.add('selected');
+  document.getElementById('btn-continue-rubro').disabled=false;
+}
+function goToRol(){if(!state.rubro)return;renderRoles();showScreen('screen-rol');}
+
+function renderRoles(){
+  const grid=document.getElementById('rol-grid');
+  const list=roles[state.rubro]||[];
+  grid.innerHTML=list.map(r=>`<button class="select-chip" onclick="selectRol('${r.replace(/[\s\/]/g,'_')}')" id="rol-${r.replace(/[\s\/]/g,'_')}">${r}</button>`).join('');
+  document.getElementById('btn-continue-rol').disabled=true;
+}
+function selectRol(rolId){
+  const list=roles[state.rubro]||[];
+  const rol=list.find(r=>r.replace(/[\s\/]/g,'_')===rolId)||rolId;
+  state.rol=rol;
+  document.querySelectorAll('#rol-grid .select-chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('rol-'+rolId).classList.add('selected');
+  document.getElementById('btn-continue-rol').disabled=false;
+}
+
+function buildQuestions(){
+  const mod=state.module;
+  const rubro=state.rubro;
+  const rol=state.rol||'';
+  const general=Q[mod]?.general||[];
+  const aiRoles=['AI Engineer','Desarrollador de IA','Responsible AI Specialist'];
+  const legalRoles=['Abogado Corporativo','Abogado Laboral','Abogado de Familia','Escribano'];
+  const docenciaRoles=['Docente de Nivel Primario','Docente de Nivel Secundario','Docente Universitario','Coordinador Pedagógico','Tutor / Acompañante Educativo'];
+  const disenoRoles=['Diseñador Gráfico','Director de Arte','Motion Designer','Diseñador UX/UI','Diseñador Editorial'];
+  const saludRoles=['Enfermero/a','Médico/a Clínico/a','Farmacéutico/a','Kinesiólogo/a','Nutricionista','Psicólogo/a','Instrumentador/a Quirúrgico/a'];
+  const ingenieriaRoles=['Ingeniero Civil','Ingeniero Industrial','Ingeniero Mecánico','Ingeniero Eléctrico','Ingeniero Químico','Project Manager de Obra'];
+  const logisticaRoles=['Coordinador de Logística','Analista de Supply Chain','Jefe de Depósito','Operador Logístico','Planner de Producción','Despachante de Aduana'];
+  const turismoRoles=['Recepcionista de Hotel','Agente de Viajes','Coordinador de Eventos','Guía de Turismo','Jefe de Recepción','Revenue Manager'];
+  const atencionRoles=['Agente de Atención al Cliente','Customer Success Manager','Supervisor de Call Center','Soporte Técnico','Community Manager de Soporte'];
+  const key=aiRoles.includes(rol)?'ai':legalRoles.includes(rol)?'legal':docenciaRoles.includes(rol)?'docencia':disenoRoles.includes(rol)?'diseno':saludRoles.includes(rol)?'salud':ingenieriaRoles.includes(rol)?'ingenieria':logisticaRoles.includes(rol)?'logistica':turismoRoles.includes(rol)?'turismo':atencionRoles.includes(rol)?'atencion':rubro;
+  const specific=Q[mod]?.[key]||[];
+  return [...specific,...general].sort(()=>Math.random()-0.5);
+}
+
+function showDailyLimitScreen(type){
+  const isGame = type==='game';
+  const msg = isGame
+    ? 'Usaste tus <strong>5 preguntas gratuitas</strong> de hoy. Volvé mañana para seguir practicando.'
+    : 'Usaste tus <strong>2 análisis de CV gratuitos</strong> de hoy. Volvé mañana o contactanos.';
+  showScreen('screen-welcome');
+  const existing = document.getElementById('daily-limit-msg');
+  if(existing) existing.remove();
+  const div = document.createElement('div');
+  div.id='daily-limit-msg';
+  div.style.cssText='background:rgba(143,168,200,0.08);border:1px solid rgba(143,168,200,0.2);border-radius:10px;padding:16px 20px;text-align:center;margin-top:16px;width:100%';
+  div.innerHTML=`<p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px">${msg}</p><a href="https://wa.me/5493412712847" target="_blank" style="display:inline-flex;align-items:center;background:#FFFFFF;color:#0A1628;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Contactar a Corvus Talent</a>`;
+  document.getElementById('btn-continue-module').after(div);
+}
+
+function startQuestions(){
+  if(!state.rol)return;
+  const remaining=getRemainingDaily('game');
+  if(remaining<=0){showDailyLimitScreen('game');return;}
+  state.questions=buildQuestions();
+  state.currentQ=0;state.answers=[];state.favorites=new Set();
+  state.freeLimit=remaining;
+  showQuestion();showScreen('screen-question');
+}
+
+function showQuestion(){
+  const q=state.questions[state.currentQ];
+  if(!q){finishSession();return;}
+  const total=Math.min(state.questions.length,state.freeLimit);
+  const current=state.currentQ+1;
+  document.getElementById('q-bar').style.width=((current-1)/total*100)+'%';
+  document.getElementById('q-count').textContent=current+' / '+total;
+  document.getElementById('q-label').textContent=state.module==='candidato'?'Pregunta de entrevista':'Preguntale esto';
+  document.getElementById('q-text').textContent=q.q;
+  const favBtn=document.getElementById('fav-btn');
+  if(state.favorites.has(state.currentQ)){favBtn.innerHTML='★ Guardada';favBtn.classList.add('active');}
+  else{favBtn.innerHTML='☆ Guardar';favBtn.classList.remove('active');}
+  renderMC(q);
+  document.getElementById('btn-next').disabled=true;
+  document.getElementById('limit-banner').style.display='none';
+  document.getElementById('ai-feedback').classList.remove('visible');
+  document.getElementById('ai-feedback-text').textContent='';
+  startTimer();
+}
+
+function renderMC(q){
+  const shuffled=[...q.options].sort(()=>Math.random()-0.5);
+  document.getElementById('mc-options').innerHTML=shuffled.map((opt,i)=>`<button class="mc-option" onclick="selectMCOption(this,${opt.correct})"><span class="mc-letter">${LETTERS[i]}</span><span>${opt.text}</span></button>`).join('');
+  const expBox=document.getElementById('explanation-box');
+  expBox.classList.remove('visible');expBox.innerHTML='';
+}
+
+function selectMCOption(btn,isCorrect){
+  stopTimer();
+  const q=state.questions[state.currentQ];
+  const opts=document.querySelectorAll('.mc-option');
+  opts.forEach(o=>o.disabled=true);
+  btn.classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect){
+    opts.forEach(o=>{
+      const btnText=o.querySelectorAll('span')[1].textContent;
+      const isC=q.options.find(op=>op.text===btnText&&op.correct);
+      if(isC)o.classList.add('reveal-correct');
+    });
+  }
+  const expBox=document.getElementById('explanation-box');
+  expBox.innerHTML=`<strong>${isCorrect?'✓ Correcto.':'✗ No exactamente.'}</strong> ${q.a}${q.tip?'<br><br><strong>💡 Tip:</strong> '+q.tip:''}`;
+  expBox.classList.add('visible');
+  state.answers[state.currentQ]={type:'mc',correct:isCorrect,q:q.q};
+  incrementDailyUsage('game');
+  const atLimit=state.currentQ>=state.freeLimit-1;
+  if(atLimit)document.getElementById('limit-banner').style.display='block';
+  else document.getElementById('btn-next').disabled=false;
+
+  // AI feedback
+  const feedbackEl=document.getElementById('ai-feedback');
+  const feedbackText=document.getElementById('ai-feedback-text');
+  if(sampleAPI || typeof fetch !== 'undefined'){
+    feedbackEl.classList.add('visible');
+    feedbackText.innerHTML='<span class="ai-thinking">Generando feedback personalizado...</span>';
+    const chosenText=btn.querySelectorAll('span')[1].textContent;
+    const correctAnswer=q.options.find(o=>o.correct)?.text||'';
+    (async()=>{
+      try{
+        const text = await callFeedbackAI(q.q, chosenText, isCorrect, correctAnswer, q.a, state.module);
+        feedbackText.textContent = text || '';
+        if(!text) feedbackEl.classList.remove('visible');
+      }catch(e){
+        feedbackEl.classList.remove('visible');
+      }
+    })();
+  }
+}
+
+function nextQuestion(){
+  stopTimer();
+  state.currentQ++;
+  if(state.currentQ>=state.freeLimit||state.currentQ>=state.questions.length)finishSession();
+  else showQuestion();
+}
+
+function finishSession(){
+  stopTimer();
+  const answered=state.answers.filter(Boolean);
+  const mc=answered.filter(a=>a.type==='mc');
+  const correct=mc.filter(a=>a.correct).length;
+  const pct=mc.length>0?Math.round(correct/mc.length*100):null;
+  document.getElementById('score-num').textContent=pct!==null?pct+'%':'—';
+  const arc=document.getElementById('score-arc');
+  const offset=pct!==null?364.4-(pct/100*364.4):364.4;
+  arc.style.strokeDashoffset=offset;
+  arc.style.stroke=pct>=70?'#4ADE80':pct>=40?'#FBBF24':'#F87171';
+  document.getElementById('stat-total').textContent=answered.length;
+  document.getElementById('stat-correct').textContent=mc.length>0?correct+'/'+mc.length:'—';
+  document.getElementById('stat-favs').textContent=state.favorites.size;
+  let title='¡Sesión completa!',sub='';
+  if(pct!==null){
+    if(pct>=80){title='¡Excelente preparación!';sub='Llegás a la entrevista en muy buena forma.';}
+    else if(pct>=60){title='¡Buen resultado!';sub='Repasá los conceptos donde fallaste y vas a estar listo.';}
+    else{title='Hay margen para mejorar.';sub='Revisá las respuestas y volvé a practicar. ¡La práctica hace al maestro!';}
+  }else{sub='Revisá los tips de las respuestas abiertas para reforzar tu preparación.';}
+  document.getElementById('results-title').textContent=title;
+  document.getElementById('results-sub').textContent=sub;
+  if(state.favorites.size>0){
+    const favSection=document.getElementById('fav-section');
+    const favList=document.getElementById('fav-list');
+    favSection.style.display='';
+    favList.innerHTML=[...state.favorites].map(idx=>{const q=state.questions[idx];return q?`<div class="fav-item">★ ${q.q}</div>`:''}).join('');
+  }
+  document.getElementById('review-list').innerHTML=answered.map(a=>{
+    const cls=a.type==='open'?'open':(a.correct?'correct':'wrong');
+    const badge=a.type==='open'?'📖 Abierta':(a.correct?'✓ Correcta':'✗ Incorrecta');
+    return `<div class="review-item ${cls}"><div class="review-q">${a.q}</div><div class="review-result">${badge}</div></div>`;
+  }).join('');
+  showScreen('screen-results');
+}
+
+function resetApp(){
+  stopTimer();
+  state={module:null,rubro:null,rol:null,questions:[],currentQ:0,answers:[],favorites:new Set(),freeLimit:5,timerInterval:null,timerSeconds:120};
+  document.getElementById('nav-module-tag').textContent='';
+  document.querySelectorAll('.module-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('btn-continue-module').disabled=true;
+  document.getElementById('fav-section').style.display='none';
+  showScreen('screen-welcome');
+}
+</script>
+</body>
+</html>

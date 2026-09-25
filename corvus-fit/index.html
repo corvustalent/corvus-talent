@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corvus Fit — ¿Qué tan compatible sos con ese puesto?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
+    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
+    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
+    --green:#4ADE80;--yellow:#FBBF24;--red:#F87171;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+  nav{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+  .nav-back{font-size:14px;font-weight:500;color:var(--slate);text-decoration:none;display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:20px;transition:all 0.2s}
+  .nav-back:hover{border-color:var(--slate);color:var(--white)}
+  .nav-brand{font-size:16px;font-weight:700;letter-spacing:1px;color:var(--white)}
+  .nav-brand span{color:var(--slate)}
+
+  main{flex:1;display:flex;flex-direction:column;align-items:center;padding:40px 24px}
+  .container{width:100%;max-width:640px}
+
+  /* HEADER */
+  .header{margin-bottom:36px;text-align:center}
+  .header-eyebrow{font-size:11px;color:var(--slate);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+  .header-title{font-size:clamp(28px,5vw,40px);font-weight:700;line-height:1.2;margin-bottom:10px}
+  .header-title span{color:var(--slate)}
+  .header-sub{font-size:14px;color:var(--gray);line-height:1.6;max-width:480px;margin:0 auto}
+
+  /* STEPS INDICATOR */
+  .steps-indicator{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:36px}
+  .step-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--gray);transition:all 0.3s;position:relative;z-index:1;background:var(--navy)}
+  .step-dot.active{border-color:var(--slate);color:var(--white);background:var(--navy-light)}
+  .step-dot.done{border-color:var(--green);color:var(--green);background:rgba(74,222,128,0.08)}
+  .step-line{width:60px;height:2px;background:var(--border);transition:background 0.3s}
+  .step-line.done{background:var(--green)}
+  .step-label{font-size:10px;color:var(--gray);position:absolute;bottom:-20px;white-space:nowrap;left:50%;transform:translateX(-50%)}
+  .step-dot.active .step-label{color:var(--slate)}
+  .step-dot.done .step-label{color:var(--green)}
+
+  /* CARDS */
+  .card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px}
+  .card-label{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+  .card-title{font-size:18px;font-weight:600;color:var(--white);margin-bottom:8px}
+  .card-sub{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:20px}
+
+  /* UPLOAD */
+  .upload-area{border:1.5px dashed var(--border);border-radius:10px;padding:32px;cursor:pointer;transition:border-color 0.2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .upload-area:hover{border-color:var(--slate)}
+  .upload-area.uploaded{border-color:var(--green);background:rgba(74,222,128,0.04)}
+  .upload-icon{font-size:32px}
+  .upload-text{font-size:13px;color:var(--slate)}
+  .upload-text.success{color:var(--green)}
+
+  /* TEXTAREA */
+  textarea{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--white);font-family:inherit;font-size:13px;line-height:1.6;outline:none;transition:border-color 0.2s;resize:vertical;min-height:160px}
+  textarea:focus{border-color:var(--slate)}
+  textarea::placeholder{color:var(--gray)}
+  .char-count{font-size:11px;color:var(--gray);text-align:right;margin-top:6px}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 28px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s;width:100%}
+  .btn-primary{background:var(--white);color:var(--navy)}
+  .btn-primary:hover{background:var(--off-white);transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+  .btn-ghost{background:transparent;color:var(--slate);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--slate);color:var(--white)}
+
+  /* LOADING */
+  .loading{text-align:center;padding:40px;display:none}
+  .loading-dots{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--slate);animation:bounce 1.2s ease-in-out infinite}
+  .dot:nth-child(2){animation-delay:0.15s}
+  .dot:nth-child(3){animation-delay:0.3s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+  .loading p{font-size:14px;color:var(--slate)}
+
+  /* SCORE RING */
+  .score-section{text-align:center;margin-bottom:28px}
+  .score-ring{width:140px;height:140px;border-radius:50%;border:4px solid var(--navy-mid);margin:0 auto 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+  .score-ring svg{position:absolute;top:-4px;left:-4px;transform:rotate(-90deg)}
+  .score-ring svg circle{fill:none;stroke-width:4;stroke-linecap:round}
+  .score-num{font-size:42px;font-weight:700;position:relative;z-index:1;line-height:1}
+  .score-label{font-size:11px;color:var(--slate);position:relative;z-index:1;margin-top:4px}
+  .score-title{font-size:22px;font-weight:700;margin-bottom:6px}
+  .score-sub{font-size:14px;color:var(--gray)}
+
+  /* RESULT SECTIONS */
+  .result-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+  .result-block{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .result-block-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .result-block-body{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7}
+  .result-block-body ul{list-style:none;padding:0}
+  .result-block-body ul li{padding:3px 0}
+  .result-block-body ul li::before{content:'·';color:var(--slate);margin-right:8px}
+
+  /* CTA */
+  .result-cta{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .cta-text strong{color:var(--white);display:block;margin-bottom:4px;font-size:14px}
+  .cta-text p{font-size:13px;color:var(--slate)}
+  .btn-cta{background:var(--white);color:var(--navy);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;width:auto}
+
+  /* LIMIT */
+  .limit-banner{background:rgba(143,168,200,0.08);border:1px solid var(--border);border-radius:10px;padding:16px 20px;text-align:center;margin-bottom:20px;display:none}
+  .limit-banner p{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px}
+
+  footer{padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .footer-brand{font-size:12px;color:var(--gray)}
+  .footer-brand span{color:var(--slate)}
+
+  @media(max-width:520px){.result-cta{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-back">← Corvus Talent</a>
+  <div class="nav-brand">CORVUS <span>FIT</span></div>
+  <div style="width:120px"></div>
+</nav>
+
+<main>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">Ecosistema Corvus</div>
+    <h1 class="header-title">¿Qué tan <span>compatible</span><br>sos con ese puesto?</h1>
+    <p class="header-sub">Subí tu CV, pegá la descripción del puesto y la IA te dice exactamente cómo encajás — y qué hacer para mejorar tu postulación.</p>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps-indicator" style="margin-bottom:48px">
+    <div class="step-dot active" id="dot-1">1<span class="step-label">Tu CV</span></div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2<span class="step-label">El puesto</span></div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3<span class="step-label">Tu análisis</span></div>
+  </div>
+
+  <!-- STEP 1: CV -->
+  <div id="step-1">
+    <div class="card">
+      <div class="card-label">Paso 1 de 3</div>
+      <div class="card-title">Subí tu CV</div>
+      <div class="card-sub">Necesitamos tu CV en PDF para analizar tu perfil profesional.</div>
+      <label class="upload-area" id="cv-upload-area">
+        <span class="upload-icon">📄</span>
+        <span class="upload-text" id="cv-upload-text">Hacé clic para seleccionar tu CV en PDF</span>
+        <input type="file" accept=".pdf" id="cv-file-input" style="display:none" onchange="handleCVUpload(event)">
+      </label>
+    </div>
+    <button class="btn btn-primary" id="btn-step1" onclick="goToStep2()" disabled>Continuar →</button>
+  </div>
+
+  <!-- STEP 2: JD -->
+  <div id="step-2" style="display:none">
+    <div class="card">
+      <div class="card-label">Paso 2 de 3</div>
+      <div class="card-title">Pegá la descripción del puesto</div>
+      <div class="card-sub">Copiá la JD de LinkedIn, Bumeran, o donde encontraste el aviso. Cuanto más completa, mejor el análisis.</div>
+      <textarea id="jd-input" placeholder="Pegá acá la descripción completa del puesto al que querés postularte..." oninput="updateCharCount()"></textarea>
+      <div class="char-count"><span id="char-count">0</span> caracteres</div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-ghost" onclick="goToStep1()" style="width:auto;padding:13px 20px">← Volver</button>
+      <button class="btn btn-primary" id="btn-step2" onclick="analyzefit()" disabled>Analizar compatibilidad ✦</button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <p id="loading-text">Analizando tu perfil...</p>
+  </div>
+
+  <!-- STEP 3: RESULTS -->
+  <div id="step-3" style="display:none">
+
+    <div class="limit-banner" id="limit-banner">
+      <p>Usaste tus <strong style="color:var(--white)">2 análisis gratuitos</strong> de hoy. Volvé mañana o contactanos.</p>
+      <a href="https://wa.me/5493412712847" target="_blank" class="btn btn-primary" style="display:inline-flex;width:auto;padding:10px 20px">Contactar</a>
+    </div>
+
+    <!-- SCORE -->
+    <div class="score-section">
+      <div class="score-ring">
+        <svg width="148" height="148" viewBox="0 0 148 148">
+          <circle cx="74" cy="74" r="66" stroke="rgba(143,168,200,0.12)" stroke-width="4"/>
+          <circle cx="74" cy="74" r="66" stroke="#8FA8C8" stroke-width="4" id="score-arc" stroke-dasharray="414.7" stroke-dashoffset="414.7"/>
+        </svg>
+        <div class="score-num" id="score-num">—</div>
+        <div class="score-label">compatibilidad</div>
+      </div>
+      <div class="score-title" id="score-title">Analizando...</div>
+      <div class="score-sub" id="score-sub"></div>
+    </div>
+
+    <div class="result-grid" id="result-grid"></div>
+
+    <div class="result-cta" id="result-cta" style="display:none">
+      <div class="cta-text">
+        <strong id="cta-title">¿Querés mejorar tu perfil?</strong>
+        <p id="cta-body">En Corvus Talent te ayudamos a optimizar tu CV y prepararte para la entrevista.</p>
+      </div>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20analicé%20mi%20CV%20con%20Corvus%20Fit%20y%20quiero%20mejorar%20mi%20postulación." target="_blank" class="btn btn-primary btn-cta">Hablar con Corvus</a>
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-ghost" onclick="resetApp()">Analizar otro puesto</button>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<footer>
+  <div class="footer-brand">CORVUS <span>FIT</span> · by Corvus Talent</div>
+  <a href="/" style="font-size:12px;color:var(--gray);text-decoration:none">corvustalent.com.ar</a>
+</footer>
+
+<script>
+// ── LÍMITE DIARIO ──────────────────────────────────────────
+const FIT_LIMIT = 2;
+const FIT_KEY = 'corvus_fit_usage';
+
+function getUsage() {
+  try {
+    const raw = localStorage.getItem(FIT_KEY);
+    if (!raw) return { date: null, count: 0 };
+    return JSON.parse(raw);
+  } catch(e) { return { date: null, count: 0 }; }
+}
+
+function incrementUsage() {
+  const today = new Date().toDateString();
+  const usage = getUsage();
+  const count = usage.date === today ? usage.count + 1 : 1;
+  try { localStorage.setItem(FIT_KEY, JSON.stringify({ date: today, count })); } catch(e) {}
+  return count;
+}
+
+function getRemainingUses() {
+  const today = new Date().toDateString();
+  const usage = getUsage();
+  return usage.date === today ? Math.max(0, FIT_LIMIT - usage.count) : FIT_LIMIT;
+}
+
+// ── STATE ──────────────────────────────────────────────────
+let cvBase64 = null;
+
+// ── STEP 1 ─────────────────────────────────────────────────
+function handleCVUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const area = document.getElementById('cv-upload-area');
+  const text = document.getElementById('cv-upload-text');
+  area.classList.add('uploaded');
+  text.textContent = '✓ ' + file.name;
+  text.classList.add('success');
+  document.getElementById('btn-step1').disabled = false;
+  const reader = new FileReader();
+  reader.onload = e => { cvBase64 = e.target.result.split(',')[1]; };
+  reader.readAsDataURL(file);
+}
+
+function goToStep1() {
+  document.getElementById('step-2').style.display = 'none';
+  document.getElementById('step-1').style.display = 'block';
+  setStep(1);
+}
+
+function goToStep2() {
+  if (!cvBase64) return;
+  document.getElementById('step-1').style.display = 'none';
+  document.getElementById('step-2').style.display = 'block';
+  setStep(2);
+}
+
+// ── STEP 2 ─────────────────────────────────────────────────
+function updateCharCount() {
+  const val = document.getElementById('jd-input').value;
+  document.getElementById('char-count').textContent = val.length;
+  document.getElementById('btn-step2').disabled = val.trim().length < 50;
+}
+
+// ── STEPS UI ───────────────────────────────────────────────
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.classList.remove('active', 'done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  for (let i = 1; i <= 2; i++) {
+    const line = document.getElementById(`line-${i}`);
+    line.classList.toggle('done', i < n);
+  }
+}
+
+// ── ANALYZE ────────────────────────────────────────────────
+async function analyzefit() {
+  const jd = document.getElementById('jd-input').value.trim();
+  if (!cvBase64 || jd.length < 50) return;
+  if (getRemainingUses() <= 0) {
+    document.getElementById('step-2').style.display = 'none';
+    document.getElementById('step-3').style.display = 'block';
+    document.getElementById('limit-banner').style.display = 'block';
+    setStep(3);
+    return;
+  }
+
+  document.getElementById('step-2').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  setStep(3);
+
+  const loadingMsgs = ['Leyendo tu CV...', 'Analizando el puesto...', 'Cruzando tu perfil con los requisitos...', 'Preparando tu análisis...'];
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMsgs.length;
+    document.getElementById('loading-text').textContent = loadingMsgs[msgIdx];
+  }, 2000);
+
+  try {
+    const response = await fetch('/api/fit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cvBase64, jd })
+    });
+
+    const data = await response.json();
+    clearInterval(msgInterval);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('step-3').style.display = 'block';
+
+    let result;
+    try {
+      result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
+    } catch(e) { throw new Error('parse_error'); }
+
+    incrementUsage();
+    renderResults(result);
+
+  } catch(e) {
+    clearInterval(msgInterval);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('step-3').style.display = 'block';
+    document.getElementById('result-grid').innerHTML = `
+      <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center">
+        <p style="color:var(--gray);font-size:13px">No pudimos analizar el CV. Asegurate de que el PDF tenga texto seleccionable e intentá de nuevo.</p>
+      </div>`;
+  }
+}
+
+function renderResults(r) {
+  const scoreColor = r.score >= 70 ? '#4ADE80' : r.score >= 40 ? '#FBBF24' : '#F87171';
+  document.getElementById('score-num').textContent = r.score + '%';
+  document.getElementById('score-num').style.color = scoreColor;
+  const arc = document.getElementById('score-arc');
+  arc.style.stroke = scoreColor;
+  arc.style.strokeDashoffset = 414.7 - (r.score / 100 * 414.7);
+
+  let title, sub;
+  if (r.score >= 75) { title = '¡Muy buen match!'; sub = 'Tu perfil encaja bien con este puesto. Postulate con confianza.'; }
+  else if (r.score >= 50) { title = 'Match moderado.'; sub = 'Tenés puntos fuertes pero hay gaps que podés trabajar antes de postularte.'; }
+  else { title = 'Match bajo por ahora.'; sub = 'Tu perfil tiene diferencias importantes con lo que buscan. Te decimos qué trabajar.'; }
+
+  document.getElementById('score-title').textContent = title;
+  document.getElementById('score-sub').textContent = sub;
+
+  const grid = document.getElementById('result-grid');
+  grid.innerHTML = `
+    <div class="result-block">
+      <div class="result-block-title" style="color:#4ADE80">✓ Lo que tenés que ellos buscan</div>
+      <div class="result-block-body"><ul>${r.matches.map(m => `<li>${m}</li>`).join('')}</ul></div>
+    </div>
+    <div class="result-block">
+      <div class="result-block-title" style="color:#F87171">✗ Gaps detectados</div>
+      <div class="result-block-body"><ul>${r.gaps.map(g => `<li>${g}</li>`).join('')}</ul></div>
+    </div>
+    <div class="result-block">
+      <div class="result-block-title" style="color:#FBBF24">↑ Cómo mejorar tu postulación</div>
+      <div class="result-block-body"><ul>${r.mejoras.map(m => `<li>${m}</li>`).join('')}</ul></div>
+    </div>
+    <div class="result-block">
+      <div class="result-block-title" style="color:var(--slate)">💬 Qué destacar en la entrevista</div>
+      <div class="result-block-body"><ul>${r.entrevista.map(e => `<li>${e}</li>`).join('')}</ul></div>
+    </div>
+  `;
+
+  // CTA dinámico según score
+  const ctaEl = document.getElementById('result-cta');
+  const ctaTitle = document.getElementById('cta-title');
+  const ctaBody = document.getElementById('cta-body');
+  ctaEl.style.display = 'flex';
+  if (r.score < 50) {
+    ctaTitle.textContent = 'Tu CV necesita trabajo antes de postularte.';
+    ctaBody.textContent = 'En Corvus Talent optimizamos tu CV para que matcheés mejor con este tipo de puestos.';
+  } else if (r.score < 75) {
+    ctaTitle.textContent = '¿Querés practicar la entrevista antes de postularte?';
+    ctaBody.textContent = 'Usá Corvit para prepararte con preguntas reales del rubro o hacé una simulación 1-on-1 con nosotros.';
+  } else {
+    ctaTitle.textContent = '¡Estás listo para postularte!';
+    ctaBody.textContent = 'Si querés llegar todavía más preparado, hacemos simulaciones de entrevista 1-on-1 con feedback real.';
+  }
+}
+
+function resetApp() {
+  cvBase64 = null;
+  document.getElementById('cv-file-input').value = '';
+  document.getElementById('cv-upload-text').textContent = 'Hacé clic para seleccionar tu CV en PDF';
+  document.getElementById('cv-upload-text').classList.remove('success');
+  document.getElementById('cv-upload-area').classList.remove('uploaded');
+  document.getElementById('btn-step1').disabled = true;
+  document.getElementById('jd-input').value = '';
+  document.getElementById('char-count').textContent = '0';
+  document.getElementById('step-3').style.display = 'none';
+  document.getElementById('result-grid').innerHTML = '';
+  document.getElementById('result-cta').style.display = 'none';
+  document.getElementById('limit-banner').style.display = 'none';
+  document.getElementById('step-1').style.display = 'block';
+  setStep(1);
+}
+</script>
+</body>
+</html>

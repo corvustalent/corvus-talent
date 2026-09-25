@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corvus Craft — Generador de Job Descriptions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
+    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
+    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
+    --green:#4ADE80;--yellow:#FBBF24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+  nav{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+  .nav-brand{font-size:16px;font-weight:700;letter-spacing:1px;color:var(--white)}
+  .nav-brand span{color:var(--slate)}
+  .nav-tag{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase}
+  main{flex:1;display:flex;flex-direction:column;align-items:center;padding:40px 24px}
+  .container{width:100%;max-width:680px}
+
+  /* HEADER */
+  .header{margin-bottom:36px}
+  .header-eyebrow{font-size:11px;color:var(--slate);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+  .header-title{font-size:clamp(28px,5vw,40px);font-weight:700;line-height:1.2;margin-bottom:10px}
+  .header-title span{color:var(--slate)}
+  .header-sub{font-size:14px;color:var(--gray);line-height:1.6}
+
+  /* FORM */
+  .form-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:1/-1}
+  label{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;font-weight:500}
+  input,select,textarea{
+    background:var(--navy);border:1px solid var(--border);border-radius:8px;
+    padding:10px 14px;color:var(--white);font-family:inherit;font-size:14px;
+    outline:none;transition:border-color 0.2s;width:100%;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--slate)}
+  select option{background:var(--navy-mid)}
+  textarea{resize:vertical;min-height:80px;line-height:1.5}
+  ::placeholder{color:var(--gray)}
+
+  /* CHIPS */
+  .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{
+    background:rgba(143,168,200,0.08);border:1px solid var(--border);
+    border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gray);
+    cursor:pointer;transition:all 0.15s;user-select:none;
+  }
+  .chip:hover{border-color:var(--slate);color:var(--white)}
+  .chip.selected{border-color:var(--slate);background:rgba(143,168,200,0.15);color:var(--white)}
+
+  /* LANG TOGGLE */
+  .lang-toggle{display:flex;gap:0;background:var(--navy);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .lang-btn{flex:1;padding:10px;background:none;border:none;color:var(--gray);font-family:inherit;font-size:13px;cursor:pointer;transition:all 0.15s}
+  .lang-btn.active{background:var(--navy-light);color:var(--white);font-weight:500}
+
+  /* GENERATE BTN */
+  .btn-generate{
+    width:100%;padding:14px;border-radius:8px;background:var(--white);color:var(--navy);
+    font-family:inherit;font-size:15px;font-weight:600;border:none;cursor:pointer;
+    transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-bottom:24px;
+  }
+  .btn-generate:hover{background:var(--off-white);transform:translateY(-1px)}
+  .btn-generate:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+  /* RESULT */
+  .result-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px;display:none}
+  .result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+  .result-label{font-size:11px;color:var(--green);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+  .result-actions{display:flex;gap:10px}
+  .btn-copy,.btn-regen{
+    background:none;border:1px solid var(--border);border-radius:6px;
+    padding:6px 14px;font-family:inherit;font-size:12px;color:var(--slate);
+    cursor:pointer;transition:all 0.15s;
+  }
+  .btn-copy:hover,.btn-regen:hover{border-color:var(--slate);color:var(--white)}
+  .result-body{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.8}
+  .result-body h1,.result-body h2,.result-body h3{color:var(--white);font-size:15px;font-weight:600;margin:20px 0 8px}
+  .result-body p{margin-bottom:10px}
+  .result-body ul{padding-left:0;list-style:none;margin-bottom:12px}
+  .result-body ul li{padding:3px 0;color:rgba(255,255,255,0.85)}
+  .result-body ul li::before{content:'·';color:var(--slate);margin-right:8px}
+  .result-body hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+  .result-body.streaming{border-right:2px solid var(--slate);padding-right:2px;animation:blink 0.8s step-end infinite}
+  @keyframes blink{50%{border-color:transparent}}
+
+  /* LOADING */
+  .loading{text-align:center;padding:32px;display:none}
+  .loading-dots{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--slate);animation:bounce 1.2s ease-in-out infinite}
+  .dot:nth-child(2){animation-delay:0.15s}
+  .dot:nth-child(3){animation-delay:0.3s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+  .loading p{font-size:13px;color:var(--slate)}
+
+  /* CORVUS CTA */
+  .corvus-cta{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+  .cta-text{font-size:13px;color:var(--slate);line-height:1.5}
+  .cta-text strong{color:var(--white);display:block;margin-bottom:4px}
+  .btn-cta{background:var(--white);color:var(--navy);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+
+  footer{padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .footer-brand{font-size:12px;color:var(--gray)}
+  .footer-brand span{color:var(--slate)}
+  .footer-link{font-size:12px;color:var(--gray);text-decoration:none}
+  .footer-link:hover{color:var(--slate)}
+
+  @media(max-width:520px){.form-grid{grid-template-columns:1fr}.result-header{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">CORVUS <span>CRAFT</span></div>
+  <div class="nav-tag">Generador de Job Descriptions</div>
+</nav>
+
+<main>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">Corvus Ecosystem</div>
+    <h1 class="header-title">Generá tu <span>Job Description</span><br>en segundos.</h1>
+    <p class="header-sub">Completá los parámetros del puesto y la IA genera una descripción profesional, lista para publicar.</p>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <div class="form-grid">
+
+      <div class="field full">
+        <label>Nombre del puesto *</label>
+        <input type="text" id="job-title" placeholder="ej. Desarrollador Backend Senior">
+      </div>
+
+      <div class="field">
+        <label>Rubro / Industria *</label>
+        <select id="industry">
+          <option value="">Seleccioná...</option>
+          <option>Tecnología IT</option>
+          <option>Recursos Humanos</option>
+          <option>Ventas</option>
+          <option>Marketing</option>
+          <option>Finanzas</option>
+          <option>Legal / Derecho</option>
+          <option>Salud</option>
+          <option>Ingeniería</option>
+          <option>Logística</option>
+          <option>Turismo y Hotelería</option>
+          <option>Atención al Cliente</option>
+          <option>Diseño Gráfico</option>
+          <option>Docencia</option>
+          <option>Administración</option>
+          <option>Otro</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Seniority *</label>
+        <select id="seniority">
+          <option value="">Seleccioná...</option>
+          <option>Junior (0-2 años)</option>
+          <option>Semi Senior (2-4 años)</option>
+          <option>Senior (4+ años)</option>
+          <option>Lead / Tech Lead</option>
+          <option>Manager</option>
+          <option>Director</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Modalidad</label>
+        <select id="modality">
+          <option value="">Seleccioná...</option>
+          <option>100% Remoto</option>
+          <option>Híbrido</option>
+          <option>Presencial</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tipo de empresa</label>
+        <select id="company-type">
+          <option value="">Seleccioná...</option>
+          <option>Startup</option>
+          <option>Empresa mediana (Pyme)</option>
+          <option>Corporación / Multinacional</option>
+          <option>Consultora</option>
+          <option>Agencia</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label>Skills técnicas requeridas</label>
+        <input type="text" id="skills" placeholder="ej. Python, SQL, AWS, React — separadas por coma">
+      </div>
+
+      <div class="field full">
+        <label>Responsabilidades principales</label>
+        <textarea id="responsibilities" placeholder="ej. Desarrollar y mantener APIs REST, liderar code reviews, coordinar con el equipo de producto..."></textarea>
+      </div>
+
+      <div class="field full">
+        <label>Idioma de la JD</label>
+        <div class="lang-toggle">
+          <button class="lang-btn active" onclick="setLang('es', this)">Español</button>
+          <button class="lang-btn" onclick="setLang('en', this)">English</button>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label>Tono de la descripción</label>
+        <div class="chips-wrap" id="tone-chips">
+          <div class="chip selected" onclick="toggleTone(this)">Profesional</div>
+          <div class="chip" onclick="toggleTone(this)">Dinámico</div>
+          <div class="chip" onclick="toggleTone(this)">Cercano</div>
+          <div class="chip" onclick="toggleTone(this)">Técnico</div>
+          <div class="chip" onclick="toggleTone(this)">Corporativo</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <button class="btn-generate" id="btn-generate" onclick="generateJD()">
+    <span>✦</span> Generar Job Description
+  </button>
+
+  <!-- LÍMITE DIARIO -->
+  <div id="limit-banner" style="display:none;background:rgba(143,168,200,0.08);border:1px solid rgba(143,168,200,0.2);border-radius:10px;padding:16px 20px;text-align:center;margin-bottom:20px">
+    <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px">Alcanzaste el límite de <strong style="color:#FFFFFF">3 generaciones gratuitas</strong> por hoy. Volvé mañana o contactanos para acceso ilimitado.</p>
+    <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20acceso%20ilimitado%20a%20Corvus%20Craft." target="_blank" style="display:inline-flex;align-items:center;background:#FFFFFF;color:#0A1628;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Contactar para acceso ilimitado</a>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <p id="loading-text">Generando tu Job Description...</p>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="result-card">
+    <div class="result-header">
+      <div class="result-label">✦ Job Description generada</div>
+      <div class="result-actions">
+        <button class="btn-copy" onclick="copyJD()">Copiar</button>
+        <button class="btn-regen" onclick="generateJD()">Regenerar</button>
+      </div>
+    </div>
+    <div class="result-body" id="result-body"></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="corvus-cta" id="corvus-cta" style="display:none">
+    <div class="cta-text">
+      <strong>¿Necesitás ayuda con el proceso de selección?</strong>
+      En Corvus Talent te ayudamos a encontrar el candidato ideal para este puesto.
+    </div>
+    <a href="https://wa.me/5493412712847?text=Hola%2C%20generé%20una%20JD%20con%20Corvus%20Craft%20y%20me%20interesa%20el%20servicio%20de%20selección." target="_blank" class="btn-cta">Contactar</a>
+  </div>
+
+</div>
+</main>
+
+<footer>
+  <div class="footer-brand">CORVUS <span>CRAFT</span> · by Corvus Talent</div>
+  <a href="/" target="_blank" class="footer-link">corvustalent.com.ar</a>
+</footer>
+
+<script>
+let selectedLang = 'es';
+let selectedTone = 'Profesional';
+
+function setLang(lang, btn) {
+  selectedLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleTone(chip) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  selectedTone = chip.textContent;
+}
+
+function getFormData() {
+  return {
+    title: document.getElementById('job-title').value.trim(),
+    industry: document.getElementById('industry').value,
+    seniority: document.getElementById('seniority').value,
+    modality: document.getElementById('modality').value,
+    companyType: document.getElementById('company-type').value,
+    skills: document.getElementById('skills').value.trim(),
+    responsibilities: document.getElementById('responsibilities').value.trim(),
+    lang: selectedLang,
+    tone: selectedTone,
+  };
+}
+
+function buildPrompt(data) {
+  const langInstruction = data.lang === 'en'
+    ? 'Write the entire job description in English.'
+    : 'Escribí toda la descripción del puesto en español (Argentina).';
+
+  const toneMap = {
+    'Profesional': 'profesional y claro, sin jerga innecesaria',
+    'Dinámico': 'dinámico y energético, mostrando cultura activa',
+    'Cercano': 'cercano y humano, usando "vos" y un tono conversacional',
+    'Técnico': 'técnico y preciso, orientado a profesionales especializados',
+    'Corporativo': 'formal y corporativo, apropiado para grandes empresas',
+  };
+  const tone = toneMap[data.tone] || 'profesional';
+
+  return `${langInstruction}
+
+Generá una Job Description completa y atractiva para el siguiente puesto. El tono debe ser ${tone}.
+
+DATOS DEL PUESTO:
+- Título: ${data.title}
+- Rubro: ${data.industry || 'No especificado'}
+- Seniority: ${data.seniority || 'No especificado'}
+- Modalidad: ${data.modality || 'No especificada'}
+- Tipo de empresa: ${data.companyType || 'No especificado'}
+- Skills técnicas: ${data.skills || 'No especificadas'}
+- Responsabilidades: ${data.responsibilities || 'No especificadas'}
+
+La JD debe incluir estas secciones en orden:
+1. Sobre el rol (2-3 oraciones que enganchen al candidato)
+2. Responsabilidades principales (5-7 bullets concisos)
+3. Requisitos (4-6 bullets: skills técnicas + experiencia)
+4. Deseable (2-3 bullets opcionales)
+5. Lo que ofrecemos (3-4 bullets atractivos, podés inferir según el tipo de empresa)
+
+Usá bullets con "·" (punto centrado). No pongas títulos con #. Hacé la JD realista, atractiva y directa — que un candidato quiera postularse.`;
+}
+
+// ── LÍMITE DIARIO ─────────────────────────────────────────────
+const CRAFT_LIMIT = 3;
+const CRAFT_KEY = 'corvus_craft_usage';
+
+function getUsage() {
+  try {
+    const raw = localStorage.getItem(CRAFT_KEY);
+    if (!raw) return { date: null, count: 0 };
+    return JSON.parse(raw);
+  } catch(e) { return { date: null, count: 0 }; }
+}
+
+function incrementUsage() {
+  const today = new Date().toDateString();
+  const usage = getUsage();
+  const newCount = usage.date === today ? usage.count + 1 : 1;
+  try { localStorage.setItem(CRAFT_KEY, JSON.stringify({ date: today, count: newCount })); } catch(e) {}
+  return newCount;
+}
+
+function getRemainingUses() {
+  const today = new Date().toDateString();
+  const usage = getUsage();
+  if (usage.date !== today) return CRAFT_LIMIT;
+  return Math.max(0, CRAFT_LIMIT - usage.count);
+}
+
+function updateLimitBanner() {
+  const remaining = getRemainingUses();
+  const banner = document.getElementById('limit-banner');
+  const btn = document.getElementById('btn-generate');
+  if (remaining === 0) {
+    banner.style.display = 'block';
+    btn.disabled = true;
+    btn.textContent = 'Límite diario alcanzado';
+  } else {
+    banner.style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = `<span>✦</span> Generar Job Description <span style="font-size:12px;opacity:0.6">(${remaining} restante${remaining !== 1 ? 's' : ''} hoy)</span>`;
+  }
+}
+
+let sampleAPI = null;
+if (typeof claude !== 'undefined' && claude.use) {
+  claude.use('sample').then(api => { sampleAPI = api; });
+}
+
+async function callAI(data) {
+  if (sampleAPI) {
+    const prompt = buildPrompt(data);
+    const result = await sampleAPI(prompt, { modelTier: 'default' });
+    return result.text || '';
+  }
+  // Backend serverless — manda solo parámetros, el prompt se arma en el servidor
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: data.title,
+      industry: data.industry,
+      seniority: data.seniority,
+      modality: data.modality,
+      companyType: data.companyType,
+      skills: data.skills,
+      responsibilities: data.responsibilities,
+      lang: data.lang,
+      tone: data.tone,
+    })
+  });
+  const result = await response.json();
+  if (result.error) throw new Error(result.error);
+  return result.text || '';
+}
+
+async function generateJD() {
+  if (getRemainingUses() <= 0) { updateLimitBanner(); return; }
+  const data = getFormData();
+  if (!data.title) {
+    document.getElementById('job-title').focus();
+    document.getElementById('job-title').style.borderColor = '#F87171';
+    setTimeout(() => document.getElementById('job-title').style.borderColor = '', 2000);
+    return;
+  }
+
+  const btn = document.getElementById('btn-generate');
+  const loading = document.getElementById('loading');
+  const resultCard = document.getElementById('result-card');
+  const resultBody = document.getElementById('result-body');
+  const corvusCta = document.getElementById('corvus-cta');
+
+  btn.disabled = true;
+  loading.style.display = 'block';
+  resultCard.style.display = 'none';
+  corvusCta.style.display = 'none';
+  resultBody.textContent = '';
+
+  const loadingMsgs = ['Generando tu Job Description...', 'Redactando responsabilidades...', 'Puliendo el tono...', 'Casi listo...'];
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMsgs.length;
+    document.getElementById('loading-text').textContent = loadingMsgs[msgIdx];
+  }, 2000);
+
+  const prompt = buildPrompt(data);
+
+  try {
+    const text = await callAI(data);
+
+    clearInterval(msgInterval);
+    loading.style.display = 'none';
+    resultCard.style.display = 'block';
+    corvusCta.style.display = 'flex';
+    btn.disabled = false;
+
+    // Animate text
+    resultBody.classList.add('streaming');
+    incrementUsage();
+    updateLimitBanner();
+    let i = 0;
+    const speed = Math.max(5, Math.floor(30 / (text.length / 500)));
+    const interval = setInterval(() => {
+      resultBody.innerHTML = renderMarkdown(text.slice(0, i));
+      i += 3;
+      if (i >= text.length) {
+        resultBody.innerHTML = renderMarkdown(text);
+        resultBody.classList.remove('streaming');
+        resultBody.dataset.raw = text;
+        clearInterval(interval);
+      }
+    }, speed);
+
+  } catch(e) {
+    clearInterval(msgInterval);
+    loading.style.display = 'none';
+    resultCard.style.display = 'block';
+    resultBody.textContent = 'Hubo un error al generar la descripción. Verificá tu conexión e intentá de nuevo.';
+    btn.disabled = false;
+  }
+}
+
+function renderMarkdown(text) {
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^---$/gm, '<hr>')
+    .replace(/^[·•\-] (.+)$/gm, '<ul><li>$1</li></ul>')
+    .replace(/<\/ul>\n<ul>/g, '')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hup]|<hr)(.+)$/gm, '<p>$1</p>')
+    .replace(/<p><\/p>/g, '')
+    .trim();
+}
+
+async function copyJD() {
+  const el = document.getElementById('result-body');
+  const text = el.dataset.raw || el.textContent;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  } catch(e) {}
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', updateLimitBanner);
+</script>
+</body>
+</html>

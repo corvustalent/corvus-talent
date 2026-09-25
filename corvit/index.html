@@ -116,11 +116,6 @@
   .footer-brand span{color:var(--slate)}
   .footer-link{font-size:12px;color:var(--gray);text-decoration:none}
   .footer-link:hover{color:var(--slate)}
-  .cv-section{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:2px}
-  .cv-section-title{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-  .cv-section-body{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7}
-  .cv-score{font-family:Georgia,serif;font-size:48px;font-weight:700;text-align:center;margin:8px 0 4px}
-  .cv-score-label{font-size:11px;color:var(--slate);text-align:center;letter-spacing:2px}
 </style>
 </head>
 <body>
@@ -136,7 +131,7 @@
     <p class="field-label">¿Qué querés hacer?</p>
     <div class="module-grid">
       <div class="module-card" onclick="selectModule('candidato')" id="card-candidato">
-        <div class="module-icon">🎯</div>
+        <div class="module-icon">🏆</div>
         <div class="module-name">Candidato</div>
         <div class="module-desc">Buscás trabajo y querés prepararte para la entrevista</div>
       </div>
@@ -146,39 +141,9 @@
         <div class="module-desc">Vas a entrevistar a alguien y querés las mejores preguntas</div>
       </div>
     </div>
-    <div style="width:100%;margin-bottom:32px">
-      <div class="module-card" onclick="goToCVFeedback()" id="card-cv" style="display:flex;align-items:center;gap:16px;padding:20px 24px">
-        <div style="font-size:28px">📄</div>
-        <div>
-          <div class="module-name">Analizá tu CV con IA</div>
-          <div class="module-desc">Subí tu CV en PDF y recibí feedback profesional — errores ATS, puntos fuertes y sugerencias concretas</div>
-        </div>
-      </div>
-    </div>
     <button class="btn btn-primary" id="btn-continue-module" onclick="goToRubro()" disabled>Continuar con preguntas</button>
   </div>
 
-  <div class="screen" id="screen-cv">
-    <button class="back-btn" onclick="goBack('screen-welcome')">← Volver</button>
-    <p class="field-label">ANÁLISIS DE CV CON IA</p>
-    <div class="q-card" style="margin-bottom:16px">
-      <div class="q-label">📄 Subí tu CV en PDF</div>
-      <p style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:16px">La IA va a analizar tu CV como lo haría un recruiter IT senior: errores ATS, estructura, logros, keywords y más.</p>
-      <label id="cv-upload-label" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px dashed var(--border);border-radius:10px;padding:28px;cursor:pointer;transition:border-color 0.2s;gap:8px">
-        <span style="font-size:28px">⬆️</span>
-        <span style="font-size:13px;color:var(--slate)" id="cv-upload-text">Hacé clic para seleccionar tu CV en PDF</span>
-        <input type="file" accept=".pdf" id="cv-file-input" style="display:none" onchange="handleCVUpload(event)">
-      </label>
-    </div>
-    <button class="btn btn-primary" id="btn-analyze-cv" onclick="analyzeCVWithAI()" disabled style="margin-bottom:16px">Analizar con IA</button>
-
-    <div id="cv-loading" style="display:none;text-align:center;padding:24px">
-      <div style="font-size:28px;margin-bottom:12px">🔍</div>
-      <p style="font-size:14px;color:var(--slate)" id="cv-loading-text">Analizando tu CV...</p>
-    </div>
-
-    <div id="cv-results" style="display:none;flex-direction:column;gap:12px"></div>
-  </div>
   <div class="screen" id="screen-rubro">
     <p class="field-label">¿Cuál es tu rubro?</p>
     <div class="select-grid" id="rubro-grid"></div>
@@ -498,7 +463,7 @@ const Q={
 };
 
 // ── LÍMITES DIARIOS ───────────────────────────────────────────
-const LIMITS = { game: 5, cv: 2 };
+const LIMITS = { game: 5 };
 
 function getUsageKey(type) { return `corvit_${type}_usage`; }
 
@@ -576,99 +541,6 @@ function selectModule(mod){
   document.getElementById('btn-continue-module').disabled=false;
   document.getElementById('nav-module-tag').textContent=mod==='candidato'?'Candidatos':'Entrevistadores';
 }
-function goToCVFeedback(){showScreen('screen-cv');}
-
-let cvBase64=null;
-function handleCVUpload(event){
-  const file=event.target.files[0];
-  if(!file)return;
-  document.getElementById('cv-upload-text').textContent='✓ '+file.name;
-  document.getElementById('cv-upload-label').style.borderColor='var(--slate)';
-  document.getElementById('btn-analyze-cv').disabled=false;
-  const reader=new FileReader();
-  reader.onload=e=>{cvBase64=e.target.result.split(',')[1];};
-  reader.readAsDataURL(file);
-}
-
-async function analyzeCVWithAI(){
-  if(!cvBase64)return;
-  if(getRemainingDaily('cv')<=0){showDailyLimitScreen('cv');return;}
-  incrementDailyUsage('cv');
-  document.getElementById('btn-analyze-cv').disabled=true;
-  document.getElementById('cv-loading').style.display='block';
-  document.getElementById('cv-results').style.display='none';
-  document.getElementById('cv-results').innerHTML='';
-  const loadingMsgs=['Leyendo tu CV...','Analizando estructura y formato...','Evaluando keywords y ATS...','Preparando feedback...'];
-  let msgIdx=0;
-  const msgInterval=setInterval(()=>{
-    msgIdx=(msgIdx+1)%loadingMsgs.length;
-    document.getElementById('cv-loading-text').textContent=loadingMsgs[msgIdx];
-  },2000);
-  try{
-    const rawText=await callCVAnalysisAI(cvBase64);
-    clearInterval(msgInterval);
-    document.getElementById('cv-loading').style.display='none';
-    let data;
-    try{
-      const clean=rawText.replace(/```json|```/g,'').trim();
-      data=JSON.parse(clean);
-    }catch(e){throw new Error('parse_error');}
-    const scoreColor=data.score_color==='green'?'#4ADE80':data.score_color==='yellow'?'#FBBF24':'#F87171';
-    const resultsEl=document.getElementById('cv-results');
-    resultsEl.style.display='flex';
-    resultsEl.innerHTML=`
-      <div class="cv-section" style="text-align:center">
-        <div class="cv-score" style="color:${scoreColor}">${data.score}/100</div>
-        <div class="cv-score-label">SCORE DE TU CV</div>
-        <p style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-top:12px">${data.resumen}</p>
-      </div>
-      <div class="cv-section">
-        <div class="cv-section-title" style="color:#4ADE80">✓ Fortalezas</div>
-        <div class="cv-section-body">${data.fortalezas.map(f=>'• '+f).join('<br>')}</div>
-      </div>
-      <div class="cv-section">
-        <div class="cv-section-title" style="color:#F87171">✗ Problemas ATS detectados</div>
-        <div class="cv-section-body">${data.problemas_ats.map(p=>'• '+p).join('<br>')}</div>
-      </div>
-      <div class="cv-section">
-        <div class="cv-section-title" style="color:#FBBF24">↑ Mejoras sugeridas</div>
-        <div class="cv-section-body">${data.mejoras.map(m=>'• '+m).join('<br>')}</div>
-      </div>
-      <div class="cv-section">
-        <div class="cv-section-title" style="color:var(--slate)">🔑 Keywords que podrían faltarte</div>
-        <div class="cv-section-body">${data.keywords_faltantes.map(k=>'<span style="background:rgba(143,168,200,0.15);border-radius:20px;padding:3px 12px;display:inline-block;margin:3px;font-size:12px">'+k+'</span>').join('')}</div>
-      </div>
-      <div class="cv-section" style="border-color:rgba(143,168,200,0.4)">
-        <div class="cv-section-title" style="color:var(--white)">💡 Lo más importante</div>
-        <div class="cv-section-body">${data.conclusion}</div>
-      </div>
-      <div class="corvus-cta">
-        <div class="cta-text">
-          <strong>La IA detectó los problemas. Nosotros los resolvemos.</strong>
-          En Corvus Talent reescribimos tu CV de forma profesional y ATS-friendly. Pack Esencial desde $35.000 ARS.
-        </div>
-        <a href="https://wa.me/5493412712847?text=Hola%2C%20analicé%20mi%20CV%20con%20Corvit%20y%20quiero%20optimizarlo%20profesionalmente%20con%20Corvus%20Talent." target="_blank" class="btn btn-primary" style="text-decoration:none">Quiero mejorar mi CV</a>
-      </div>
-      <button class="btn btn-ghost" onclick="resetCV()" style="margin-top:8px">Analizar otro CV</button>
-    `;
-  }catch(e){
-    clearInterval(msgInterval);
-    document.getElementById('cv-loading').style.display='none';
-    document.getElementById('cv-results').style.display='flex';
-    document.getElementById('cv-results').innerHTML='<div class="cv-section"><div class="cv-section-title" style="color:#F87171">⚠ Error al analizar</div><div class="cv-section-body">No pudimos analizar el CV. Asegurate de que el PDF tenga texto seleccionable (no sea una imagen escaneada) e intentá de nuevo.</div></div><button class="btn btn-ghost" onclick="resetCV()" style="margin-top:8px">Intentar de nuevo</button>';
-    document.getElementById('btn-analyze-cv').disabled=false;
-  }
-}
-
-function resetCV(){
-  cvBase64=null;
-  document.getElementById('cv-file-input').value='';
-  document.getElementById('cv-upload-text').textContent='Hacé clic para seleccionar tu CV en PDF';
-  document.getElementById('cv-upload-label').style.borderColor='';
-  document.getElementById('btn-analyze-cv').disabled=true;
-  document.getElementById('cv-results').style.display='none';
-  document.getElementById('cv-results').innerHTML='';
-}
 
 async function callFeedbackAI(question, chosen, correct, correctAnswer, context, module) {
   if(sampleAPI) {
@@ -681,28 +553,6 @@ async function callFeedbackAI(question, chosen, correct, correctAnswer, context,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question, chosen, correct, correctAnswer, context, module })
-  });
-  const data = await res.json();
-  if(data.error) throw new Error(data.error);
-  return data.text || '';
-}
-
-async function callCVAnalysisAI(cvBase64) {
-  if(sampleAPI) {
-    const prompt = `Analizá el CV adjunto como recruiter IT senior. Devolvé SOLO un JSON con: score (0-100), score_color ("green"/"yellow"/"red"), resumen, fortalezas (array), problemas_ats (array), mejoras (array), keywords_faltantes (array), conclusion.`;
-    const result = await sampleAPI({
-      role: 'user',
-      content: [
-        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: cvBase64 } },
-        { type: 'text', text: prompt }
-      ]
-    }, { modelTier: 'default' });
-    return result.text || '';
-  }
-  const res = await fetch('/api/analyze-cv', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cvBase64 })
   });
   const data = await res.json();
   if(data.error) throw new Error(data.error);

@@ -67,7 +67,6 @@
     <a class="nav-link" href="#servicios" id="nav-servicios">Servicios</a>
     <a class="nav-link" href="#precios" id="nav-precios">Precios</a>
     <a class="nav-link" href="#sobre" id="nav-sobre">Sobre mí</a>
-    <a class="nav-link" href="https://corvit-rho.vercel.app" target="_blank" id="nav-corvit">Corvit</a>
     <a class="nav-link" href="#contacto" id="nav-contacto">Contacto</a>
     <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
     <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
@@ -205,9 +204,45 @@
   </div>
 </section>
 
+<!-- ECOSISTEMA CORVUS -->
+<section style="padding:80px 80px;background:#0D1F3C;border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="margin-bottom:48px">
+      <p style="font-size:11px;color:#8FA8C8;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;font-family:Arial,sans-serif" id="eco-eyebrow">Ecosistema Corvus</p>
+      <h2 style="font-family:Georgia,serif;font-size:clamp(28px,4vw,40px);font-weight:400;color:#FFFFFF;line-height:1.2;margin-bottom:12px" id="eco-title">Herramientas gratuitas<br>para tu carrera.</h2>
+      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:420px;font-family:Arial,sans-serif" id="eco-sub">Más allá de nuestros servicios, construimos herramientas de IA para que llegues mejor preparado.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+
+      <!-- CORVIT -->
+      <div style="background:#142038;border:1px solid rgba(143,168,200,0.2);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:32px">🎯</div>
+        <div>
+          <div style="font-size:11px;color:#8FA8C8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:Arial,sans-serif">Corvit</div>
+          <h3 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#FFFFFF;margin-bottom:10px" id="corvit-card-title">Preparate para tu entrevista.</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;font-family:Arial,sans-serif" id="corvit-card-desc">Preguntas reales de entrevista con múltiple choice, feedback de IA y análisis de CV. 14 rubros disponibles. Gratis.</p>
+        </div>
+        <a href="https://corvit-rho.vercel.app" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:rgba(143,168,200,0.12);border:1px solid rgba(143,168,200,0.3);border-radius:8px;padding:10px 18px;color:#8FA8C8;font-size:13px;text-decoration:none;font-family:Arial,sans-serif;transition:all 0.2s;width:fit-content" id="corvit-card-btn">Abrir Corvit →</a>
+      </div>
+
+      <!-- CORVUS CRAFT -->
+      <div style="background:#142038;border:1px solid rgba(143,168,200,0.2);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:32px">✦</div>
+        <div>
+          <div style="font-size:11px;color:#8FA8C8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:Arial,sans-serif">Corvus Craft</div>
+          <h3 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#FFFFFF;margin-bottom:10px" id="craft-card-title">Generá tu Job Description.</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;font-family:Arial,sans-serif" id="craft-card-desc">Completá los parámetros del puesto y la IA genera una descripción profesional lista para publicar. En español o inglés.</p>
+        </div>
+        <a href="https://corvus-craft.vercel.app" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:rgba(143,168,200,0.12);border:1px solid rgba(143,168,200,0.3);border-radius:8px;padding:10px 18px;color:#8FA8C8;font-size:13px;text-decoration:none;font-family:Arial,sans-serif;transition:all 0.2s;width:fit-content" id="craft-card-btn">Abrir Corvus Craft →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <footer style="padding:24px 80px;background:#0A1628;border-top:1px solid rgba(255,255,255,0.08)">
   <div style="display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="footer-text">© 2025 Corvus Talent · Talento certero. · <a href="https://corvit-rho.vercel.app" target="_blank" style="color:rgba(255,255,255,0.4);text-decoration:none;">Corvit App</a></div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="footer-text">© 2025 Corvus Talent · Talento certero.</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif">Rosario, Argentina</div>
   </div>
 </footer>
@@ -215,7 +250,16 @@
 <script>
 const t={
   es:{
-    'nav-servicios':'Servicios','nav-precios':'Precios','nav-sobre':'Sobre mí','nav-corvit':'Corvit','nav-contacto':'Contacto',
+    'eco-eyebrow':'Ecosistema Corvus',
+    'eco-title':'Herramientas gratuitas<br>para tu carrera.',
+    'eco-sub':'Más allá de nuestros servicios, construimos herramientas de IA para que llegues mejor preparado.',
+    'corvit-card-title':'Preparate para tu entrevista.',
+    'corvit-card-desc':'Preguntas reales de entrevista con múltiple choice, feedback de IA y análisis de CV. 14 rubros disponibles. Gratis.',
+    'corvit-card-btn':'Abrir Corvit →',
+    'craft-card-title':'Generá tu Job Description.',
+    'craft-card-desc':'Completá los parámetros del puesto y la IA genera una descripción profesional lista para publicar. En español o inglés.',
+    'craft-card-btn':'Abrir Corvus Craft →',
+    'nav-servicios':'Servicios','nav-precios':'Precios','nav-sobre':'Sobre mí','nav-contacto':'Contacto',
     'hero-label':'ASESORÍA DE CARRERA IT','hero-h1':'Conseguí el trabajo<br>que merecés.',
     'hero-sub':'Te acompañamos en cada etapa de tu búsqueda laboral — desde el CV hasta la entrevista — para que llegues al trabajo que querés.',
     'hero-btn1':'Ver packs','hero-btn2':'Contacto',
@@ -232,9 +276,15 @@ const t={
     'about-label':'SOBRE MÍ','about-title':'Founder · Corvus Talent',
     'about-desc':'Técnico en Recursos Humanos con más de 6 años de experiencia en Recruiting y Sourcing IT. Sé exactamente qué buscan los recruiters — porque soy uno de ellos. Actualmente cursando la Licenciatura en Filosofía en la UNR, integrando enfoques estratégicos y humanos en el acompañamiento de carrera.',
     'contact-label':'CONTACTO','contact-h2':'Hablemos','contact-loc':'Rosario, Argentina · Remote-ready','contact-btn':'Escribinos','contact-wa-text':'WhatsApp',
-    'footer-text':'© 2025 Corvus Talent · Talento certero. · <a href="https://corvit-rho.vercel.app" target="_blank" style="color:rgba(255,255,255,0.4);text-decoration:none;">Corvit App</a>'
-  },
-  en:{
+    'eco-eyebrow':'Corvus Ecosystem',
+    'eco-title':'Free tools<br>for your career.',
+    'eco-sub':'Beyond our services, we build AI tools to help you arrive better prepared.',
+    'corvit-card-title':'Prepare for your interview.',
+    'corvit-card-desc':'Real interview questions with multiple choice, AI feedback and CV analysis. 14 industries available. Free.',
+    'corvit-card-btn':'Open Corvit →',
+    'craft-card-title':'Generate your Job Description.',
+    'craft-card-desc':'Fill in the position parameters and AI generates a professional description ready to publish. In Spanish or English.',
+    'craft-card-btn':'Open Corvus Craft →',
     'nav-servicios':'Services','nav-precios':'Pricing','nav-sobre':'About','nav-contacto':'Contact',
     'hero-label':'IT CAREER ADVISORY','hero-h1':'Land the job<br>you deserve.',
     'hero-sub':'We guide you through every step of your job search — from your CV to the interview — so you get the job you want.',
@@ -252,7 +302,7 @@ const t={
     'about-label':'ABOUT','about-title':'Founder · Corvus Talent',
     'about-desc':'HR Technician with over 6 years of experience in IT Recruiting and Sourcing. I know exactly what recruiters look for — because I am one. Currently pursuing a Philosophy degree at UNR, integrating strategic and human-centered approaches to career coaching.',
     'contact-label':'CONTACT','contact-h2':"Let's talk",'contact-loc':'Rosario, Argentina · Remote-ready','contact-btn':'Get in touch','contact-wa-text':'WhatsApp',
-    'footer-text':'© 2025 Corvus Talent · Talento certero. · <a href="https://corvit-rho.vercel.app" target="_blank" style="color:rgba(255,255,255,0.4);text-decoration:none;">Corvit App</a>'
+    'footer-text':'© 2025 Corvus Talent · Talento certero.'
   }
 };
 function setLang(lang){

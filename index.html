@@ -3,517 +3,314 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Corvus Craft — Generador de Job Descriptions</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Corvus Talent — Talento certero.</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
-  :root {
-    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
-    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
-    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
-    --green:#4ADE80;--yellow:#FBBF24;
-  }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-  nav{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-  .nav-brand{font-size:16px;font-weight:700;letter-spacing:1px;color:var(--white)}
-  .nav-brand span{color:var(--slate)}
-  .nav-tag{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase}
-  main{flex:1;display:flex;flex-direction:column;align-items:center;padding:40px 24px}
-  .container{width:100%;max-width:680px}
-
-  /* HEADER */
-  .header{margin-bottom:36px}
-  .header-eyebrow{font-size:11px;color:var(--slate);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-  .header-title{font-size:clamp(28px,5vw,40px);font-weight:700;line-height:1.2;margin-bottom:10px}
-  .header-title span{color:var(--slate)}
-  .header-sub{font-size:14px;color:var(--gray);line-height:1.6}
-
-  /* FORM */
-  .form-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px}
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .field{display:flex;flex-direction:column;gap:6px}
-  .field.full{grid-column:1/-1}
-  label{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;font-weight:500}
-  input,select,textarea{
-    background:var(--navy);border:1px solid var(--border);border-radius:8px;
-    padding:10px 14px;color:var(--white);font-family:inherit;font-size:14px;
-    outline:none;transition:border-color 0.2s;width:100%;
+  html{scroll-behavior:smooth}
+  body{font-family:Georgia,serif;color:#1a1a1a}
+  .section{padding:64px 80px}
+  .label{font-size:11px;letter-spacing:4px;color:#8FA8C8;margin-bottom:12px;font-family:Arial,sans-serif}
+  .h1{font-size:52px;font-weight:700;line-height:1.1;margin-bottom:16px}
+  .h2{font-size:32px;font-weight:700;margin-bottom:8px}
+  .h3{font-size:19px;font-weight:700;margin-bottom:10px}
+  .sub{font-size:16px;line-height:1.8;color:#8FA8C8;margin-bottom:28px}
+  .sub-dark{font-size:15px;line-height:1.8;color:#555;margin-bottom:20px}
+  .divider{height:2px;background:#8FA8C8;width:48px;margin-bottom:28px;opacity:0.4}
+  .btn-white{display:inline-block;background:#fff;color:#0A1628;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:none;letter-spacing:1px;text-decoration:none}
+  .btn-outline{display:inline-block;background:transparent;color:#fff;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.4);text-decoration:none}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:20px 80px;background:#0A1628;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:100}
+  .nav-brand{font-size:16px;font-weight:700;color:#fff;letter-spacing:3px;text-decoration:none}
+  .nav-links{display:flex;gap:28px;align-items:center}
+  .nav-link{font-size:12px;color:rgba(255,255,255,0.55);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px;background:none;border:none;text-decoration:none}
+  .nav-link:hover{color:#fff}
+  .lang-btn{font-size:11px;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;cursor:pointer;letter-spacing:1px}
+  .lang-btn.active{background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.6)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .card-navy{background:#142038;border:0.5px solid #1E3A5F;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .card-featured{background:#1A3050;border:2px solid #fff;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .badge{display:inline-block;background:rgba(143,168,200,0.2);color:#8FA8C8;font-size:10px;padding:4px 12px;border-radius:20px;font-family:Arial,sans-serif;letter-spacing:1px;margin-bottom:12px}
+  .price{font-size:34px;font-weight:700;color:#fff;margin:14px 0 4px}
+  .price-label{font-size:11px;color:#8FA8C8;font-family:Arial,sans-serif;letter-spacing:1px}
+  .feature{font-size:13px;color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .feature-dark{font-size:13px;color:#444;font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .dot{width:5px;height:5px;border-radius:50%;background:#8FA8C8;margin-top:8px;flex-shrink:0}
+  .dot-dark{width:5px;height:5px;border-radius:50%;background:#0A1628;margin-top:8px;flex-shrink:0}
+  .card-spacer{flex:1}
+  .btn-pay{display:block;width:100%;margin-top:20px;padding:12px;border-radius:6px;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-align:center;text-decoration:none;cursor:pointer;border:none}
+  .btn-pay-primary{background:#fff;color:#0A1628}
+  .btn-pay-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.5)}
+  .btn-wa{display:flex;align-items:center;justify-content:center;gap:8px}
+  .contact-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .contact-icon{font-size:20px;color:#8FA8C8}
+  .contact-text{font-size:15px;color:rgba(255,255,255,0.8);font-family:Arial,sans-serif}
+  .avatar{width:72px;height:72px;border-radius:50%;background:#142038;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;letter-spacing:2px;flex-shrink:0;border:2px solid rgba(255,255,255,0.15)}
+  .skill-tag{font-size:11px;background:#0A1628;color:#fff;padding:5px 14px;border-radius:20px;font-family:Arial,sans-serif}
+  .srv-icon{font-size:28px;margin-bottom:14px}
+  @media(max-width:768px){
+    .section{padding:48px 24px}
+    nav{padding:16px 24px}
+    .nav-links{gap:12px}
+    .grid-2,.grid-3{grid-template-columns:1fr}
+    .h1{font-size:36px}
+    .h2{font-size:26px}
   }
-  input:focus,select:focus,textarea:focus{border-color:var(--slate)}
-  select option{background:var(--navy-mid)}
-  textarea{resize:vertical;min-height:80px;line-height:1.5}
-  ::placeholder{color:var(--gray)}
-
-  /* CHIPS */
-  .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-  .chip{
-    background:rgba(143,168,200,0.08);border:1px solid var(--border);
-    border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gray);
-    cursor:pointer;transition:all 0.15s;user-select:none;
-  }
-  .chip:hover{border-color:var(--slate);color:var(--white)}
-  .chip.selected{border-color:var(--slate);background:rgba(143,168,200,0.15);color:var(--white)}
-
-  /* LANG TOGGLE */
-  .lang-toggle{display:flex;gap:0;background:var(--navy);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-  .lang-btn{flex:1;padding:10px;background:none;border:none;color:var(--gray);font-family:inherit;font-size:13px;cursor:pointer;transition:all 0.15s}
-  .lang-btn.active{background:var(--navy-light);color:var(--white);font-weight:500}
-
-  /* GENERATE BTN */
-  .btn-generate{
-    width:100%;padding:14px;border-radius:8px;background:var(--white);color:var(--navy);
-    font-family:inherit;font-size:15px;font-weight:600;border:none;cursor:pointer;
-    transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:10px;
-    margin-bottom:24px;
-  }
-  .btn-generate:hover{background:var(--off-white);transform:translateY(-1px)}
-  .btn-generate:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-
-  /* RESULT */
-  .result-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px;display:none}
-  .result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
-  .result-label{font-size:11px;color:var(--green);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
-  .result-actions{display:flex;gap:10px}
-  .btn-copy,.btn-regen{
-    background:none;border:1px solid var(--border);border-radius:6px;
-    padding:6px 14px;font-family:inherit;font-size:12px;color:var(--slate);
-    cursor:pointer;transition:all 0.15s;
-  }
-  .btn-copy:hover,.btn-regen:hover{border-color:var(--slate);color:var(--white)}
-  .result-body{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.8}
-  .result-body h1,.result-body h2,.result-body h3{color:var(--white);font-size:15px;font-weight:600;margin:20px 0 8px}
-  .result-body p{margin-bottom:10px}
-  .result-body ul{padding-left:0;list-style:none;margin-bottom:12px}
-  .result-body ul li{padding:3px 0;color:rgba(255,255,255,0.85)}
-  .result-body ul li::before{content:'·';color:var(--slate);margin-right:8px}
-  .result-body hr{border:none;border-top:1px solid var(--border);margin:16px 0}
-  .result-body.streaming{border-right:2px solid var(--slate);padding-right:2px;animation:blink 0.8s step-end infinite}
-  @keyframes blink{50%{border-color:transparent}}
-
-  /* LOADING */
-  .loading{text-align:center;padding:32px;display:none}
-  .loading-dots{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--slate);animation:bounce 1.2s ease-in-out infinite}
-  .dot:nth-child(2){animation-delay:0.15s}
-  .dot:nth-child(3){animation-delay:0.3s}
-  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
-  .loading p{font-size:13px;color:var(--slate)}
-
-  /* CORVUS CTA */
-  .corvus-cta{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-  .cta-text{font-size:13px;color:var(--slate);line-height:1.5}
-  .cta-text strong{color:var(--white);display:block;margin-bottom:4px}
-  .btn-cta{background:var(--white);color:var(--navy);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
-
-  footer{padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-  .footer-brand{font-size:12px;color:var(--gray)}
-  .footer-brand span{color:var(--slate)}
-  .footer-link{font-size:12px;color:var(--gray);text-decoration:none}
-  .footer-link:hover{color:var(--slate)}
-
-  @media(max-width:520px){.form-grid{grid-template-columns:1fr}.result-header{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="/" style="font-size:14px;font-weight:500;color:var(--slate);text-decoration:none;display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--slate)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate)'">← Corvus Talent</a>
-  <div class="nav-brand">CORVUS <span>CRAFT</span></div>
-  <div class="nav-tag">Generador de Job Descriptions</div>
+  <a class="nav-brand" href="#">CORVUS TALENT</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#servicios" id="nav-servicios">Servicios</a>
+    <a class="nav-link" href="#precios" id="nav-precios">Precios</a>
+    <a class="nav-link" href="#sobre" id="nav-sobre">Sobre mí</a>
+    <a class="nav-link" href="#ecosistema" id="nav-ecosistema">Ecosistema Corvus</a>
+    <a class="nav-link" href="#contacto" id="nav-contacto">Contacto</a>
+    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
 </nav>
 
-<main>
-<div class="container">
-
-  <div class="header">
-    <div class="header-eyebrow">Corvus Ecosystem</div>
-    <h1 class="header-title">Generá tu <span>Job Description</span><br>en segundos.</h1>
-    <p class="header-sub">Completá los parámetros del puesto y la IA genera una descripción profesional, lista para publicar.</p>
+<!-- HERO -->
+<section class="section" style="background:#0A1628;padding-top:96px;padding-bottom:96px">
+  <div class="label" id="hero-label">ASESORÍA DE CARRERA IT</div>
+  <div class="h1" style="color:#fff" id="hero-h1">Conseguí el trabajo<br>que merecés.</div>
+  <div class="sub" id="hero-sub">Te acompañamos en cada etapa de tu búsqueda laboral — desde el CV hasta la entrevista — para que llegues al trabajo que querés.</div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap">
+    <a class="btn-white" href="#precios" id="hero-btn1">Ver packs</a>
+    <a class="btn-outline" href="#contacto" id="hero-btn2">Contacto</a>
   </div>
+</section>
 
-  <!-- FORM -->
-  <div class="form-card">
-    <div class="form-grid">
+<!-- SERVICIOS -->
+<section class="section" style="background:#F5F7FA" id="servicios">
+  <div class="label" id="srv-label">SERVICIOS</div>
+  <div class="h2" style="color:#0A1628" id="srv-h2">Todo lo que necesitás para tu búsqueda</div>
+  <div class="divider"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="srv-icon">📄</div>
+      <div class="h3" style="color:#0A1628" id="srv-1-title">CV profesional</div>
+      <div class="sub-dark" id="srv-1-desc">Redactamos tu CV desde cero o lo optimizamos, adaptado a ATS y al mercado IT. Sin fotos, sin columnas — diseñado para pasar filtros y llegar a la entrevista.</div>
+    </div>
+    <div class="card">
+      <div class="srv-icon">💼</div>
+      <div class="h3" style="color:#0A1628" id="srv-2-title">Optimización LinkedIn</div>
+      <div class="sub-dark" id="srv-2-desc">Headline, banner, resumen y experiencia optimizados para que los recruiters te encuentren. Incluye activación estratégica del Open to Work.</div>
+    </div>
+    <div class="card">
+      <div class="srv-icon">✉️</div>
+      <div class="h3" style="color:#0A1628" id="srv-3-title">Cover letter en inglés</div>
+      <div class="sub-dark" id="srv-3-desc">Carta de presentación redactada en inglés profesional para postulaciones en el exterior. Adaptada a cada empresa y puesto.</div>
+    </div>
+    <div class="card">
+      <div class="srv-icon">🎯</div>
+      <div class="h3" style="color:#0A1628" id="srv-4-title">Simulación de entrevista</div>
+      <div class="sub-dark" id="srv-4-desc">Sesión de roleplay 1-on-1 simulando una entrevista real — técnica o de RRHH. Feedback detallado para que llegues preparado.</div>
+    </div>
+  </div>
+</section>
 
-      <div class="field full">
-        <label>Nombre del puesto *</label>
-        <input type="text" id="job-title" placeholder="ej. Desarrollador Backend Senior">
+<!-- PRECIOS -->
+<section class="section" style="background:#0A1628" id="precios">
+  <div class="label" id="price-label">PACKS</div>
+  <div class="h2" style="color:#fff" id="price-h2">Elegí el pack que mejor se adapta</div>
+  <div class="divider"></div>
+  <div class="grid-3">
+    <div class="card-navy">
+      <div class="badge" id="p1-badge">ESENCIAL ATS</div>
+      <div class="price">$35.000</div>
+      <div class="price-label">ARS</div>
+      <div style="margin-top:18px;flex:1">
+        <div class="feature"><div class="dot"></div><span id="p1-f1">CV profesional optimizado</span></div>
+        <div class="feature"><div class="dot"></div><span id="p1-f2">Perfil LinkedIn optimizado</span></div>
+        <div class="feature" style="border:none"><div class="dot"></div><span id="p1-f3">Entrega asincrónica</span></div>
       </div>
-
-      <div class="field">
-        <label>Rubro / Industria *</label>
-        <select id="industry">
-          <option value="">Seleccioná...</option>
-          <option>Tecnología IT</option>
-          <option>Recursos Humanos</option>
-          <option>Ventas</option>
-          <option>Marketing</option>
-          <option>Finanzas</option>
-          <option>Legal / Derecho</option>
-          <option>Salud</option>
-          <option>Ingeniería</option>
-          <option>Logística</option>
-          <option>Turismo y Hotelería</option>
-          <option>Atención al Cliente</option>
-          <option>Diseño Gráfico</option>
-          <option>Docencia</option>
-          <option>Administración</option>
-          <option>Otro</option>
-        </select>
+      <a href="https://mpago.la/2dVR4r2" target="_blank" class="btn-pay btn-pay-primary" id="p1-btn">
+        <span id="p1-btn-text">Contratar ahora</span>
+      </a>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif;text-align:center" id="p1-note">Pago seguro vía MercadoPago</div>
+    </div>
+    <div class="card-featured">
+      <div class="badge" id="p2-badge">PRO ESTRATÉGICO ★</div>
+      <div class="price">$55.000</div>
+      <div class="price-label">ARS</div>
+      <div style="margin-top:18px;flex:1">
+        <div class="feature"><div class="dot"></div><span id="p2-f1">Todo lo del Pack Esencial</span></div>
+        <div class="feature"><div class="dot"></div><span id="p2-f2">Sesión 1-on-1 de 60 minutos</span></div>
+        <div class="feature" style="border:none"><div class="dot"></div><span id="p2-f3">Estrategia personalizada</span></div>
       </div>
-
-      <div class="field">
-        <label>Seniority *</label>
-        <select id="seniority">
-          <option value="">Seleccioná...</option>
-          <option>Junior (0-2 años)</option>
-          <option>Semi Senior (2-4 años)</option>
-          <option>Senior (4+ años)</option>
-          <option>Lead / Tech Lead</option>
-          <option>Manager</option>
-          <option>Director</option>
-        </select>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20contratar%20el%20Pack%20Pro%20Estrat%C3%A9gico%20de%20Corvus%20Talent." target="_blank" class="btn-pay btn-pay-primary btn-wa" id="p2-btn">
+        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span id="p2-btn-text">Consultar disponibilidad</span>
+      </a>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif;text-align:center" id="p2-note">Coordinamos sesión antes del pago</div>
+    </div>
+    <div class="card-navy">
+      <div class="badge" id="p3-badge">PREMIUM PITCH</div>
+      <div class="price">$85.000</div>
+      <div class="price-label">ARS</div>
+      <div style="margin-top:18px;flex:1">
+        <div class="feature"><div class="dot"></div><span id="p3-f1">Todo lo del Pack Pro</span></div>
+        <div class="feature"><div class="dot"></div><span id="p3-f2">Simulación de entrevista</span></div>
+        <div class="feature" style="border:none"><div class="dot"></div><span id="p3-f3">30 días soporte por WhatsApp</span></div>
       </div>
+      <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20contratar%20el%20Pack%20Premium%20Pitch%20de%20Corvus%20Talent." target="_blank" class="btn-pay btn-pay-outline btn-wa" id="p3-btn">
+        <i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span id="p3-btn-text">Consultar disponibilidad</span>
+      </a>
+      <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif;text-align:center" id="p3-note">Coordinamos sesión antes del pago</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;font-size:11px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="price-note">* Precios en ARS sujetos a revisión mensual.</div>
+</section>
 
-      <div class="field">
-        <label>Modalidad</label>
-        <select id="modality">
-          <option value="">Seleccioná...</option>
-          <option>100% Remoto</option>
-          <option>Híbrido</option>
-          <option>Presencial</option>
-        </select>
+<!-- SOBRE MÍ -->
+<section class="section" style="background:#F5F7FA" id="sobre">
+  <div class="label" id="about-label">SOBRE MÍ</div>
+  <div style="display:flex;gap:28px;align-items:flex-start">
+    <div class="avatar">AL</div>
+    <div>
+      <div class="h2" style="color:#0A1628;margin-bottom:4px">Alejandro Leitner</div>
+      <div style="font-size:13px;color:#8FA8C8;font-family:Arial,sans-serif;letter-spacing:1px;margin-bottom:18px" id="about-title">Founder · Corvus Talent</div>
+      <div class="sub-dark" id="about-desc">Técnico en Recursos Humanos con más de 6 años de experiencia en Recruiting y Sourcing IT. Sé exactamente qué buscan los recruiters — porque soy uno de ellos. Actualmente cursando la Licenciatura en Filosofía en la UNR, integrando enfoques estratégicos y humanos en el acompañamiento de carrera.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="skill-tag">+6 años en IT Recruiting</span>
+        <span class="skill-tag">HiredScore</span>
+        <span class="skill-tag">Workday</span>
+        <span class="skill-tag">HR Analytics</span>
+        <span class="skill-tag">ATS Expert</span>
       </div>
+    </div>
+  </div>
+</section>
 
-      <div class="field">
-        <label>Tipo de empresa</label>
-        <select id="company-type">
-          <option value="">Seleccioná...</option>
-          <option>Startup</option>
-          <option>Empresa mediana (Pyme)</option>
-          <option>Corporación / Multinacional</option>
-          <option>Consultora</option>
-          <option>Agencia</option>
-        </select>
-      </div>
+<!-- CONTACTO -->
+<section class="section" style="background:#0A1628" id="contacto">
+  <div class="label" id="contact-label">CONTACTO</div>
+  <div class="h2" style="color:#fff" id="contact-h2">Hablemos</div>
+  <div class="divider"></div>
+  <div style="max-width:460px">
+    <div class="contact-row"><i class="ti ti-mail contact-icon"></i><div class="contact-text">corvus.talent@gmail.com</div></div>
+    <div class="contact-row"><i class="ti ti-brand-instagram contact-icon"></i><div class="contact-text">@corvustalent</div></div>
+    <div class="contact-row"><i class="ti ti-brand-whatsapp contact-icon"></i><div class="contact-text">+54 341 271 2847</div></div>
+    <div class="contact-row" style="border:none"><i class="ti ti-map-pin contact-icon"></i><div class="contact-text" id="contact-loc">Rosario, Argentina · Remote-ready</div></div>
+  </div>
+  <div style="margin-top:32px;display:flex;gap:12px;flex-wrap:wrap">
+    <a class="btn-white" href="mailto:corvus.talent@gmail.com" id="contact-btn">Escribinos</a>
+    <a class="btn-outline" href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20consultar%20sobre%20los%20servicios%20de%20Corvus%20Talent." target="_blank" style="display:flex;align-items:center;gap:6px" id="contact-wa">
+      <i class="ti ti-brand-whatsapp"></i><span id="contact-wa-text">WhatsApp</span>
+    </a>
+  </div>
+</section>
 
-      <div class="field full">
-        <label>Skills técnicas requeridas</label>
-        <input type="text" id="skills" placeholder="ej. Python, SQL, AWS, React — separadas por coma">
-      </div>
+<!-- ECOSISTEMA CORVUS -->
+<section id="ecosistema" style="padding:80px 80px;background:#0D1F3C;border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="margin-bottom:48px">
+      <p style="font-size:11px;color:#8FA8C8;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;font-family:Arial,sans-serif" id="eco-eyebrow">Ecosistema Corvus</p>
+      <h2 style="font-family:Georgia,serif;font-size:clamp(28px,4vw,40px);font-weight:400;color:#FFFFFF;line-height:1.2;margin-bottom:12px" id="eco-title">Herramientas gratuitas<br>para tu carrera.</h2>
+      <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:420px;font-family:Arial,sans-serif" id="eco-sub">Más allá de nuestros servicios, construimos herramientas de IA para que llegues mejor preparado.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
 
-      <div class="field full">
-        <label>Responsabilidades principales</label>
-        <textarea id="responsibilities" placeholder="ej. Desarrollar y mantener APIs REST, liderar code reviews, coordinar con el equipo de producto..."></textarea>
-      </div>
-
-      <div class="field full">
-        <label>Idioma de la JD</label>
-        <div class="lang-toggle">
-          <button class="lang-btn active" onclick="setLang('es', this)">Español</button>
-          <button class="lang-btn" onclick="setLang('en', this)">English</button>
+      <!-- CORVIT -->
+      <div style="background:#142038;border:1px solid rgba(143,168,200,0.2);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:32px">🎯</div>
+        <div>
+          <div style="font-size:11px;color:#8FA8C8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:Arial,sans-serif">Corvit</div>
+          <h3 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#FFFFFF;margin-bottom:10px" id="corvit-card-title">Preparate para tu entrevista.</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;font-family:Arial,sans-serif" id="corvit-card-desc">Preguntas reales de entrevista con múltiple choice, feedback de IA y análisis de CV. 14 rubros disponibles. Gratis.</p>
         </div>
+        <a href="/corvit" style="display:inline-flex;align-items:center;gap:8px;background:rgba(143,168,200,0.12);border:1px solid rgba(143,168,200,0.3);border-radius:8px;padding:10px 18px;color:#8FA8C8;font-size:13px;text-decoration:none;font-family:Arial,sans-serif;transition:all 0.2s;width:fit-content" id="corvit-card-btn">Abrir Corvit →</a>
       </div>
 
-      <div class="field full">
-        <label>Tono de la descripción</label>
-        <div class="chips-wrap" id="tone-chips">
-          <div class="chip selected" onclick="toggleTone(this)">Profesional</div>
-          <div class="chip" onclick="toggleTone(this)">Dinámico</div>
-          <div class="chip" onclick="toggleTone(this)">Cercano</div>
-          <div class="chip" onclick="toggleTone(this)">Técnico</div>
-          <div class="chip" onclick="toggleTone(this)">Corporativo</div>
+      <!-- CORVUS CRAFT -->
+      <div style="background:#142038;border:1px solid rgba(143,168,200,0.2);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font-size:32px">✦</div>
+        <div>
+          <div style="font-size:11px;color:#8FA8C8;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:Arial,sans-serif">Corvus Craft</div>
+          <h3 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#FFFFFF;margin-bottom:10px" id="craft-card-title">Generá tu Job Description.</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;font-family:Arial,sans-serif" id="craft-card-desc">Completá los parámetros del puesto y la IA genera una descripción profesional lista para publicar. En español o inglés.</p>
         </div>
+        <a href="/corvus-craft" style="display:inline-flex;align-items:center;gap:8px;background:rgba(143,168,200,0.12);border:1px solid rgba(143,168,200,0.3);border-radius:8px;padding:10px 18px;color:#8FA8C8;font-size:13px;text-decoration:none;font-family:Arial,sans-serif;transition:all 0.2s;width:fit-content" id="craft-card-btn">Abrir Corvus Craft →</a>
       </div>
 
     </div>
   </div>
+</section>
 
-  <button class="btn-generate" id="btn-generate" onclick="generateJD()">
-    <span>✦</span> Generar Job Description
-  </button>
-
-  <!-- LÍMITE DIARIO -->
-  <div id="limit-banner" style="display:none;background:rgba(143,168,200,0.08);border:1px solid rgba(143,168,200,0.2);border-radius:10px;padding:16px 20px;text-align:center;margin-bottom:20px">
-    <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px">Alcanzaste el límite de <strong style="color:#FFFFFF">3 generaciones gratuitas</strong> por hoy. Volvé mañana o contactanos para acceso ilimitado.</p>
-    <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20acceso%20ilimitado%20a%20Corvus%20Craft." target="_blank" style="display:inline-flex;align-items:center;background:#FFFFFF;color:#0A1628;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Contactar para acceso ilimitado</a>
+<footer style="padding:24px 80px;background:#0A1628;border-top:1px solid rgba(255,255,255,0.08)">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif" id="footer-text">© 2025 Corvus Talent · Talento certero.</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.3);font-family:Arial,sans-serif">Rosario, Argentina</div>
   </div>
-
-  <!-- LOADING -->
-  <div class="loading" id="loading">
-    <div class="loading-dots">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
-    <p id="loading-text">Generando tu Job Description...</p>
-  </div>
-
-  <!-- RESULT -->
-  <div class="result-card" id="result-card">
-    <div class="result-header">
-      <div class="result-label">✦ Job Description generada</div>
-      <div class="result-actions">
-        <button class="btn-copy" onclick="copyJD()">Copiar</button>
-        <button class="btn-regen" onclick="generateJD()">Regenerar</button>
-      </div>
-    </div>
-    <div class="result-body" id="result-body"></div>
-  </div>
-
-  <!-- CTA -->
-  <div class="corvus-cta" id="corvus-cta" style="display:none">
-    <div class="cta-text">
-      <strong>¿Necesitás ayuda con el proceso de selección?</strong>
-      En Corvus Talent te ayudamos a encontrar el candidato ideal para este puesto.
-    </div>
-    <a href="https://wa.me/5493412712847?text=Hola%2C%20generé%20una%20JD%20con%20Corvus%20Craft%20y%20me%20interesa%20el%20servicio%20de%20selección." target="_blank" class="btn-cta">Contactar</a>
-  </div>
-
-</div>
-</main>
-
-<footer>
-  <div class="footer-brand">CORVUS <span>CRAFT</span> · by Corvus Talent</div>
-  <a href="/" target="_blank" class="footer-link">corvustalent.com.ar</a>
 </footer>
 
 <script>
-let selectedLang = 'es';
-let selectedTone = 'Profesional';
-
-function setLang(lang, btn) {
-  selectedLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function toggleTone(chip) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  chip.classList.add('selected');
-  selectedTone = chip.textContent;
-}
-
-function getFormData() {
-  return {
-    title: document.getElementById('job-title').value.trim(),
-    industry: document.getElementById('industry').value,
-    seniority: document.getElementById('seniority').value,
-    modality: document.getElementById('modality').value,
-    companyType: document.getElementById('company-type').value,
-    skills: document.getElementById('skills').value.trim(),
-    responsibilities: document.getElementById('responsibilities').value.trim(),
-    lang: selectedLang,
-    tone: selectedTone,
-  };
-}
-
-function buildPrompt(data) {
-  const langInstruction = data.lang === 'en'
-    ? 'Write the entire job description in English.'
-    : 'Escribí toda la descripción del puesto en español (Argentina).';
-
-  const toneMap = {
-    'Profesional': 'profesional y claro, sin jerga innecesaria',
-    'Dinámico': 'dinámico y energético, mostrando cultura activa',
-    'Cercano': 'cercano y humano, usando "vos" y un tono conversacional',
-    'Técnico': 'técnico y preciso, orientado a profesionales especializados',
-    'Corporativo': 'formal y corporativo, apropiado para grandes empresas',
-  };
-  const tone = toneMap[data.tone] || 'profesional';
-
-  return `${langInstruction}
-
-Generá una Job Description completa y atractiva para el siguiente puesto. El tono debe ser ${tone}.
-
-DATOS DEL PUESTO:
-- Título: ${data.title}
-- Rubro: ${data.industry || 'No especificado'}
-- Seniority: ${data.seniority || 'No especificado'}
-- Modalidad: ${data.modality || 'No especificada'}
-- Tipo de empresa: ${data.companyType || 'No especificado'}
-- Skills técnicas: ${data.skills || 'No especificadas'}
-- Responsabilidades: ${data.responsibilities || 'No especificadas'}
-
-La JD debe incluir estas secciones en orden:
-1. Sobre el rol (2-3 oraciones que enganchen al candidato)
-2. Responsabilidades principales (5-7 bullets concisos)
-3. Requisitos (4-6 bullets: skills técnicas + experiencia)
-4. Deseable (2-3 bullets opcionales)
-5. Lo que ofrecemos (3-4 bullets atractivos, podés inferir según el tipo de empresa)
-
-Usá bullets con "·" (punto centrado). No pongas títulos con #. Hacé la JD realista, atractiva y directa — que un candidato quiera postularse.`;
-}
-
-// ── LÍMITE DIARIO ─────────────────────────────────────────────
-const CRAFT_LIMIT = 3;
-const CRAFT_KEY = 'corvus_craft_usage';
-
-function getUsage() {
-  try {
-    const raw = localStorage.getItem(CRAFT_KEY);
-    if (!raw) return { date: null, count: 0 };
-    return JSON.parse(raw);
-  } catch(e) { return { date: null, count: 0 }; }
-}
-
-function incrementUsage() {
-  const today = new Date().toDateString();
-  const usage = getUsage();
-  const newCount = usage.date === today ? usage.count + 1 : 1;
-  try { localStorage.setItem(CRAFT_KEY, JSON.stringify({ date: today, count: newCount })); } catch(e) {}
-  return newCount;
-}
-
-function getRemainingUses() {
-  const today = new Date().toDateString();
-  const usage = getUsage();
-  if (usage.date !== today) return CRAFT_LIMIT;
-  return Math.max(0, CRAFT_LIMIT - usage.count);
-}
-
-function updateLimitBanner() {
-  const remaining = getRemainingUses();
-  const banner = document.getElementById('limit-banner');
-  const btn = document.getElementById('btn-generate');
-  if (remaining === 0) {
-    banner.style.display = 'block';
-    btn.disabled = true;
-    btn.textContent = 'Límite diario alcanzado';
-  } else {
-    banner.style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = `<span>✦</span> Generar Job Description <span style="font-size:12px;opacity:0.6">(${remaining} restante${remaining !== 1 ? 's' : ''} hoy)</span>`;
+const t={
+  es:{
+    'eco-eyebrow':'Ecosistema Corvus',
+    'eco-title':'Herramientas gratuitas<br>para tu carrera.',
+    'eco-sub':'Más allá de nuestros servicios, construimos herramientas de IA para que llegues mejor preparado.',
+    'corvit-card-title':'Preparate para tu entrevista.',
+    'corvit-card-desc':'Preguntas reales de entrevista con múltiple choice, feedback de IA y análisis de CV. 14 rubros disponibles. Gratis.',
+    'corvit-card-btn':'Abrir Corvit →',
+    'craft-card-title':'Generá tu Job Description.',
+    'craft-card-desc':'Completá los parámetros del puesto y la IA genera una descripción profesional lista para publicar. En español o inglés.',
+    'craft-card-btn':'Abrir Corvus Craft →',
+    'nav-servicios':'Servicios','nav-precios':'Precios','nav-sobre':'Sobre mí','nav-ecosistema':'Ecosistema Corvus','nav-contacto':'Contacto',
+    'hero-label':'ASESORÍA DE CARRERA IT','hero-h1':'Conseguí el trabajo<br>que merecés.',
+    'hero-sub':'Te acompañamos en cada etapa de tu búsqueda laboral — desde el CV hasta la entrevista — para que llegues al trabajo que querés.',
+    'hero-btn1':'Ver packs','hero-btn2':'Contacto',
+    'srv-label':'SERVICIOS','srv-h2':'Todo lo que necesitás para tu búsqueda',
+    'srv-1-title':'CV profesional','srv-1-desc':'Redactamos tu CV desde cero o lo optimizamos, adaptado a ATS y al mercado IT. Sin fotos, sin columnas — diseñado para pasar filtros y llegar a la entrevista.',
+    'srv-2-title':'Optimización LinkedIn','srv-2-desc':'Headline, banner, resumen y experiencia optimizados para que los recruiters te encuentren. Incluye activación estratégica del Open to Work.',
+    'srv-3-title':'Cover letter en inglés','srv-3-desc':'Carta de presentación redactada en inglés profesional para postulaciones en el exterior. Adaptada a cada empresa y puesto.',
+    'srv-4-title':'Simulación de entrevista','srv-4-desc':'Sesión de roleplay 1-on-1 simulando una entrevista real — técnica o de RRHH. Feedback detallado para que llegués preparado.',
+    'price-label':'PACKS','price-h2':'Elegí el pack que mejor se adapta',
+    'p1-badge':'ESENCIAL ATS','p1-f1':'CV profesional optimizado','p1-f2':'Perfil LinkedIn optimizado','p1-f3':'Entrega asincrónica','p1-btn-text':'Contratar ahora','p1-note':'Pago seguro vía MercadoPago',
+    'p2-badge':'PRO ESTRATÉGICO ★','p2-f1':'Todo lo del Pack Esencial','p2-f2':'Sesión 1-on-1 de 60 minutos','p2-f3':'Estrategia personalizada','p2-btn-text':'Consultar disponibilidad','p2-note':'Coordinamos sesión antes del pago',
+    'p3-badge':'PREMIUM PITCH','p3-f1':'Todo lo del Pack Pro','p3-f2':'Simulación de entrevista','p3-f3':'30 días soporte por WhatsApp','p3-btn-text':'Consultar disponibilidad','p3-note':'Coordinamos sesión antes del pago',
+    'price-note':'* Precios en ARS sujetos a revisión mensual.',
+    'about-label':'SOBRE MÍ','about-title':'Founder · Corvus Talent',
+    'about-desc':'Técnico en Recursos Humanos con más de 6 años de experiencia en Recruiting y Sourcing IT. Sé exactamente qué buscan los recruiters — porque soy uno de ellos. Actualmente cursando la Licenciatura en Filosofía en la UNR, integrando enfoques estratégicos y humanos en el acompañamiento de carrera.',
+    'contact-label':'CONTACTO','contact-h2':'Hablemos','contact-loc':'Rosario, Argentina · Remote-ready','contact-btn':'Escribinos','contact-wa-text':'WhatsApp',
+    'eco-eyebrow':'Corvus Ecosystem',
+    'eco-title':'Free tools<br>for your career.',
+    'eco-sub':'Beyond our services, we build AI tools to help you arrive better prepared.',
+    'corvit-card-title':'Prepare for your interview.',
+    'corvit-card-desc':'Real interview questions with multiple choice, AI feedback and CV analysis. 14 industries available. Free.',
+    'corvit-card-btn':'Open Corvit →',
+    'craft-card-title':'Generate your Job Description.',
+    'craft-card-desc':'Fill in the position parameters and AI generates a professional description ready to publish. In Spanish or English.',
+    'craft-card-btn':'Open Corvus Craft →',
+    'nav-servicios':'Services','nav-precios':'Pricing','nav-sobre':'About','nav-ecosistema':'Corvus Ecosystem','nav-contacto':'Contact',
+    'hero-label':'IT CAREER ADVISORY','hero-h1':'Land the job<br>you deserve.',
+    'hero-sub':'We guide you through every step of your job search — from your CV to the interview — so you get the job you want.',
+    'hero-btn1':'View packs','hero-btn2':'Contact',
+    'srv-label':'SERVICES','srv-h2':'Everything you need for your job search',
+    'srv-1-title':'Professional CV','srv-1-desc':'We write your CV from scratch or optimize it — ATS-ready and tailored to the IT market. No photos, no columns — built to pass filters and land interviews.',
+    'srv-2-title':'LinkedIn optimization','srv-2-desc':'Headline, banner, summary and experience optimized so recruiters find you. Includes strategic Open to Work activation.',
+    'srv-3-title':'English cover letter','srv-3-desc':'Professional cover letter in English for international applications. Tailored to each company and role.',
+    'srv-4-title':'Interview simulation','srv-4-desc':'1-on-1 roleplay session simulating a real interview — technical or HR. Detailed feedback so you arrive prepared.',
+    'price-label':'PACKS','price-h2':'Choose the plan that fits you best',
+    'p1-badge':'ATS ESSENTIAL','p1-f1':'Professional CV optimized','p1-f2':'LinkedIn profile optimized','p1-f3':'Async delivery','p1-btn-text':'Get started','p1-note':'Secure payment via MercadoPago',
+    'p2-badge':'PRO STRATEGIC ★','p2-f1':'Everything in Essential','p2-f2':'1-on-1 session (60 min)','p2-f3':'Personalized strategy','p2-btn-text':'Check availability','p2-note':'We coordinate before payment',
+    'p3-badge':'PREMIUM PITCH','p3-f1':'Everything in Pro','p3-f2':'Interview simulation','p3-f3':'30-day WhatsApp support','p3-btn-text':'Check availability','p3-note':'We coordinate before payment',
+    'price-note':'* ARS prices subject to monthly review.',
+    'about-label':'ABOUT','about-title':'Founder · Corvus Talent',
+    'about-desc':'HR Technician with over 6 years of experience in IT Recruiting and Sourcing. I know exactly what recruiters look for — because I am one. Currently pursuing a Philosophy degree at UNR, integrating strategic and human-centered approaches to career coaching.',
+    'contact-label':'CONTACT','contact-h2':"Let's talk",'contact-loc':'Rosario, Argentina · Remote-ready','contact-btn':'Get in touch','contact-wa-text':'WhatsApp',
+    'footer-text':'© 2025 Corvus Talent · Talento certero.'
   }
+};
+function setLang(lang){
+  Object.keys(t[lang]).forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=t[lang][id]});
+  document.getElementById('btn-es').classList.toggle('active',lang==='es');
+  document.getElementById('btn-en').classList.toggle('active',lang==='en');
 }
-
-let sampleAPI = null;
-if (typeof claude !== 'undefined' && claude.use) {
-  claude.use('sample').then(api => { sampleAPI = api; });
-}
-
-async function callAI(data) {
-  if (sampleAPI) {
-    const prompt = buildPrompt(data);
-    const result = await sampleAPI(prompt, { modelTier: 'default' });
-    return result.text || '';
-  }
-  // Backend serverless — manda solo parámetros, el prompt se arma en el servidor
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      title: data.title,
-      industry: data.industry,
-      seniority: data.seniority,
-      modality: data.modality,
-      companyType: data.companyType,
-      skills: data.skills,
-      responsibilities: data.responsibilities,
-      lang: data.lang,
-      tone: data.tone,
-    })
-  });
-  const result = await response.json();
-  if (result.error) throw new Error(result.error);
-  return result.text || '';
-}
-
-async function generateJD() {
-  if (getRemainingUses() <= 0) { updateLimitBanner(); return; }
-  const data = getFormData();
-  if (!data.title) {
-    document.getElementById('job-title').focus();
-    document.getElementById('job-title').style.borderColor = '#F87171';
-    setTimeout(() => document.getElementById('job-title').style.borderColor = '', 2000);
-    return;
-  }
-
-  const btn = document.getElementById('btn-generate');
-  const loading = document.getElementById('loading');
-  const resultCard = document.getElementById('result-card');
-  const resultBody = document.getElementById('result-body');
-  const corvusCta = document.getElementById('corvus-cta');
-
-  btn.disabled = true;
-  loading.style.display = 'block';
-  resultCard.style.display = 'none';
-  corvusCta.style.display = 'none';
-  resultBody.textContent = '';
-
-  const loadingMsgs = ['Generando tu Job Description...', 'Redactando responsabilidades...', 'Puliendo el tono...', 'Casi listo...'];
-  let msgIdx = 0;
-  const msgInterval = setInterval(() => {
-    msgIdx = (msgIdx + 1) % loadingMsgs.length;
-    document.getElementById('loading-text').textContent = loadingMsgs[msgIdx];
-  }, 2000);
-
-  const prompt = buildPrompt(data);
-
-  try {
-    const text = await callAI(data);
-
-    clearInterval(msgInterval);
-    loading.style.display = 'none';
-    resultCard.style.display = 'block';
-    corvusCta.style.display = 'flex';
-    btn.disabled = false;
-
-    // Animate text
-    resultBody.classList.add('streaming');
-    incrementUsage();
-    updateLimitBanner();
-    let i = 0;
-    const speed = Math.max(5, Math.floor(30 / (text.length / 500)));
-    const interval = setInterval(() => {
-      resultBody.innerHTML = renderMarkdown(text.slice(0, i));
-      i += 3;
-      if (i >= text.length) {
-        resultBody.innerHTML = renderMarkdown(text);
-        resultBody.classList.remove('streaming');
-        resultBody.dataset.raw = text;
-        clearInterval(interval);
-      }
-    }, speed);
-
-  } catch(e) {
-    clearInterval(msgInterval);
-    loading.style.display = 'none';
-    resultCard.style.display = 'block';
-    resultBody.textContent = 'Hubo un error al generar la descripción. Verificá tu conexión e intentá de nuevo.';
-    btn.disabled = false;
-  }
-}
-
-function renderMarkdown(text) {
-  return text
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^---$/gm, '<hr>')
-    .replace(/^[·•\-] (.+)$/gm, '<ul><li>$1</li></ul>')
-    .replace(/<\/ul>\n<ul>/g, '')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[hup]|<hr)(.+)$/gm, '<p>$1</p>')
-    .replace(/<p><\/p>/g, '')
-    .trim();
-}
-
-async function copyJD() {
-  const el = document.getElementById('result-body');
-  const text = el.dataset.raw || el.textContent;
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    const btn = document.querySelector('.btn-copy');
-    btn.textContent = '✓ Copiado';
-    setTimeout(() => btn.textContent = 'Copiar', 2000);
-  } catch(e) {}
-}
-
-// Init
-window.addEventListener('DOMContentLoaded', updateLimitBanner);
 </script>
 </body>
 </html>

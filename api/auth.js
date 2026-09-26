@@ -1,10 +1,10 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -58,17 +58,13 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: error.message });
       }
 
-      const { error: profileError } = await supabaseAdmin.from('profiles').insert({
+      await supabaseAdmin.from('profiles').insert({
         id: data.user.id,
         email,
         role,
         company: role === 'recruiter' ? company.trim() : null,
         visible: false,
       });
-
-      if (profileError) {
-        return res.status(500).json({ error: 'Error al crear el perfil' });
-      }
 
       return res.status(200).json({ message: 'Cuenta creada. Revisá tu email para confirmar.' });
 
@@ -106,7 +102,7 @@ module.exports = async function handler(req, res) {
     }
 
   } catch (err) {
-    console.error('Auth error:', err);
+    console.error('Auth error:', err.message);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
-};
+}

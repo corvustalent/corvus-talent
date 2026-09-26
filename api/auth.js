@@ -1,9 +1,17 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -16,17 +24,16 @@ export default async function handler(req, res) {
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña requeridos' });
   }
-
-  // Validaciones
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Email inválido' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
   }
 
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
 
   try {
     if (action === 'register') {
@@ -37,38 +44,38 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Nombre de empresa requerido' });
       }
 
-      // Crear usuario en Supabase Auth
-      const { data, error } = await supabase.auth.admin.createUser({
+      const { data, error } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
-        email_confirm: false, // requiere verificación
-        user_metadata: {
-          role,
-          company: role === 'recruiter' ? company.trim() : null,
-        }
+        email_confirm: false,
+        user_metadata: { role, company: role === 'recruiter' ? company.trim() : null }
       });
 
       if (error) {
-        if (error.message.includes('already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
           return res.status(409).json({ error: 'Ya existe una cuenta con ese email' });
         }
         return res.status(400).json({ error: error.message });
       }
 
-      // Insertar perfil en tabla profiles
-      await supabase.from('profiles').insert({
+      const { error: profileError } = await supabaseAdmin.from('profiles').insert({
         id: data.user.id,
         email,
         role,
         company: role === 'recruiter' ? company.trim() : null,
-        visible: false, // candidatos no visibles por defecto
+        visible: false,
       });
+
+      if (profileError) {
+        return res.status(500).json({ error: 'Error al crear el perfil' });
+      }
 
       return res.status(200).json({ message: 'Cuenta creada. Revisá tu email para confirmar.' });
 
     } else if (action === 'login') {
-      const { createClient: createClientAnon } = await import('@supabase/supabase-js');
-      const supabaseAnon = createClientAnon(supabaseUrl, process.env.SUPABASE_ANON_KEY);
+      const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { autoRefreshToken: false, persistSession: false }
+      });
 
       const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
 
@@ -76,8 +83,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Email o contraseña incorrectos' });
       }
 
-      // Obtener perfil
-      const { data: profile } = await supabase
+      const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('role, company, visible')
         .eq('id', data.user.id)
@@ -91,7 +97,7 @@ export default async function handler(req, res) {
           role: profile?.role,
           company: profile?.company,
           visible: profile?.visible,
-          confirmed: data.user.email_confirmed_at !== null,
+          confirmed: !!data.user.email_confirmed_at,
         }
       });
 
@@ -99,7 +105,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Acción inválida' });
     }
 
-  } catch (error) {
+  } catch (err) {
+    console.error('Auth error:', err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
+};

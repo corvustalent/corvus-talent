@@ -236,9 +236,9 @@ async function handleLogin() {
 
     // Redirigir según rol
     if (data.user.role === 'recruiter') {
-      window.location.href = '/dashboard/recruiter';
+      window.location.href = '/';
     } else {
-      window.location.href = '/dashboard/candidato';
+      window.location.href = '/';
     }
 
   } catch(e) {

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Recruiter — Corvus Talent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
+    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
+    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
+    --green:#4ADE80;--yellow:#FBBF24;--red:#F87171;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+  nav{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--navy);z-index:100}
+  .nav-brand{font-size:15px;font-weight:700;letter-spacing:1px;color:var(--white);text-decoration:none}
+  .nav-brand span{color:var(--slate)}
+  .nav-right{display:flex;align-items:center;gap:16px}
+  .nav-badge{font-size:11px;color:var(--slate);background:rgba(143,168,200,0.1);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+  .nav-user{font-size:13px;color:var(--gray)}
+  .btn-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--gray);font-size:12px;font-family:inherit;cursor:pointer;transition:all 0.15s}
+  .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+  main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:32px 24px}
+
+  .dashboard-header{margin-bottom:28px}
+  .welcome{font-size:clamp(22px,4vw,28px);font-weight:700;margin-bottom:6px}
+  .welcome span{color:var(--slate)}
+  .header-sub{font-size:13px;color:var(--gray)}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+  .stat-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+  .stat-num{font-size:28px;font-weight:700;color:var(--slate);margin-bottom:4px}
+  .stat-label{font-size:12px;color:var(--gray)}
+
+  /* FILTERS */
+  .filters-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
+  .filters-title{font-size:12px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+  .filters-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-items:end}
+  select,input[type=range]{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-family:inherit;font-size:13px;outline:none;width:100%;transition:border-color 0.2s}
+  select:focus{border-color:var(--slate)}
+  select option{background:var(--navy-mid)}
+  .filter-label{font-size:11px;color:var(--gray);margin-bottom:5px;display:block}
+  .score-display{font-size:12px;color:var(--slate);text-align:right;margin-top:4px}
+  .btn-filter{background:var(--white);color:var(--navy);border:none;border-radius:8px;padding:9px 20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all 0.15s}
+  .btn-filter:hover{background:var(--off-white)}
+
+  /* CANDIDATES */
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .section-title{font-size:13px;color:var(--slate);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+  .results-count{font-size:12px;color:var(--gray)}
+
+  .candidate-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;transition:border-color 0.2s}
+  .candidate-card:hover{border-color:var(--slate)}
+  .candidate-top{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+  .candidate-avatar{width:44px;height:44px;border-radius:50%;background:rgba(143,168,200,0.15);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--slate);flex-shrink:0}
+  .candidate-info{flex:1}
+  .candidate-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:3px}
+  .candidate-meta{font-size:12px;color:var(--gray)}
+  .candidate-score{text-align:right}
+  .score-num{font-size:22px;font-weight:700}
+  .score-label{font-size:10px;color:var(--gray);margin-top:2px}
+
+  .candidate-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .tag{background:rgba(143,168,200,0.08);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:11px;color:var(--gray)}
+  .tag.highlight{border-color:rgba(143,168,200,0.4);color:var(--slate)}
+
+  .candidate-contact{display:flex;gap:10px;flex-wrap:wrap}
+  .contact-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;border:1px solid var(--border);color:var(--slate);transition:all 0.15s;cursor:pointer;background:none;font-family:inherit}
+  .contact-btn:hover{border-color:var(--slate);color:var(--white)}
+  .contact-btn.primary{background:var(--white);color:var(--navy);border-color:var(--white)}
+  .contact-btn.primary:hover{background:var(--off-white)}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--gray)}
+  .empty-icon{font-size:40px;margin-bottom:16px}
+  .empty-state p{font-size:14px;margin-bottom:8px}
+  .empty-state span{font-size:12px;color:var(--gray)}
+
+  .loading{text-align:center;padding:40px;color:var(--slate);font-size:14px}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.visible{display:flex}
+  .modal{background:var(--navy-mid);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:480px;width:100%;position:relative}
+  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;line-height:1}
+  .modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
+  .modal-sub{font-size:13px;color:var(--gray);margin-bottom:20px}
+  .modal-field{margin-bottom:16px}
+  .modal-field label{font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px}
+  textarea{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-family:inherit;font-size:13px;resize:vertical;min-height:100px;outline:none;line-height:1.5}
+  textarea:focus{border-color:var(--slate)}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+  .btn-cancel{background:none;border:1px solid var(--border);border-radius:6px;padding:9px 18px;color:var(--gray);font-family:inherit;font-size:13px;cursor:pointer}
+  .btn-send{background:var(--white);color:var(--navy);border:none;border-radius:6px;padding:9px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+  .msg.success{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);display:block}
+  .msg.error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);display:block}
+
+  @media(max-width:520px){.stats-row{grid-template-columns:1fr 1fr}.filters-grid{grid-template-columns:1fr}.candidate-top{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
+  <div class="nav-right">
+    <span class="nav-badge">Recruiter</span>
+    <span class="nav-user" id="nav-company"></span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<main>
+  <div class="dashboard-header">
+    <h1 class="welcome">Hola, <span id="user-name">—</span></h1>
+    <p class="header-sub" id="company-sub">Panel de búsqueda de talento.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-label">candidatos disponibles</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-high">—</div>
+      <div class="stat-label">con score +70</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-immediate">—</div>
+      <div class="stat-label">disponibilidad inmediata</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-card">
+    <div class="filters-title">Filtros de búsqueda</div>
+    <div class="filters-grid">
+      <div>
+        <span class="filter-label">Rubro</span>
+        <select id="filter-rubro">
+          <option value="">Todos los rubros</option>
+          <option>Tecnología IT</option>
+          <option>Recursos Humanos</option>
+          <option>Ventas</option>
+          <option>Marketing</option>
+          <option>Administración</option>
+          <option>Finanzas</option>
+          <option>Legal / Derecho</option>
+          <option>Salud</option>
+          <option>Ingeniería</option>
+          <option>Logística</option>
+          <option>Turismo y Hotelería</option>
+          <option>Atención al Cliente</option>
+          <option>Diseño Gráfico</option>
+          <option>Docencia</option>
+        </select>
+      </div>
+      <div>
+        <span class="filter-label">Seniority</span>
+        <select id="filter-seniority">
+          <option value="">Cualquier nivel</option>
+          <option>Junior</option>
+          <option>Semi Senior</option>
+          <option>Senior</option>
+          <option>Lead / Tech Lead</option>
+          <option>Manager</option>
+        </select>
+      </div>
+      <div>
+        <span class="filter-label">Modalidad buscada</span>
+        <select id="filter-modalidad">
+          <option value="">Cualquiera</option>
+          <option>Remoto</option>
+          <option>Híbrido</option>
+          <option>Presencial</option>
+        </select>
+      </div>
+      <div>
+        <span class="filter-label">Disponibilidad</span>
+        <select id="filter-disponibilidad">
+          <option value="">Cualquiera</option>
+          <option>Inmediata</option>
+          <option>2 semanas</option>
+          <option>1 mes</option>
+        </select>
+      </div>
+      <div>
+        <span class="filter-label">Score mínimo: <span id="score-val">0</span>%</span>
+        <input type="range" id="filter-score" min="0" max="90" step="10" value="0"
+          oninput="document.getElementById('score-val').textContent=this.value">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn-filter" onclick="loadCandidates()">Buscar candidatos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="section-header">
+    <div class="section-title">Candidatos</div>
+    <div class="results-count" id="results-count"></div>
+  </div>
+
+  <div id="msg" class="msg"></div>
+  <div id="candidates-list"><div class="loading">Cargando candidatos...</div></div>
+</main>
+
+<!-- MODAL CONTACTO -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Solicitud de contacto</div>
+    <div class="modal-sub" id="modal-candidate-name">Enviás una solicitud al candidato.</div>
+    <div class="msg" id="modal-msg"></div>
+    <div class="modal-field">
+      <label>Tu mensaje</label>
+      <textarea id="modal-message" placeholder="Presentate y contale por qué te interesa su perfil. Mencioná la posición y la empresa."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-send" onclick="sendContact()">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AUTH CHECK ─────────────────────────────────────────────
+const userRaw = localStorage.getItem('corvus_user');
+const token = localStorage.getItem('corvus_token');
+
+if (!userRaw || !token) { window.location.href = '/auth'; }
+
+const user = JSON.parse(userRaw || '{}');
+if (user.role !== 'recruiter') { window.location.href = '/dashboard/candidato'; }
+
+document.getElementById('user-name').textContent = user.email?.split('@')[0] || 'recruiter';
+document.getElementById('nav-company').textContent = user.company || '';
+if (user.company) {
+  document.getElementById('company-sub').textContent = `Panel de búsqueda de talento — ${user.company}`;
+}
+
+// ── LOAD CANDIDATES ────────────────────────────────────────
+let allCandidates = [];
+let selectedCandidateId = null;
+
+async function loadCandidates() {
+  const rubro = document.getElementById('filter-rubro').value;
+  const seniority = document.getElementById('filter-seniority').value;
+  const modalidad = document.getElementById('filter-modalidad').value;
+  const disponibilidad = document.getElementById('filter-disponibilidad').value;
+  const minScore = parseInt(document.getElementById('filter-score').value) || 0;
+
+  document.getElementById('candidates-list').innerHTML = '<div class="loading">Buscando candidatos...</div>';
+
+  try {
+    const params = new URLSearchParams();
+    if (rubro) params.set('rubro', rubro);
+    if (seniority) params.set('seniority', seniority);
+    if (modalidad) params.set('modalidad', modalidad);
+    if (disponibilidad) params.set('disponibilidad', disponibilidad);
+    if (minScore > 0) params.set('min_score', minScore);
+
+    const res = await fetch('/api/candidates?' + params.toString(), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (!res.ok) { showMsg(data.error || 'Error al cargar candidatos.', 'error'); return; }
+
+    allCandidates = data.candidates || [];
+    renderCandidates(allCandidates);
+    updateStats(allCandidates);
+
+  } catch(e) {
+    document.getElementById('candidates-list').innerHTML = '<div class="loading">Error de conexión.</div>';
+  }
+}
+
+function updateStats(candidates) {
+  document.getElementById('stat-total').textContent = candidates.length;
+  document.getElementById('stat-high').textContent = candidates.filter(c => (c.best_score || 0) >= 70).length;
+  document.getElementById('stat-immediate').textContent = candidates.filter(c => c.disponibilidad === 'Inmediata').length;
+}
+
+function renderCandidates(candidates) {
+  const list = document.getElementById('candidates-list');
+  document.getElementById('results-count').textContent = candidates.length + ' resultado' + (candidates.length !== 1 ? 's' : '');
+
+  if (candidates.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p>No hay candidatos que coincidan con tu búsqueda.</p>
+        <span>Probá ajustando los filtros.</span>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = candidates.map(c => {
+    const initial = c.nombre ? c.nombre[0].toUpperCase() : c.email?.[0]?.toUpperCase() || '?';
+    const name = c.nombre && c.apellido ? `${c.nombre} ${c.apellido}` : c.nombre || 'Candidato';
+    const score = c.best_score || null;
+    const scoreColor = score >= 70 ? '#4ADE80' : score >= 40 ? '#FBBF24' : '#F87171';
+
+    const tags = [
+      c.rubro, c.seniority, c.ubicacion, c.disponibilidad,
+      c.tipo_puesto, c.modalidad
+    ].filter(Boolean);
+
+    const contactBtns = [];
+    if (c.mostrar_email && c.email_contacto) {
+      contactBtns.push(`<a href="mailto:${c.email_contacto}" class="contact-btn">✉ ${c.email_contacto}</a>`);
+    }
+    if (c.mostrar_telefono && c.telefono) {
+      contactBtns.push(`<a href="https://wa.me/${c.telefono.replace(/\D/g,'')}" target="_blank" class="contact-btn">💬 WhatsApp</a>`);
+    }
+    if (c.mostrar_linkedin && c.linkedin) {
+      contactBtns.push(`<a href="https://${c.linkedin.replace('https://','')}" target="_blank" class="contact-btn">in LinkedIn</a>`);
+    }
+    contactBtns.push(`<button class="contact-btn primary" onclick="openModal('${c.id}','${name}')">Enviar solicitud</button>`);
+
+    return `
+      <div class="candidate-card">
+        <div class="candidate-top">
+          <div class="candidate-avatar">${initial}</div>
+          <div class="candidate-info">
+            <div class="candidate-name">${name}</div>
+            <div class="candidate-meta">${[c.rubro, c.seniority].filter(Boolean).join(' · ') || 'Sin datos de perfil'}</div>
+          </div>
+          ${score !== null ? `
+            <div class="candidate-score">
+              <div class="score-num" style="color:${scoreColor}">${score}%</div>
+              <div class="score-label">mejor match</div>
+            </div>` : ''}
+        </div>
+        ${tags.length > 0 ? `
+          <div class="candidate-tags">
+            ${tags.map(t => `<span class="tag ${['Inmediata','Remoto'].includes(t)?'highlight':''}">${t}</span>`).join('')}
+          </div>` : ''}
+        ${c.notas ? `<p style="font-size:12px;color:var(--gray);margin-bottom:14px;line-height:1.5">${c.notas}</p>` : ''}
+        <div class="candidate-contact">${contactBtns.join('')}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── MODAL CONTACTO ─────────────────────────────────────────
+function openModal(id, name) {
+  selectedCandidateId = id;
+  document.getElementById('modal-candidate-name').textContent = `Solicitud de contacto para ${name}`;
+  document.getElementById('modal-message').value = '';
+  document.getElementById('modal-msg').className = 'msg';
+  document.getElementById('modal-overlay').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('visible');
+  selectedCandidateId = null;
+}
+
+async function sendContact() {
+  const message = document.getElementById('modal-message').value.trim();
+  if (!message || message.length < 20) {
+    const el = document.getElementById('modal-msg');
+    el.textContent = 'Escribí un mensaje de al menos 20 caracteres.';
+    el.className = 'msg error';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ candidate_id: selectedCandidateId, message })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      const el = document.getElementById('modal-msg');
+      el.textContent = '¡Solicitud enviada! El candidato la recibirá en su dashboard.';
+      el.className = 'msg success';
+      setTimeout(closeModal, 2000);
+    } else {
+      const el = document.getElementById('modal-msg');
+      el.textContent = data.error || 'Error al enviar.';
+      el.className = 'msg error';
+    }
+  } catch(e) {
+    const el = document.getElementById('modal-msg');
+    el.textContent = 'Error de conexión.';
+    el.className = 'msg error';
+  }
+}
+
+function showMsg(text, type='success') {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+
+// ── LOGOUT ─────────────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('corvus_token');
+  localStorage.removeItem('corvus_user');
+  window.location.href = '/';
+}
+
+// ── INIT ───────────────────────────────────────────────────
+loadCandidates();
+</script>
+</body>
+</html>

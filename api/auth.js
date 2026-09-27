@@ -30,6 +30,12 @@ export default async function handler(req, res) {
   if (password.length < 8) {
     return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
   }
+  if (!/[A-Z]/.test(password)) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos una mayúscula' });
+  }
+  if (!/[0-9]/.test(password)) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos un número' });
+  }
 
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     auth: { autoRefreshToken: false, persistSession: false }

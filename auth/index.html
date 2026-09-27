@@ -149,7 +149,7 @@
     </div>
     <div class="field">
       <label>Contraseña</label>
-      <input type="password" id="register-password" placeholder="Mínimo 8 caracteres">
+      <input type="password" id="register-password" placeholder="Mín. 8 caracteres, 1 mayúscula y 1 número">
     </div>
     <div class="field">
       <label>Confirmá tu contraseña</label>
@@ -258,6 +258,8 @@ async function handleRegister() {
   if (!email || !password || !password2) { showError('Completá todos los campos.'); return; }
   if (password !== password2) { showError('Las contraseñas no coinciden.'); return; }
   if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres.'); return; }
+  if (!/[A-Z]/.test(password)) { showError('La contraseña debe tener al menos una mayúscula.'); return; }
+  if (!/[0-9]/.test(password)) { showError('La contraseña debe tener al menos un número.'); return; }
   if (selectedRole === 'recruiter' && !company) { showError('Ingresá el nombre de tu empresa.'); return; }
   if (!terms) { showError('Aceptá los términos y condiciones para continuar.'); return; }
 

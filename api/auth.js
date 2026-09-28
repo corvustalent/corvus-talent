@@ -42,6 +42,20 @@ export default async function handler(req, res) {
   });
 
   try {
+    if (action === 'create_profile') {
+      if (!req.body.userId || !req.body.email || !req.body.role) {
+        return res.status(400).json({ error: 'Datos requeridos faltantes' });
+      }
+      await supabaseAdmin.from('profiles').upsert({
+        id: req.body.userId,
+        email: req.body.email,
+        role: req.body.role,
+        company: req.body.company || null,
+        visible: false,
+      });
+      return res.status(200).json({ ok: true });
+    }
+
     if (action === 'register') {
       if (!role || !['candidato', 'recruiter'].includes(role)) {
         return res.status(400).json({ error: 'Rol inválido' });

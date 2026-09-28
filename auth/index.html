@@ -172,7 +172,15 @@
 
 <footer>CORVUS <span>TALENT</span> · Talento certero.</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+let supabaseClient = null;
+
+async function initSupabase() {
+  const res = await fetch('/api/config');
+  const { url, anon } = await res.json();
+  supabaseClient = supabase.createClient(url, anon);
+}
 let selectedRole = 'candidato';
 
 function switchTab(tab) {
@@ -216,30 +224,35 @@ async function handleLogin() {
   btn.disabled = true; btn.textContent = 'Ingresando...';
 
   try {
-    const res = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', email, password })
-    });
-    const data = await res.json();
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) { showError('Email o contraseña incorrectos.'); return; }
 
-    if (!res.ok) { showError(data.error || 'Error al ingresar.'); return; }
-
-    if (!data.user.confirmed) {
+    if (!data.user.email_confirmed_at) {
       showError('Confirmá tu email antes de ingresar. Revisá tu casilla.');
       return;
     }
 
-    // Guardar sesión
-    localStorage.setItem('corvus_token', data.token);
-    localStorage.setItem('corvus_user', JSON.stringify(data.user));
+    // Obtener perfil
+    const { data: profile } = await supabaseClient
+      .from('profiles').select('role, company, visible, nombre').eq('id', data.user.id).single();
 
-    // Redirigir según destino guardado o dashboard por rol
+    const user = {
+      id: data.user.id,
+      email: data.user.email,
+      role: profile?.role,
+      company: profile?.company,
+      visible: profile?.visible,
+      nombre: profile?.nombre,
+    };
+
+    localStorage.setItem('corvus_token', data.session.access_token);
+    localStorage.setItem('corvus_user', JSON.stringify(user));
+
     const redirect = localStorage.getItem('corvus_redirect');
     localStorage.removeItem('corvus_redirect');
     if (redirect && redirect !== '/auth') {
       window.location.href = redirect;
-    } else if (data.user.role === 'recruiter') {
+    } else if (user.role === 'recruiter') {
       window.location.href = '/dashboard/recruiter';
     } else {
       window.location.href = '/dashboard/candidato';
@@ -271,17 +284,38 @@ async function handleRegister() {
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
 
   try {
-    const res = await fetch('/api/auth', {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { role: selectedRole, company: selectedRole === 'recruiter' ? company : null }
+      }
+    });
+
+    if (error) {
+      if (error.message.includes('already registered')) {
+        showError('Ya existe una cuenta con ese email.');
+      } else {
+        showError(error.message);
+      }
+      return;
+    }
+
+    // Insertar perfil via API (necesita service key)
+    await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'register', email, password, role: selectedRole, company })
+      body: JSON.stringify({
+        action: 'create_profile',
+        userId: data.user.id,
+        email,
+        role: selectedRole,
+        company: selectedRole === 'recruiter' ? company : null
+      })
     });
-    const data = await res.json();
-
-    if (!res.ok) { showError(data.error || 'Error al crear la cuenta.'); return; }
 
     showSuccess('¡Cuenta creada! Revisá tu email para confirmar tu cuenta antes de ingresar.');
-    document.getElementById('form-register').querySelectorAll('input').forEach(i => i.value = '');
+    document.getElementById('form-register').querySelectorAll('input[type=text],input[type=email],input[type=password],input[type=tel]').forEach(i => i.value = '');
     document.getElementById('terms-check').checked = false;
 
   } catch(e) {
@@ -290,6 +324,9 @@ async function handleRegister() {
     btn.disabled = false; btn.textContent = 'Crear cuenta';
   }
 }
+
+// Init
+initSupabase();
 
 // Enter key support
 document.addEventListener('keydown', e => {

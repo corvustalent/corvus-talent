@@ -181,6 +181,12 @@ async function initSupabase() {
   const { url, anon } = await res.json();
   supabaseClient = supabase.createClient(url, anon);
 }
+// Mostrar mensaje si viene de verificación exitosa
+if (new URLSearchParams(window.location.search).get('verified') === '1') {
+  showSuccess('¡Email confirmado! Ya podés iniciar sesión.');
+  switchTab('login');
+}
+
 let selectedRole = 'candidato';
 
 function switchTab(tab) {
@@ -284,35 +290,14 @@ async function handleRegister() {
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
 
   try {
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { role: selectedRole, company: selectedRole === 'recruiter' ? company : null }
-      }
-    });
-
-    if (error) {
-      if (error.message.includes('already registered')) {
-        showError('Ya existe una cuenta con ese email.');
-      } else {
-        showError(error.message);
-      }
-      return;
-    }
-
-    // Insertar perfil via API (necesita service key)
-    await fetch('/api/auth', {
+    const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'create_profile',
-        userId: data.user.id,
-        email,
-        role: selectedRole,
-        company: selectedRole === 'recruiter' ? company : null
-      })
+      body: JSON.stringify({ action: 'register', email, password, role: selectedRole, company })
     });
+    const data = await res.json();
+
+    if (!res.ok) { showError(data.error || 'Error al crear la cuenta.'); return; }
 
     showSuccess('¡Cuenta creada! Revisá tu email para confirmar tu cuenta antes de ingresar.');
     document.getElementById('form-register').querySelectorAll('input[type=text],input[type=email],input[type=password],input[type=tel]').forEach(i => i.value = '');

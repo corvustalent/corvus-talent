@@ -113,6 +113,10 @@
       <label>Contraseña</label>
       <input type="password" id="login-password" placeholder="••••••••">
     </div>
+    <div class="check-row" style="margin-bottom:16px">
+      <input type="checkbox" id="remember-me" checked>
+      <label for="remember-me" style="font-size:12px;color:var(--gray);cursor:pointer;letter-spacing:0;text-transform:none;font-weight:400">Recordarme en este dispositivo</label>
+    </div>
     <button class="btn btn-primary" id="btn-login" onclick="handleLogin()">Ingresar</button>
     <div class="footer-link" style="margin-top:16px">
       <a href="#" onclick="switchTab('register')">¿No tenés cuenta? Creá una gratis</a>
@@ -251,8 +255,10 @@ async function handleLogin() {
       nombre: profile?.nombre,
     };
 
-    localStorage.setItem('corvus_token', data.session.access_token);
-    localStorage.setItem('corvus_user', JSON.stringify(user));
+    const remember = document.getElementById('remember-me').checked;
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem('corvus_token', data.session.access_token);
+    storage.setItem('corvus_user', JSON.stringify(user));
 
     const redirect = localStorage.getItem('corvus_redirect');
     localStorage.removeItem('corvus_redirect');

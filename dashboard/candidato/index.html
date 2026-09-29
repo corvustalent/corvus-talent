@@ -107,7 +107,20 @@
   .quick-name{font-size:13px;font-weight:600;color:var(--white)}
   .quick-desc{font-size:11px;color:var(--gray);margin-top:2px}
 
-  @media(max-width:520px){.form-grid{grid-template-columns:1fr}.quick-access{grid-template-columns:1fr}}
+  .solicitud-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:10px}
+  .solicitud-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .solicitud-company{font-size:14px;font-weight:600;color:var(--white)}
+  .solicitud-date{font-size:11px;color:var(--gray)}
+  .solicitud-msg{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:14px}
+  .solicitud-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-accept{background:var(--green);color:#0A1628;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
+  .btn-accept:hover{opacity:0.85}
+  .btn-reject{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 16px;font-size:12px;color:var(--gray);cursor:pointer;font-family:inherit;transition:all 0.15s}
+  .btn-reject:hover{border-color:var(--red);color:var(--red)}
+  .status-badge{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
+  .status-pending{background:rgba(251,191,36,0.15);color:var(--yellow)}
+  .status-accepted{background:rgba(74,222,128,0.15);color:var(--green)}
+  .status-rejected{background:rgba(248,113,113,0.1);color:var(--red)}
 </style>
 </head>
 <body>
@@ -195,6 +208,7 @@
     <button class="tab active" onclick="switchTab('perfil')">Mi perfil</button>
     <button class="tab" onclick="switchTab('deseos')">Qué busco</button>
     <button class="tab" onclick="switchTab('analisis')">Mis análisis</button>
+    <button class="tab" onclick="switchTab('solicitudes')">Solicitudes <span id="solicitudes-badge" style="display:none;background:var(--slate);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px">0</span></button>
   </div>
 
   <!-- MSG -->
@@ -394,6 +408,16 @@
       </div>
     </div>
   </div>
+  <!-- TAB: SOLICITUDES -->
+  <div class="section" id="section-solicitudes">
+    <div class="section-title">Solicitudes de contacto</div>
+    <div id="solicitudes-list">
+      <div class="empty-state">
+        <p>Todavía no recibiste solicitudes de contacto.</p>
+        <span style="font-size:12px;color:var(--gray)">Activá tu visibilidad para que los recruiters puedan encontrarte.</span>
+      </div>
+    </div>
+  </div>
 
 </main>
 
@@ -418,7 +442,7 @@ document.getElementById('user-name').textContent = user.nombre || user.email?.sp
 // ── TABS ───────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const tabs = ['perfil', 'deseos', 'analisis'];
+    const tabs = ['perfil', 'deseos', 'analisis', 'solicitudes'];
     t.classList.toggle('active', tabs[i] === tab);
   });
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -640,6 +664,77 @@ async function saveDeseos() {
   }
 }
 
+// ── SOLICITUDES ────────────────────────────────────────────
+async function loadSolicitudes() {
+  try {
+    const res = await fetch('/api/contact?action=list', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) return;
+
+    const solicitudes = data.solicitudes || [];
+    const pending = solicitudes.filter(s => s.status === 'pending').length;
+
+    // Mostrar badge
+    const badge = document.getElementById('solicitudes-badge');
+    if (pending > 0) {
+      badge.style.display = 'inline';
+      badge.textContent = pending;
+    }
+
+    renderSolicitudes(solicitudes);
+  } catch(e) {
+    console.error('Error loading solicitudes:', e);
+  }
+}
+
+function renderSolicitudes(solicitudes) {
+  const list = document.getElementById('solicitudes-list');
+  if (!solicitudes.length) return;
+
+  list.innerHTML = solicitudes.map(s => {
+    const date = new Date(s.created_at).toLocaleDateString('es-AR');
+    const statusLabel = s.status === 'pending' ? 'Pendiente' : s.status === 'accepted' ? 'Aceptada' : 'Rechazada';
+    const statusClass = `status-${s.status}`;
+
+    const actions = s.status === 'pending' ? `
+      <button class="btn-accept" onclick="respondSolicitud('${s.id}', 'accepted')">Aceptar contacto</button>
+      <button class="btn-reject" onclick="respondSolicitud('${s.id}', 'rejected')">Rechazar</button>
+    ` : `<span class="status-badge ${statusClass}">${statusLabel}</span>`;
+
+    return `
+      <div class="solicitud-card" id="sol-${s.id}">
+        <div class="solicitud-header">
+          <div>
+            <div class="solicitud-company">💼 ${s.company || 'Empresa'}</div>
+            <div class="solicitud-date">${date}</div>
+          </div>
+          ${s.status !== 'pending' ? `<span class="status-badge ${statusClass}">${statusLabel}</span>` : ''}
+        </div>
+        <div class="solicitud-msg">${s.message}</div>
+        <div class="solicitud-actions">${actions}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function respondSolicitud(id, status) {
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'respond', solicitud_id: id, status })
+    });
+    if (res.ok) {
+      showMsg(status === 'accepted' ? 'Contacto aceptado. El recruiter recibirá tu confirmación.' : 'Solicitud rechazada.', status === 'accepted' ? 'success' : 'success');
+      loadSolicitudes();
+    }
+  } catch(e) {
+    showMsg('Error al responder.', 'error');
+  }
+}
+
 // ── LOGOUT ─────────────────────────────────────────────────
 function logout() {
   localStorage.removeItem('corvus_token');
@@ -649,6 +744,7 @@ function logout() {
 
 // ── INIT ───────────────────────────────────────────────────
 loadProfile();
+loadSolicitudes();
 </script>
 </body>
 </html>

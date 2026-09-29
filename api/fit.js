@@ -1,3 +1,8 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
 const SYSTEM_PROMPT = `Sos un recruiter IT senior con 10 años de experiencia. 
 Tu especialidad es evaluar la compatibilidad entre perfiles profesionales y descripciones de puesto.
 Analizás CVs y JDs con criterio técnico y de negocio. Siempre respondés SOLO con JSON válido.`;
@@ -9,14 +14,15 @@ DESCRIPCIÓN DEL PUESTO:
 
 Devolvé SOLO un JSON con exactamente esta estructura:
 {
-  "score": <número del 0 al 100 que representa el % de compatibilidad>,
-  "matches": ["<cosa que tiene el candidato que el puesto busca 1>", "<match 2>", "<match 3>", "<match 4>"],
-  "gaps": ["<gap importante 1>", "<gap 2>", "<gap 3>"],
-  "mejoras": ["<cómo mejorar el CV para este puesto específico 1>", "<mejora 2>", "<mejora 3>"],
-  "entrevista": ["<punto fuerte a destacar en la entrevista 1>", "<punto 2>", "<punto 3>"]
+  "score": <número del 0 al 100>,
+  "job_title": "<título del puesto detectado de la JD>",
+  "matches": ["<match 1>", "<match 2>", "<match 3>", "<match 4>"],
+  "gaps": ["<gap 1>", "<gap 2>", "<gap 3>"],
+  "mejoras": ["<mejora 1>", "<mejora 2>", "<mejora 3>"],
+  "entrevista": ["<punto 1>", "<punto 2>", "<punto 3>"]
 }
 
-Sé específico y directo. Respondé SOLO con el JSON.`;
+Respondé SOLO con el JSON.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -26,7 +32,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  const { cvBase64, jd } = req.body;
+  const { cvBase64, jd, save, token } = req.body;
 
   if (!cvBase64 || typeof cvBase64 !== 'string') {
     return res.status(400).json({ error: 'CV requerido' });
@@ -71,6 +77,33 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     const text = data.content?.map(b => b.text || '').join('') || '';
+
+    // Guardar en Supabase si hay token y save=true
+    if (save && token) {
+      try {
+        const sb = createClient(supabaseUrl, supabaseServiceKey, {
+          auth: { autoRefreshToken: false, persistSession: false }
+        });
+
+        const { data: { user } } = await sb.auth.getUser(token);
+        if (user) {
+          const result = JSON.parse(text.replace(/```json|```/g, '').trim());
+          await sb.from('fit_analyses').insert({
+            user_id: user.id,
+            score: result.score,
+            job_title: result.job_title || null,
+            matches: result.matches || [],
+            gaps: result.gaps || [],
+            mejoras: result.mejoras || [],
+            entrevista: result.entrevista || [],
+          });
+        }
+      } catch(e) {
+        console.error('Error saving analysis:', e.message);
+        // No falla el request principal
+      }
+    }
+
     return res.status(200).json({ text });
 
   } catch (error) {

@@ -8,14 +8,15 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{font-family:Georgia,serif;color:#1a1a1a}
+  body{font-family:Georgia,serif;color:#fff;background:#0A1628}
   .section{padding:64px 80px}
   .label{font-size:11px;letter-spacing:4px;color:#8FA8C8;margin-bottom:12px;font-family:Arial,sans-serif}
   .h1{font-size:52px;font-weight:700;line-height:1.1;margin-bottom:16px}
   .h2{font-size:32px;font-weight:700;margin-bottom:8px}
   .h3{font-size:19px;font-weight:700;margin-bottom:10px}
   .sub{font-size:16px;line-height:1.8;color:#8FA8C8;margin-bottom:28px}
-  .sub-dark{font-size:15px;line-height:1.8;color:#555;margin-bottom:20px}
+  .sub-dark{font-size:15px;line-height:1.8;color:rgba(255,255,255,0.6);margin-bottom:20px}
+  .h3{font-size:19px;font-weight:700;margin-bottom:10px;color:#fff}
   .divider{height:2px;background:#8FA8C8;width:48px;margin-bottom:28px;opacity:0.4}
   .btn-white{display:inline-block;background:#fff;color:#0A1628;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:none;letter-spacing:1px;text-decoration:none}
   .btn-outline{display:inline-block;background:transparent;color:#fff;font-family:Arial,sans-serif;font-size:13px;font-weight:700;padding:12px 28px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,0.4);text-decoration:none}
@@ -28,16 +29,18 @@
   .lang-btn.active{background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.6)}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  .card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:28px;display:flex;flex-direction:column}
+  .card{background:#142038;border:0.5px solid rgba(143,168,200,0.2);border-radius:12px;padding:28px;display:flex;flex-direction:column;color:#fff}
+  .card .h3{color:#fff}
+  .card .sub-dark{color:rgba(255,255,255,0.65)}
   .card-navy{background:#142038;border:0.5px solid #1E3A5F;border-radius:12px;padding:28px;display:flex;flex-direction:column}
   .card-featured{background:#1A3050;border:2px solid #fff;border-radius:12px;padding:28px;display:flex;flex-direction:column}
   .badge{display:inline-block;background:rgba(143,168,200,0.2);color:#8FA8C8;font-size:10px;padding:4px 12px;border-radius:20px;font-family:Arial,sans-serif;letter-spacing:1px;margin-bottom:12px}
   .price{font-size:34px;font-weight:700;color:#fff;margin:14px 0 4px}
   .price-label{font-size:11px;color:#8FA8C8;font-family:Arial,sans-serif;letter-spacing:1px}
   .feature{font-size:13px;color:rgba(255,255,255,0.75);font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:10px;align-items:flex-start;line-height:1.5}
-  .feature-dark{font-size:13px;color:#444;font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .feature-dark{font-size:13px;color:rgba(255,255,255,0.7);font-family:Arial,sans-serif;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:10px;align-items:flex-start;line-height:1.5}
   .dot{width:5px;height:5px;border-radius:50%;background:#8FA8C8;margin-top:8px;flex-shrink:0}
-  .dot-dark{width:5px;height:5px;border-radius:50%;background:#0A1628;margin-top:8px;flex-shrink:0}
+  .dot-dark{width:5px;height:5px;border-radius:50%;background:#8FA8C8;margin-top:8px;flex-shrink:0}
   .card-spacer{flex:1}
   .btn-pay{display:block;width:100%;margin-top:20px;padding:12px;border-radius:6px;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-align:center;text-decoration:none;cursor:pointer;border:none}
   .btn-pay-primary{background:#fff;color:#0A1628}
@@ -50,12 +53,16 @@
   .skill-tag{font-size:11px;background:#0A1628;color:#fff;padding:5px 14px;border-radius:20px;font-family:Arial,sans-serif}
   .srv-icon{font-size:28px;margin-bottom:14px}
   @media(max-width:768px){
-    .section{padding:48px 24px}
-    nav{padding:16px 24px}
-    .nav-links{gap:12px}
+    .section{padding:48px 20px}
+    nav{padding:14px 16px}
+    .nav-links{gap:8px}
+    .nav-link{display:none}
+    #nav-ecosistema{display:none}
+    #nav-auth-area{display:block}
     .grid-2,.grid-3{grid-template-columns:1fr}
-    .h1{font-size:36px}
-    .h2{font-size:26px}
+    .h1{font-size:32px}
+    .h2{font-size:24px}
+    body{overflow-x:hidden}
   }
 </style>
 </head>
@@ -87,7 +94,7 @@
 </section>
 
 <!-- SERVICIOS -->
-<section class="section" style="background:#F5F7FA" id="servicios">
+<section class="section" style="background:#0D1F3C" id="servicios">
   <div class="label" id="srv-label">SERVICIOS</div>
   <div class="h2" style="color:#0A1628" id="srv-h2">Todo lo que necesitás para tu búsqueda</div>
   <div class="divider"></div>
@@ -168,7 +175,7 @@
 </section>
 
 <!-- SOBRE MÍ -->
-<section class="section" style="background:#F5F7FA" id="sobre">
+<section class="section" style="background:#0D1F3C" id="sobre">
   <div class="label" id="about-label">SOBRE MÍ</div>
   <div style="display:flex;gap:28px;align-items:flex-start">
     <div class="avatar">AL</div>
@@ -207,7 +214,7 @@
 </section>
 
 <!-- ECOSISTEMA CORVUS -->
-<section id="ecosistema" style="padding:80px 80px;background:#0D1F3C;border-top:1px solid rgba(255,255,255,0.08)">
+<section id="ecosistema" style="padding:80px 24px;background:#0D1F3C;border-top:1px solid rgba(255,255,255,0.08)">
   <div style="max-width:1100px;margin:0 auto">
     <div style="margin-bottom:48px">
       <p style="font-size:11px;color:#8FA8C8;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;font-family:Arial,sans-serif" id="eco-eyebrow">Ecosistema Corvus</p>

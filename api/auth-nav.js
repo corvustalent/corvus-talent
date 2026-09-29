@@ -39,7 +39,17 @@
   if (!authArea) return;
 
   if (session) {
-    // Check inactivity on page load
+    // Si es sesión temporal, limpiar al cerrar el navegador
+  if (localStorage.getItem('corvus_session_temp') === '1') {
+    window.addEventListener('beforeunload', () => {
+      localStorage.removeItem('corvus_token');
+      localStorage.removeItem('corvus_user');
+      localStorage.removeItem('corvus_session_temp');
+      localStorage.removeItem(ACTIVITY_KEY);
+    });
+  }
+
+  // Check inactivity on page load
     checkInactivity();
     updateActivity();
 

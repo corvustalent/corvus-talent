@@ -347,6 +347,15 @@ async function analyzefit() {
 
     incrementUsage();
     renderResults(result);
+    // Guardar en Supabase si hay sesión activa
+    const token = localStorage.getItem('corvus_token');
+    if (token && result.score !== undefined) {
+      fetch('/api/fit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cvBase64, jd, save: true, token })
+      }).catch(() => {}); // silent fail
+    }
 
   } catch(e) {
     clearInterval(msgInterval);

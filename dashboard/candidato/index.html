@@ -121,6 +121,21 @@
   .status-pending{background:rgba(251,191,36,0.15);color:var(--yellow)}
   .status-accepted{background:rgba(74,222,128,0.15);color:var(--green)}
   .status-rejected{background:rgba(248,113,113,0.1);color:var(--red)}
+  @media(max-width:600px){
+    main{padding:20px 16px}
+    .quick-access{grid-template-columns:1fr}
+    .form-grid{grid-template-columns:1fr}
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0}
+    .tab{white-space:nowrap;padding:10px 12px;font-size:12px}
+    nav{padding:12px 16px}
+    .nav-right{gap:8px}
+    .nav-user{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .visibility-card{flex-direction:column;align-items:flex-start}
+    #p-pais,#p-provincia,#p-ciudad{font-size:16px}
+    .solicitud-actions{flex-direction:column}
+    .btn-accept,.btn-reject{width:100%;text-align:center;padding:10px}
+    .dashboard-header h1{font-size:22px}
+  }
 </style>
 </head>
 <body>
@@ -743,6 +758,8 @@ function renderAnalyses(analyses) {
 
 // ── SAVE PROFILE ───────────────────────────────────────────
 async function saveProfile() {
+  const btn = document.querySelector('#section-perfil .btn-primary');
+  btn.disabled = true; btn.textContent = 'Guardando...';
   const payload = {
     action: 'update_profile',
     nombre: document.getElementById('p-nombre').value.trim(),
@@ -781,11 +798,16 @@ async function saveProfile() {
     }
   } catch(e) {
     showMsg('Error de conexión.', 'error');
+  } finally {
+    const btn = document.querySelector('#section-perfil .btn-primary');
+    btn.disabled = false; btn.textContent = 'Guardar perfil';
   }
 }
 
 // ── SAVE DESEOS ────────────────────────────────────────────
 async function saveDeseos() {
+  const btn = document.querySelector('#section-deseos .btn-primary');
+  btn.disabled = true; btn.textContent = 'Guardando...';
   const selectedRubros = [...document.querySelectorAll('#rubros-chips .chip.selected')]
     .map(c => c.textContent.trim().replace(/^\S+\s/, ''));
 
@@ -812,6 +834,9 @@ async function saveDeseos() {
     else showMsg(data.error || 'Error al guardar.', 'error');
   } catch(e) {
     showMsg('Error de conexión.', 'error');
+  } finally {
+    const btn = document.querySelector('#section-deseos .btn-primary');
+    btn.disabled = false; btn.textContent = 'Guardar preferencias';
   }
 }
 
@@ -871,6 +896,9 @@ function renderSolicitudes(solicitudes) {
 }
 
 async function respondSolicitud(id, status) {
+  if (status === 'rejected') {
+    if (!confirm('¿Estás seguro que querés rechazar esta solicitud?')) return;
+  }
   try {
     const res = await fetch('/api/contact', {
       method: 'POST',

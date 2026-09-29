@@ -1,3 +1,8 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
 const SYSTEM_PROMPT = `Sos un recruiter IT senior con 10 años de experiencia en selección de talento.
 Tu especialidad es redactar Job Descriptions profesionales, atractivas y efectivas.
 Usás bullets con "·" (punto centrado). Sin títulos con #. Tono según lo indicado.`;
@@ -8,7 +13,23 @@ export default async function handler(req, res) {
   }
 
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // Validar token
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
+
+  const sb = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+
+  const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.split(' ')[1]);
+  if (authError || !user) {
+    return res.status(401).json({ error: 'Sesión inválida' });
+  }
 
   const { title, industry, seniority, modality, companyType, skills, responsibilities, lang, tone } = req.body;
 
@@ -40,7 +61,6 @@ export default async function handler(req, res) {
     skills ? `Skills técnicas: ${skills}` : '',
     responsibilities ? `Responsabilidades principales: ${responsibilities}` : '',
     'Incluí estas secciones: Sobre el rol (2-3 oraciones), Responsabilidades (5-7 bullets), Requisitos (4-6 bullets), Deseable (2-3 bullets), Lo que ofrecemos (3-4 bullets).',
-    'Hacé la JD realista y atractiva para que el candidato quiera postularse.',
   ].filter(Boolean).join('\n');
 
   try {

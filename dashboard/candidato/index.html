@@ -126,6 +126,40 @@
     <p class="header-sub">Este es tu espacio en el ecosistema Corvus.</p>
   </div>
 
+  <!-- ONBOARDING -->
+  <div id="onboarding-banner" style="display:none;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px">¡Bienvenido al ecosistema Corvus! 🎉</div>
+        <div style="font-size:12px;color:var(--gray)">Completá estos pasos para sacarle el máximo provecho.</div>
+      </div>
+      <button onclick="dismissOnboarding()" style="background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+      <div id="ob-step-1" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div id="ob-check-1" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">1</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--white)">Completá tu perfil</div>
+          <div style="font-size:11px;color:var(--gray)">Nombre, rubro y ubicación</div>
+        </div>
+      </div>
+      <div id="ob-step-2" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div id="ob-check-2" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">2</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--white)">Primer análisis</div>
+          <div style="font-size:11px;color:var(--gray)">Usá Corvus Fit con una JD</div>
+        </div>
+      </div>
+      <div id="ob-step-3" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div id="ob-check-3" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">3</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--white)">Activá tu visibilidad</div>
+          <div style="font-size:11px;color:var(--gray)">Para que recruiters te encuentren</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ACCESOS RÁPIDOS -->
   <div class="quick-access">
     <a href="/corvit" class="quick-card">
@@ -422,6 +456,32 @@ async function updateVisibility() {
   }
 }
 
+function updateOnboarding(profile, analyses) {
+  const dismissed = localStorage.getItem('corvus_onboarding_dismissed');
+  if (dismissed) return;
+
+  const step1Done = !!(profile?.nombre && profile?.rubro && profile?.ubicacion);
+  const step2Done = analyses && analyses.length > 0;
+  const step3Done = !!profile?.visible;
+
+  if (step1Done && step2Done && step3Done) {
+    localStorage.setItem('corvus_onboarding_dismissed', '1');
+    return;
+  }
+
+  document.getElementById('onboarding-banner').style.display = 'block';
+
+  const checkStyle = 'background:rgba(74,222,128,0.15);border-color:#4ADE80;color:#4ADE80;font-size:13px';
+  if (step1Done) document.getElementById('ob-check-1').style.cssText = checkStyle, document.getElementById('ob-check-1').textContent = '✓', document.getElementById('ob-step-1').style.opacity = '0.6';
+  if (step2Done) document.getElementById('ob-check-2').style.cssText = checkStyle, document.getElementById('ob-check-2').textContent = '✓', document.getElementById('ob-step-2').style.opacity = '0.6';
+  if (step3Done) document.getElementById('ob-check-3').style.cssText = checkStyle, document.getElementById('ob-check-3').textContent = '✓', document.getElementById('ob-step-3').style.opacity = '0.6';
+}
+
+function dismissOnboarding() {
+  localStorage.setItem('corvus_onboarding_dismissed', '1');
+  document.getElementById('onboarding-banner').style.display = 'none';
+}
+
 // ── LOAD PROFILE ───────────────────────────────────────────
 async function loadProfile() {
   try {
@@ -480,6 +540,9 @@ async function loadProfile() {
     if (data.analyses && data.analyses.length > 0) {
       renderAnalyses(data.analyses);
     }
+
+    // Onboarding
+    updateOnboarding(data.profile, data.analyses);
 
   } catch(e) {
     console.error('Error loading profile:', e);

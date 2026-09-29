@@ -58,9 +58,9 @@
 
     authArea.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px">
-        <a href="${dashUrl}" style="display:flex;align-items:center;gap:8px;text-decoration:none">
-          <div style="width:30px;height:30px;border-radius:50%;background:rgba(143,168,200,0.2);border:1px solid rgba(143,168,200,0.4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#8FA8C8;flex-shrink:0">${initial}</div>
-          <span style="font-size:13px;color:#8FA8C8;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${displayName}</span>
+        <a href="${dashUrl}" style="display:flex;align-items:center;gap:8px;text-decoration:none;background:rgba(143,168,200,0.1);border:1px solid rgba(143,168,200,0.25);border-radius:20px;padding:5px 12px 5px 6px">
+          <div style="width:24px;height:24px;border-radius:50%;background:rgba(143,168,200,0.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#8FA8C8;flex-shrink:0">${initial}</div>
+          <span style="font-size:12px;color:#8FA8C8;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Mi perfil</span>
         </a>
         <button onclick="(${logout.toString()})()" style="background:none;border:1px solid rgba(143,168,200,0.2);border-radius:6px;padding:5px 10px;color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;font-family:inherit">Salir</button>
       </div>

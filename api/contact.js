@@ -20,20 +20,30 @@ export default async function handler(req, res) {
 
   const { data: userProfile } = await sb.from('profiles').select('role, company').eq('id', user.id).single();
 
-  // ── GET: listar solicitudes del candidato ─────────────────
+  // ── GET: listar solicitudes del candidato o enviadas por recruiter ─
   if (req.method === 'GET') {
     const { action } = req.query;
-    if (action !== 'list') return res.status(400).json({ error: 'Acción inválida' });
 
-    if (userProfile?.role !== 'candidato') return res.status(403).json({ error: 'Solo candidatos' });
+    if (action === 'list') {
+      if (userProfile?.role !== 'candidato') return res.status(403).json({ error: 'Solo candidatos' });
+      const { data: solicitudes } = await sb
+        .from('contact_requests')
+        .select('id, company, message, status, created_at')
+        .eq('candidate_id', user.id)
+        .order('created_at', { ascending: false });
+      return res.status(200).json({ solicitudes: solicitudes || [] });
+    }
 
-    const { data: solicitudes } = await sb
-      .from('contact_requests')
-      .select('id, company, message, status, created_at')
-      .eq('candidate_id', user.id)
-      .order('created_at', { ascending: false });
+    if (action === 'sent') {
+      if (userProfile?.role !== 'recruiter') return res.status(403).json({ error: 'Solo recruiters' });
+      const { data: sent } = await sb
+        .from('contact_requests')
+        .select('candidate_id, status')
+        .eq('recruiter_id', user.id);
+      return res.status(200).json({ sent: sent || [] });
+    }
 
-    return res.status(200).json({ solicitudes: solicitudes || [] });
+    return res.status(400).json({ error: 'Acción inválida' });
   }
 
   // ── POST ──────────────────────────────────────────────────

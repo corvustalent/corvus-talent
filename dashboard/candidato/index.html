@@ -259,7 +259,21 @@
       </div>
       <div class="field full">
         <label>Ubicación</label>
-        <input type="text" id="p-ubicacion" placeholder="Ciudad, Provincia">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <select id="p-pais" onchange="updateProvincias()">
+            <option value="">País...</option>
+            <option value="AR">Argentina</option>
+            <option value="BR">Brasil</option>
+            <option value="otro">Otro</option>
+          </select>
+          <select id="p-provincia" onchange="updateCiudades()" disabled>
+            <option value="">Provincia/Estado...</option>
+          </select>
+          <select id="p-ciudad" disabled>
+            <option value="">Ciudad...</option>
+          </select>
+        </div>
+        <input type="text" id="p-ubicacion-otro" placeholder="Ingresá tu ciudad y país" style="display:none;margin-top:8px">
       </div>
     </div>
 
@@ -439,6 +453,143 @@ if (user.role === 'recruiter') {
 document.getElementById('nav-email').textContent = user.email || '';
 document.getElementById('user-name').textContent = user.nombre || user.email?.split('@')[0] || 'candidato';
 
+// ── DATOS DE UBICACIÓN ─────────────────────────────────────
+const LOCATION_DATA = {
+  AR: {
+    name: 'Argentina',
+    provincias: {
+      'Buenos Aires': ['Buenos Aires (CABA)', 'La Plata', 'Mar del Plata', 'Quilmes', 'Lanús', 'Lomas de Zamora', 'Morón', 'San Isidro', 'Tigre', 'Bahía Blanca', 'Tandil', 'Otra'],
+      'Córdoba': ['Córdoba', 'Villa María', 'Río Cuarto', 'San Francisco', 'Alta Gracia', 'Otra'],
+      'Santa Fe': ['Rosario', 'Santa Fe', 'Rafaela', 'Venado Tuerto', 'Villa Gobernador Gálvez', 'Otra'],
+      'Mendoza': ['Mendoza', 'San Rafael', 'Godoy Cruz', 'Luján de Cuyo', 'Otra'],
+      'Tucumán': ['San Miguel de Tucumán', 'Tafí Viejo', 'Otra'],
+      'Entre Ríos': ['Paraná', 'Concordia', 'Gualeguaychú', 'Otra'],
+      'Salta': ['Salta', 'San Ramón de la Nueva Orán', 'Otra'],
+      'Misiones': ['Posadas', 'Oberá', 'Eldorado', 'Otra'],
+      'Chaco': ['Resistencia', 'Presidencia Roque Sáenz Peña', 'Otra'],
+      'Corrientes': ['Corrientes', 'Goya', 'Otra'],
+      'Santiago del Estero': ['Santiago del Estero', 'La Banda', 'Otra'],
+      'San Juan': ['San Juan', 'Rawson', 'Otra'],
+      'Jujuy': ['San Salvador de Jujuy', 'Palpalá', 'Otra'],
+      'Río Negro': ['Viedma', 'Bariloche', 'Cipolletti', 'Otra'],
+      'Neuquén': ['Neuquén', 'Zapala', 'Otra'],
+      'Formosa': ['Formosa', 'Otra'],
+      'Chubut': ['Rawson', 'Comodoro Rivadavia', 'Trelew', 'Otra'],
+      'San Luis': ['San Luis', 'Villa Mercedes', 'Otra'],
+      'Catamarca': ['San Fernando del Valle de Catamarca', 'Otra'],
+      'La Rioja': ['La Rioja', 'Otra'],
+      'La Pampa': ['Santa Rosa', 'General Pico', 'Otra'],
+      'Santa Cruz': ['Río Gallegos', 'Caleta Olivia', 'Otra'],
+      'Tierra del Fuego': ['Ushuaia', 'Río Grande', 'Otra'],
+    }
+  },
+  BR: {
+    name: 'Brasil',
+    provincias: {
+      'São Paulo': ['São Paulo', 'Campinas', 'Santos', 'São Bernardo do Campo', 'Guarulhos', 'Outra'],
+      'Rio de Janeiro': ['Rio de Janeiro', 'Niterói', 'Nova Iguaçu', 'Outra'],
+      'Minas Gerais': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Outra'],
+      'Bahia': ['Salvador', 'Feira de Santana', 'Outra'],
+      'Rio Grande do Sul': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Outra'],
+      'Paraná': ['Curitiba', 'Londrina', 'Maringá', 'Outra'],
+      'Pernambuco': ['Recife', 'Caruaru', 'Outra'],
+      'Ceará': ['Fortaleza', 'Caucaia', 'Outra'],
+      'Pará': ['Belém', 'Ananindeua', 'Outra'],
+      'Goiás': ['Goiânia', 'Aparecida de Goiânia', 'Outra'],
+      'Amazonas': ['Manaus', 'Parintins', 'Outra'],
+      'Santa Catarina': ['Florianópolis', 'Joinville', 'Blumenau', 'Outra'],
+      'Distrito Federal': ['Brasília'],
+      'Espírito Santo': ['Vitória', 'Vila Velha', 'Outra'],
+      'Mato Grosso do Sul': ['Campo Grande', 'Dourados', 'Outra'],
+    }
+  }
+};
+
+function updateProvincias() {
+  const pais = document.getElementById('p-pais').value;
+  const provSelect = document.getElementById('p-provincia');
+  const ciudadSelect = document.getElementById('p-ciudad');
+  const otroInput = document.getElementById('p-ubicacion-otro');
+
+  provSelect.innerHTML = '<option value="">Provincia/Estado...</option>';
+  ciudadSelect.innerHTML = '<option value="">Ciudad...</option>';
+  provSelect.disabled = true;
+  ciudadSelect.disabled = true;
+  otroInput.style.display = 'none';
+
+  if (pais === 'otro') {
+    otroInput.style.display = 'block';
+    return;
+  }
+
+  if (pais && LOCATION_DATA[pais]) {
+    const provincias = Object.keys(LOCATION_DATA[pais].provincias);
+    provincias.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p; opt.textContent = p;
+      provSelect.appendChild(opt);
+    });
+    provSelect.disabled = false;
+  }
+}
+
+function updateCiudades() {
+  const pais = document.getElementById('p-pais').value;
+  const provincia = document.getElementById('p-provincia').value;
+  const ciudadSelect = document.getElementById('p-ciudad');
+
+  ciudadSelect.innerHTML = '<option value="">Ciudad...</option>';
+  ciudadSelect.disabled = true;
+
+  if (pais && provincia && LOCATION_DATA[pais]?.provincias[provincia]) {
+    const ciudades = LOCATION_DATA[pais].provincias[provincia];
+    ciudades.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      ciudadSelect.appendChild(opt);
+    });
+    ciudadSelect.disabled = false;
+  }
+}
+
+function getUbicacion() {
+  const pais = document.getElementById('p-pais').value;
+  if (pais === 'otro') return document.getElementById('p-ubicacion-otro').value.trim();
+  if (!pais) return '';
+  const provincia = document.getElementById('p-provincia').value;
+  const ciudad = document.getElementById('p-ciudad').value;
+  const paisName = LOCATION_DATA[pais]?.name || pais;
+  return [ciudad, provincia, paisName].filter(Boolean).join(', ');
+}
+
+function setUbicacion(ubicacion) {
+  if (!ubicacion) return;
+  // Intentar parsear "Ciudad, Provincia, País"
+  const parts = ubicacion.split(',').map(s => s.trim());
+  if (parts.length >= 3) {
+    const paisName = parts[parts.length - 1];
+    const paisCode = Object.entries(LOCATION_DATA).find(([k, v]) => v.name === paisName)?.[0];
+    if (paisCode) {
+      document.getElementById('p-pais').value = paisCode;
+      updateProvincias();
+      const provincia = parts[parts.length - 2];
+      if (LOCATION_DATA[paisCode]?.provincias[provincia]) {
+        document.getElementById('p-provincia').value = provincia;
+        document.getElementById('p-provincia').disabled = false;
+        updateCiudades();
+        const ciudad = parts[0];
+        document.getElementById('p-ciudad').value = ciudad;
+        document.getElementById('p-ciudad').disabled = false;
+        return;
+      }
+    }
+  }
+  // Fallback: campo libre
+  document.getElementById('p-pais').value = 'otro';
+  updateProvincias();
+  document.getElementById('p-ubicacion-otro').value = ubicacion;
+}
+
 // ── TABS ───────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
@@ -524,7 +675,7 @@ async function loadProfile() {
     if (p.apellido) document.getElementById('p-apellido').value = p.apellido;
     if (p.rubro) document.getElementById('p-rubro').value = p.rubro;
     if (p.seniority) document.getElementById('p-seniority').value = p.seniority;
-    if (p.ubicacion) document.getElementById('p-ubicacion').value = p.ubicacion;
+    if (p.ubicacion) setUbicacion(p.ubicacion);
     if (p.email_contacto) document.getElementById('p-email').value = p.email_contacto;
     if (p.telefono) document.getElementById('p-telefono').value = p.telefono;
     if (p.linkedin) document.getElementById('p-linkedin').value = p.linkedin;
@@ -598,7 +749,7 @@ async function saveProfile() {
     apellido: document.getElementById('p-apellido').value.trim(),
     rubro: document.getElementById('p-rubro').value,
     seniority: document.getElementById('p-seniority').value,
-    ubicacion: document.getElementById('p-ubicacion').value.trim(),
+    ubicacion: getUbicacion(),
     email_contacto: document.getElementById('p-email').value.trim(),
     telefono: document.getElementById('p-telefono').value.trim(),
     linkedin: document.getElementById('p-linkedin').value.trim(),

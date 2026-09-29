@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Métricas — Corvus Talent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0A1628;--navy-mid:#142038;--slate:#8FA8C8;--white:#FFFFFF;--gray:#9CA3AF;--border:rgba(143,168,200,0.2);--green:#4ADE80;--yellow:#FBBF24;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;-webkit-font-smoothing:antialiased}
+  nav{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--navy);z-index:100}
+  .nav-brand{font-size:15px;font-weight:700;letter-spacing:1px;color:var(--white);text-decoration:none}
+  .nav-brand span{color:var(--slate)}
+  .nav-badge{font-size:11px;color:var(--slate);background:rgba(143,168,200,0.1);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+  main{max-width:900px;margin:0 auto;padding:32px 24px}
+  h1{font-size:24px;font-weight:700;margin-bottom:6px}
+  .subtitle{font-size:13px;color:var(--gray);margin-bottom:32px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:32px}
+  .stat-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .stat-num{font-size:36px;font-weight:700;color:var(--slate);margin-bottom:4px}
+  .stat-num.green{color:var(--green)}
+  .stat-label{font-size:12px;color:var(--gray)}
+  .section-title{font-size:12px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;margin-bottom:32px}
+  th{font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+  td{font-size:13px;color:rgba(255,255,255,0.8);padding:10px 12px;border-bottom:1px solid rgba(143,168,200,0.08)}
+  tr:hover td{background:rgba(143,168,200,0.04)}
+  .loading{color:var(--gray);font-size:13px;padding:20px 0}
+  .refresh-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--slate);font-family:inherit;font-size:12px;cursor:pointer;margin-left:12px}
+  .refresh-btn:hover{border-color:var(--slate);color:var(--white)}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
+  <span class="nav-badge">Panel de métricas</span>
+</nav>
+<main>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+    <h1>Métricas del ecosistema</h1>
+    <button class="refresh-btn" onclick="loadMetrics()">↻ Actualizar</button>
+  </div>
+  <p class="subtitle" id="last-updated">Cargando...</p>
+
+  <div class="grid" id="stats-grid">
+    <div class="loading">Cargando métricas...</div>
+  </div>
+
+  <div class="section-title">Top rubros</div>
+  <table id="rubros-table">
+    <tr><th>Rubro</th><th>Candidatos</th></tr>
+    <tr><td colspan="2" class="loading">Cargando...</td></tr>
+  </table>
+
+  <div class="section-title">Registros recientes (últimos 30 días)</div>
+  <table id="registros-table">
+    <tr><th>Fecha</th><th>Registros</th></tr>
+    <tr><td colspan="2" class="loading">Cargando...</td></tr>
+  </table>
+</main>
+
+<script>
+// Verificar que es recruiter de Corvus Talent
+const userRaw = localStorage.getItem('corvus_user');
+const token = localStorage.getItem('corvus_token');
+if (!userRaw || !token) { window.location.href = '/auth'; }
+const user = JSON.parse(userRaw || '{}');
+if (user.email !== 'corvus.talent@gmail.com') {
+  window.location.href = '/';
+}
+
+async function loadMetrics() {
+  try {
+    const res = await fetch('/api/metrics', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) { console.error(data.error); return; }
+
+    document.getElementById('last-updated').textContent = 
+      'Actualizado: ' + new Date().toLocaleString('es-AR');
+
+    const m = data.metrics;
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><div class="stat-num">${m.total_candidatos || 0}</div><div class="stat-label">Candidatos registrados</div></div>
+      <div class="stat-card"><div class="stat-num">${m.total_recruiters || 0}</div><div class="stat-label">Recruiters registrados</div></div>
+      <div class="stat-card"><div class="stat-num green">${m.candidatos_visibles || 0}</div><div class="stat-label">Candidatos visibles</div></div>
+      <div class="stat-card"><div class="stat-num">${m.total_analisis || 0}</div><div class="stat-label">Análisis Corvus Fit totales</div></div>
+      <div class="stat-card"><div class="stat-num green">${m.analisis_ultima_semana || 0}</div><div class="stat-label">Análisis última semana</div></div>
+      <div class="stat-card"><div class="stat-num">${m.score_promedio || '—'}${m.score_promedio ? '%' : ''}</div><div class="stat-label">Score promedio</div></div>
+      <div class="stat-card"><div class="stat-num green">${m.registros_ultima_semana || 0}</div><div class="stat-label">Registros última semana</div></div>
+      <div class="stat-card"><div class="stat-num">${m.total_solicitudes_contacto || 0}</div><div class="stat-label">Solicitudes de contacto</div></div>
+    `;
+
+    if (data.rubros && data.rubros.length > 0) {
+      document.getElementById('rubros-table').innerHTML = `
+        <tr><th>Rubro</th><th>Candidatos</th></tr>
+        ${data.rubros.map(r => `<tr><td>${r.rubro}</td><td>${r.total}</td></tr>`).join('')}
+      `;
+    } else {
+      document.getElementById('rubros-table').innerHTML = '<tr><th>Rubro</th><th>Candidatos</th></tr><tr><td colspan="2" style="color:var(--gray);padding:12px">Sin datos aún</td></tr>';
+    }
+
+    if (data.registros && data.registros.length > 0) {
+      document.getElementById('registros-table').innerHTML = `
+        <tr><th>Fecha</th><th>Registros</th></tr>
+        ${data.registros.map(r => `<tr><td>${new Date(r.fecha).toLocaleDateString('es-AR')}</td><td>${r.registros}</td></tr>`).join('')}
+      `;
+    } else {
+      document.getElementById('registros-table').innerHTML = '<tr><th>Fecha</th><th>Registros</th></tr><tr><td colspan="2" style="color:var(--gray);padding:12px">Sin datos aún</td></tr>';
+    }
+
+  } catch(e) {
+    console.error('Error loading metrics:', e);
+  }
+}
+
+loadMetrics();
+</script>
+</body>
+</html>

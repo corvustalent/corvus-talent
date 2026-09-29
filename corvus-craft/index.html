@@ -400,9 +400,13 @@ async function callAI(data) {
     return result.text || '';
   }
   // Backend serverless — manda solo parámetros, el prompt se arma en el servidor
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   const response = await fetch('/api/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + (token || '')
+    },
     body: JSON.stringify({
       title: data.title,
       industry: data.industry,

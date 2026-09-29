@@ -361,6 +361,8 @@ function openModal(id, name) {
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('visible');
   selectedCandidateId = null;
+  const sendBtn = document.querySelector('.btn-send');
+  if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Enviar solicitud'; }
 }
 
 async function sendContact() {
@@ -371,6 +373,10 @@ async function sendContact() {
     el.className = 'msg error';
     return;
   }
+
+  const sendBtn = document.querySelector('.btn-send');
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Enviando...';
 
   try {
     const res = await fetch('/api/contact', {
@@ -388,11 +394,15 @@ async function sendContact() {
       const el = document.getElementById('modal-msg');
       el.textContent = data.error || 'Error al enviar.';
       el.className = 'msg error';
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Enviar solicitud';
     }
   } catch(e) {
     const el = document.getElementById('modal-msg');
     el.textContent = 'Error de conexión.';
     el.className = 'msg error';
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Enviar solicitud';
   }
 }
 

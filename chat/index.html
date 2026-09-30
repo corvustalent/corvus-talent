@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat — Corvus Talent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
+    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
+    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
+    --green:#4ADE80;--red:#F87171;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+  nav{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:var(--navy);z-index:100}
+  .nav-brand{font-size:15px;font-weight:700;letter-spacing:1px;color:var(--white);text-decoration:none}
+  .nav-brand span{color:var(--slate)}
+  .nav-right{display:flex;align-items:center;gap:16px}
+  .nav-user{font-size:13px;color:var(--gray)}
+
+  .container{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 65px)}
+  .sidebar{border-right:1px solid var(--border);overflow-y:auto}
+  .main{overflow-y:auto}
+
+  .sidebar-header{padding:16px;border-bottom:1px solid var(--border)}
+  .sidebar-title{font-size:14px;font-weight:600;color:var(--slate);text-transform:uppercase;margin-bottom:12px}
+  .status-filter{display:flex;gap:8px}
+  .filter-btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--gray);font-size:12px;cursor:pointer;transition:all 0.15s}
+  .filter-btn.active{border-color:var(--slate);color:var(--white);background:rgba(143,168,200,0.1)}
+
+  .conversations-list{padding:8px}
+  .conv-item{padding:12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:all 0.15s;border:1px solid transparent}
+  .conv-item:hover{background:var(--navy-mid)}
+  .conv-item.active{background:var(--navy-mid);border-color:var(--slate)}
+  .conv-name{font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px}
+  .conv-job{font-size:11px;color:var(--gray);margin-bottom:4px}
+  .conv-preview{font-size:11px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+  .conv-date{font-size:10px;color:var(--gray)}
+  .conv-badge{display:inline-block;background:var(--slate);color:var(--navy);border-radius:10px;padding:2px 6px;font-size:10px;font-weight:700;margin-left:4px}
+
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;color:var(--gray)}
+  .empty-state h2{font-size:24px;color:var(--white);margin-bottom:8px}
+  .empty-state p{font-size:14px;line-height:1.6;max-width:400px}
+
+  .conversation-view{display:flex;flex-direction:column;height:100%;background:var(--navy)}
+  .conv-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .conv-header-info h2{font-size:16px;color:var(--white);margin-bottom:3px}
+  .conv-header-info p{font-size:12px;color:var(--gray)}
+
+  .messages-container{flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
+  .message{display:flex;gap:10px;margin-bottom:4px}
+  .message.own{justify-content:flex-end}
+  .msg-bubble{max-width:70%;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.5;word-wrap:break-word}
+  .message.own .msg-bubble{background:var(--slate);color:var(--navy);border-radius:10px 2px 10px 10px}
+  .message.other .msg-bubble{background:var(--navy-mid);color:var(--white);border:1px solid var(--border);border-radius:2px 10px 10px 10px}
+  .msg-time{font-size:10px;color:var(--gray);margin-top:2px}
+
+  .input-container{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px}
+  .input-field{flex:1;display:flex;gap:8px}
+  input[type=text]{flex:1;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none}
+  input:focus{border-color:var(--slate)}
+  .btn-send{background:var(--slate);color:var(--navy);border:none;border-radius:6px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s}
+  .btn-send:hover{opacity:0.85}
+  .btn-send:disabled{opacity:0.5;cursor:not-allowed}
+
+  .loading{text-align:center;padding:16px;color:var(--gray);font-size:13px}
+
+  @media(max-width:768px){
+    .container{grid-template-columns:1fr}
+    .sidebar{display:none}
+    .sidebar.mobile-open{display:block;position:absolute;left:0;top:65px;width:100%;height:calc(100vh - 65px);background:var(--navy);z-index:99}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-email"></span>
+  </div>
+</nav>
+
+<div class="container">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Mis conversaciones</div>
+      <div class="status-filter">
+        <button class="filter-btn active" onclick="filterConversations('all')">Todas</button>
+        <button class="filter-btn" onclick="filterConversations('active')">Activas</button>
+      </div>
+    </div>
+    <div class="conversations-list" id="conversations-list">
+      <div class="loading">Cargando...</div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-area">
+    <div class="empty-state">
+      <h2>👋 Bienvenido a Corvus Chat</h2>
+      <p>Selecciona una conversación de la izquierda para empezar a comunicarte con recruiters o candidatos sobre oportunidades laborales.</p>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// AUTH
+const token = localStorage.getItem('corvus_token');
+const userRaw = localStorage.getItem('corvus_user');
+
+if (!token || !userRaw) {
+  window.location.href = '/auth';
+}
+
+const user = JSON.parse(userRaw);
+document.getElementById('nav-email').textContent = user.email;
+
+// Supabase — ACTUALIZA ESTOS VALORES
+const supabase = window.supabase.createClient(
+  'https://YOUR_PROJECT.supabase.co',  // ← Reemplaza con tu Project URL
+  'YOUR_ANON_KEY'                       // ← Reemplaza con tu Anon Key
+);
+
+let currentConversationId = null;
+let currentFilter = 'all';
+
+async function loadConversations() {
+  try {
+    const query = currentFilter === 'all' ? '' : `?status=active`;
+    const res = await fetch(`/api/chat/conversations${query}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('Error:', data);
+      return;
+    }
+
+    renderConversations(data.conversations);
+  } catch (e) {
+    console.error('Load conversations error:', e);
+  }
+}
+
+function renderConversations(conversations) {
+  const list = document.getElementById('conversations-list');
+  
+  if (!conversations.length) {
+    list.innerHTML = '<div class="loading">Sin conversaciones</div>';
+    return;
+  }
+
+  list.innerHTML = conversations.map(conv => `
+    <div class="conv-item ${currentConversationId === conv.id ? 'active' : ''}" 
+      onclick="selectConversation('${conv.id}', '${conv.other_user.nombre || conv.other_user.email}', '${conv.job_title}')">
+      <div class="conv-name">
+        ${conv.other_user.nombre || 'Contacto'}
+        ${conv.unread_count > 0 ? `<span class="conv-badge">${conv.unread_count}</span>` : ''}
+      </div>
+      <div class="conv-job">${conv.job_title}</div>
+      <div class="conv-date">${new Date(conv.updated_at).toLocaleDateString('es-AR')}</div>
+    </div>
+  `).join('');
+}
+
+function selectConversation(id, name, jobTitle) {
+  currentConversationId = id;
+  loadConversations();
+  loadMessages(id, name, jobTitle);
+}
+
+async function loadMessages(conversationId, otherUserName, jobTitle) {
+  try {
+    const res = await fetch(`/api/chat/messages?conversation_id=${conversationId}&limit=50`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (!res.ok) return;
+
+    renderChatView(conversationId, otherUserName, jobTitle, data.messages);
+  } catch (e) {
+    console.error('Load messages error:', e);
+  }
+}
+
+function renderChatView(conversationId, otherUserName, jobTitle, messages) {
+  const main = document.getElementById('main-area');
+  
+  main.innerHTML = `
+    <div class="conversation-view">
+      <div class="conv-header">
+        <div class="conv-header-info">
+          <h2>${otherUserName}</h2>
+          <p>${jobTitle}</p>
+        </div>
+      </div>
+
+      <div class="messages-container" id="messages-container">
+        ${messages.map(msg => `
+          <div class="message ${msg.sender_id === user.id ? 'own' : 'other'}">
+            <div>
+              ${msg.sender_id !== user.id ? `<div style="font-size:11px;color:var(--gray);margin-bottom:3px">${msg.sender.nombre || msg.sender.email}</div>` : ''}
+              <div class="msg-bubble">${escapeHtml(msg.content)}</div>
+              <div class="msg-time">${new Date(msg.created_at).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="input-container">
+        <div class="input-field">
+          <input type="text" id="message-input" placeholder="Escribe tu mensaje..." 
+            onkeypress="if(event.key==='Enter') sendMessage('${conversationId}')">
+          <button class="btn-send" onclick="sendMessage('${conversationId}')">Enviar</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const container = document.getElementById('messages-container');
+    container.scrollTop = container.scrollHeight;
+    document.getElementById('message-input').focus();
+  }, 100);
+
+  subscribeToMessages(conversationId);
+}
+
+function sendMessage(conversationId) {
+  const input = document.getElementById('message-input');
+  const content = input.value.trim();
+
+  if (!content) return;
+
+  input.disabled = true;
+
+  fetch('/api/chat/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ conversation_id: conversationId, content })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      input.value = '';
+      loadMessages(conversationId, '', '');
+    }
+  })
+  .finally(() => input.disabled = false);
+}
+
+function subscribeToMessages(conversationId) {
+  supabase
+    .channel(`messages:${conversationId}`)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `conversation_id=eq.${conversationId}`
+    }, (payload) => {
+      loadMessages(conversationId, '', '');
+    })
+    .subscribe();
+}
+
+function filterConversations(status) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  loadConversations();
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+loadConversations();
+setInterval(loadConversations, 5000);
+</script>
+</body>
+</html>

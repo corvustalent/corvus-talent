@@ -100,12 +100,12 @@
   .msg.error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);display:block}
 
   /* QUICK ACCESS */
-  .quick-access{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
-  .quick-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:all 0.15s;display:flex;align-items:center;gap:12px}
-  .quick-card:hover{border-color:var(--slate);transform:translateY(-1px)}
-  .quick-icon{font-size:22px}
-  .quick-name{font-size:13px;font-weight:600;color:var(--white)}
-  .quick-desc{font-size:11px;color:var(--gray);margin-top:2px}
+  .quick-access{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
+  .quick-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:all 0.15s;display:flex;align-items:flex-start;gap:12px}
+  .quick-card:hover{border-color:var(--slate);transform:translateY(-2px);box-shadow:0 4px 12px rgba(143,168,200,0.1)}
+  .quick-icon{font-size:28px;flex-shrink:0}
+  .quick-name{font-size:13px;font-weight:700;color:var(--white)}
+  .quick-desc{font-size:11px;color:var(--gray);margin-top:3px;line-height:1.4}
 
   .solicitud-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:10px}
   .solicitud-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
@@ -124,6 +124,10 @@
   @media(max-width:600px){
     main{padding:20px 16px}
     .quick-access{grid-template-columns:1fr}
+    .quick-card{padding:12px;gap:10px}
+    .quick-icon{font-size:24px}
+    .quick-name{font-size:12px}
+    .quick-desc{font-size:10px}
     .form-grid{grid-template-columns:1fr}
     .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0}
     .tab{white-space:nowrap;padding:10px 12px;font-size:12px}
@@ -131,6 +135,8 @@
     .nav-right{gap:8px}
     .nav-user{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .visibility-card{flex-direction:column;align-items:flex-start}
+    #ubicacion-desktop{display:none !important}
+    #p-ubicacion-search{display:block !important}
     #p-pais,#p-provincia,#p-ciudad{font-size:16px}
     .solicitud-actions{flex-direction:column}
     .btn-accept,.btn-reject{width:100%;text-align:center;padding:10px}
@@ -188,22 +194,38 @@
     </div>
   </div>
 
-  <!-- ACCESOS RÁPIDOS -->
-  <div class="quick-access">
-    <a href="/corvit" class="quick-card">
-      <span class="quick-icon">🏆</span>
-      <div>
-        <div class="quick-name">Corvit</div>
-        <div class="quick-desc">Practicá para tu entrevista</div>
-      </div>
-    </a>
-    <a href="/corvus-fit" class="quick-card">
-      <span class="quick-icon">🧩</span>
-      <div>
-        <div class="quick-name">Corvus Fit</div>
-        <div class="quick-desc">Analizá tu compatibilidad</div>
-      </div>
-    </a>
+  <!-- ACCESOS RÁPIDOS A HERRAMIENTAS -->
+  <div style="margin-bottom:28px">
+    <div style="font-size:12px;font-weight:600;color:var(--slate);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Nuestras herramientas</div>
+    <div class="quick-access">
+      <!-- CORVIT -->
+      <a href="/corvit" class="quick-card">
+        <span class="quick-icon">🏆</span>
+        <div>
+          <div class="quick-name">Corvit</div>
+          <div class="quick-desc">Simulador de entrevistas</div>
+          <div style="font-size:10px;color:var(--slate);margin-top:4px">14 rubros • Feedback IA</div>
+        </div>
+      </a>
+      <!-- CORVUS FIT -->
+      <a href="/corvus-fit" class="quick-card">
+        <span class="quick-icon">🧩</span>
+        <div>
+          <div class="quick-name">Corvus Fit</div>
+          <div class="quick-desc">CV vs Job Description</div>
+          <div style="font-size:10px;color:var(--slate);margin-top:4px">Score 0-100 • Análisis</div>
+        </div>
+      </a>
+      <!-- CORVUS CRAFT -->
+      <a href="/corvus-craft" class="quick-card">
+        <span class="quick-icon">✦</span>
+        <div>
+          <div class="quick-name">Corvus Craft</div>
+          <div class="quick-desc">Generador de JDs</div>
+          <div style="font-size:10px;color:var(--slate);margin-top:4px">Para recruiters • IA</div>
+        </div>
+      </a>
+    </div>
   </div>
 
   <!-- VISIBILIDAD -->
@@ -274,19 +296,29 @@
       </div>
       <div class="field full">
         <label>Ubicación</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <select id="p-pais" onchange="updateProvincias()">
-            <option value="">País...</option>
-            <option value="AR">Argentina</option>
-            <option value="BR">Brasil</option>
-            <option value="otro">Otro</option>
-          </select>
-          <select id="p-provincia" onchange="updateCiudades()" disabled>
-            <option value="">Provincia/Estado...</option>
-          </select>
-          <select id="p-ciudad" disabled>
-            <option value="">Ciudad...</option>
-          </select>
+        <div id="ubicacion-container">
+          <!-- Desktop: 3 selectores en cascada -->
+          <div id="ubicacion-desktop" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <select id="p-pais" onchange="updateProvincias()">
+              <option value="">País...</option>
+              <option value="AR">Argentina</option>
+              <option value="BR">Brasil</option>
+              <option value="otro">Otro</option>
+            </select>
+            <select id="p-provincia" onchange="updateCiudades()" disabled>
+              <option value="">Provincia/Estado...</option>
+            </select>
+            <select id="p-ciudad" disabled>
+              <option value="">Ciudad...</option>
+            </select>
+          </div>
+          <!-- Mobile: Input text con autocomplete -->
+          <input type="text" id="p-ubicacion-search" 
+            placeholder="Ej: Rosario, Argentina" 
+            style="display:none;width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--navy);color:var(--white);font-family:inherit;font-size:13px"
+            onkeyup="suggestUbicaciones()">
+          <div id="ubicacion-suggestions" 
+            style="display:none;margin-top:8px;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto"></div>
         </div>
         <input type="text" id="p-ubicacion-otro" placeholder="Ingresá tu ciudad y país" style="display:none;margin-top:8px">
       </div>
@@ -431,9 +463,11 @@
   <div class="section" id="section-analisis">
     <div class="section-title">Historial de Corvus Fit</div>
     <div id="analyses-list">
-      <div class="empty-state">
-        <p>Todavía no hiciste ningún análisis de compatibilidad.</p>
-        <a href="/corvus-fit" class="btn btn-ghost" style="text-decoration:none">Ir a Corvus Fit 🧩</a>
+      <div class="empty-state" style="padding:48px 20px;text-align:center;background:var(--navy-mid);border:2px dashed var(--border);border-radius:12px;margin-bottom:16px">
+        <div style="font-size:42px;margin-bottom:12px">🧩</div>
+        <p style="font-size:14px;margin-bottom:8px;font-weight:600;color:var(--white)">No hay análisis aún</p>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Hacé tu primer análisis de compatibilidad y descubrí cuánto te ajustás a cada posición.</p>
+        <a href="/corvus-fit" class="btn btn-primary" style="text-decoration:none;display:inline-flex">Ir a Corvus Fit 🧩</a>
       </div>
     </div>
   </div>
@@ -441,9 +475,11 @@
   <div class="section" id="section-solicitudes">
     <div class="section-title">Solicitudes de contacto</div>
     <div id="solicitudes-list">
-      <div class="empty-state">
-        <p>Todavía no recibiste solicitudes de contacto.</p>
-        <span style="font-size:12px;color:var(--gray)">Activá tu visibilidad para que los recruiters puedan encontrarte.</span>
+      <div class="empty-state" style="padding:48px 20px;text-align:center;background:var(--navy-mid);border:2px dashed var(--border);border-radius:12px;margin-bottom:16px">
+        <div style="font-size:42px;margin-bottom:12px">📧</div>
+        <p style="font-size:14px;margin-bottom:8px;font-weight:600;color:var(--white)">Esperando contactos</p>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Cuando los recruiters vean tu perfil, podrán contactarte. Activá tu visibilidad para acelerar el proceso.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('visibility-toggle').click();window.scrollTo({top:0,behavior:'smooth'})" style="display:inline-flex">Activar visibilidad ⚡</button>
       </div>
     </div>
   </div>
@@ -568,6 +604,14 @@ function updateCiudades() {
 }
 
 function getUbicacion() {
+  const search = document.getElementById('p-ubicacion-search');
+  
+  // Si estamos en mobile y el input está visible, usar ese
+  if (search && search.style.display !== 'none' && search.value.trim()) {
+    return search.value.trim();
+  }
+  
+  // Si no, usar selectores en cascada
   const pais = document.getElementById('p-pais').value;
   if (pais === 'otro') return document.getElementById('p-ubicacion-otro').value.trim();
   if (!pais) return '';
@@ -919,6 +963,78 @@ function logout() {
   localStorage.removeItem('corvus_token');
   localStorage.removeItem('corvus_user');
   window.location.href = '/';
+}
+
+// ── MOBILE UBICACIÓN ───────────────────────────────────────
+window.addEventListener('resize', adjustUbicacionLayout);
+window.addEventListener('load', adjustUbicacionLayout);
+
+function adjustUbicacionLayout() {
+  const desktop = document.getElementById('ubicacion-desktop');
+  const search = document.getElementById('p-ubicacion-search');
+  
+  if (window.innerWidth < 600) {
+    desktop.style.display = 'none';
+    search.style.display = 'block';
+  } else {
+    desktop.style.display = 'grid';
+    search.style.display = 'none';
+    document.getElementById('ubicacion-suggestions').style.display = 'none';
+  }
+}
+
+function suggestUbicaciones() {
+  const search = document.getElementById('p-ubicacion-search').value.toLowerCase();
+  const suggestions = document.getElementById('ubicacion-suggestions');
+  
+  if (!search || search.length < 2) {
+    suggestions.style.display = 'none';
+    return;
+  }
+
+  const allCities = [
+    'Rosario, Argentina',
+    'Buenos Aires, Argentina',
+    'Córdoba, Argentina',
+    'Santa Fe, Argentina',
+    'Mendoza, Argentina',
+    'La Plata, Argentina',
+    'Mar del Plata, Argentina',
+    'San Miguel de Tucumán, Argentina',
+    'Paraná, Argentina',
+    'Salta, Argentina',
+    'Bariloche, Argentina',
+    'Bahía Blanca, Argentina',
+    'Tandil, Argentina',
+    'São Paulo, Brasil',
+    'Rio de Janeiro, Brasil',
+    'Belo Horizonte, Brasil',
+    'Salvador, Brasil',
+    'Brasília, Brasil',
+    'Recife, Brasil',
+    'Curitiba, Brasil'
+  ];
+
+  const filtered = allCities.filter(c => c.toLowerCase().includes(search));
+  
+  if (filtered.length === 0) {
+    suggestions.style.display = 'none';
+    return;
+  }
+
+  suggestions.innerHTML = filtered.map(city => `
+    <div onclick="selectUbicacion('${city}')" 
+      style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;color:var(--white);transition:background 0.15s"
+      onmouseover="this.style.background='rgba(143,168,200,0.1)'"
+      onmouseout="this.style.background='transparent'">${city}</div>
+  `).join('');
+  
+  suggestions.style.display = 'block';
+}
+
+function selectUbicacion(city) {
+  document.getElementById('p-ubicacion-search').value = city;
+  document.getElementById('ubicacion-suggestions').style.display = 'none';
 }
 
 // ── INIT ───────────────────────────────────────────────────

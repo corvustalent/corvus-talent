@@ -121,6 +121,7 @@
   <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
   <div class="nav-right">
     <span class="nav-badge">Recruiter</span>
+    <a href="/chat" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--slate);text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:20px;transition:all 0.15s" onmouseover="this.style.borderColor='var(--slate)'" onmouseout="this.style.borderColor='var(--border)'">💬 Mensajes <span id="chat-badge" style="display:none;background:var(--green);color:var(--navy);border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></a>
     <span class="nav-user" id="nav-company"></span>
     <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
   </div>
@@ -442,8 +443,25 @@ function logout() {
   window.location.href = '/';
 }
 
+// ── CHAT BADGE ─────────────────────────────────────────────
+async function loadChatBadge() {
+  try {
+    const res = await fetch('/api/chat', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    const total = (data.conversations || []).reduce((s, c) => s + (c.unread || 0), 0);
+    if (total > 0) {
+      const badge = document.getElementById('chat-badge');
+      badge.style.display = 'inline';
+      badge.textContent = total;
+    }
+  } catch(e) {}
+}
+
 // ── INIT ───────────────────────────────────────────────────
 loadCandidates();
+loadChatBadge();
 </script>
 </body>
 </html>

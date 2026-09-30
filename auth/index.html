@@ -181,13 +181,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-let supabaseClient = null;
-
-async function initSupabase() {
-  const res = await fetch('/api/config');
-  const { url, anon } = await res.json();
-  supabaseClient = supabase.createClient(url, anon);
-}
+const supabaseClient = supabase.createClient(
+  'https://fciquzvndvbbqecboumg.supabase.co',
+  'sb_publishable_lQMdRp8Cs0QqX2DG7K3Jzw_zIkW-sHB'
+);
 // Mostrar mensaje si viene de verificación exitosa
 if (new URLSearchParams(window.location.search).get('verified') === '1') {
   showSuccess('¡Email confirmado! Ya podés iniciar sesión.');
@@ -322,9 +319,6 @@ async function handleRegister() {
     btn.disabled = false; btn.textContent = 'Crear cuenta';
   }
 }
-
-// Init
-initSupabase();
 
 // Enter key support
 document.addEventListener('keydown', e => {

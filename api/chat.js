@@ -58,6 +58,7 @@ export default async function handler(req, res) {
       if (existing) return res.status(200).json({ conversation_id: existing.id });
 
       // Crear conversación con columnas correctas
+      console.log('Attempting insert with:', { contact_request_id, recruiter_id: request.recruiter_id, candidate_id: request.candidate_id });
       const { data: conv, error } = await sb.from('conversations').insert({
         contact_request_id,
         recruiter_id: request.recruiter_id,
@@ -66,9 +67,10 @@ export default async function handler(req, res) {
       }).select().single();
 
       if (error) {
-        console.error('Insert error:', error.message);
-        return res.status(500).json({ error: error.message });
+        console.error('Insert error:', JSON.stringify(error));
+        return res.status(500).json({ error: error.message, details: error });
       }
+      console.log('Conversation created:', conv?.id);
       return res.status(200).json({ conversation_id: conv.id });
     }
 

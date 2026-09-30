@@ -919,7 +919,17 @@ async function respondSolicitud(id, status) {
       body: JSON.stringify({ action: 'respond', solicitud_id: id, status })
     });
     if (res.ok) {
-      showMsg(status === 'accepted' ? 'Contacto aceptado. El recruiter recibirá tu confirmación.' : 'Solicitud rechazada.', status === 'accepted' ? 'success' : 'success');
+      if (status === 'accepted') {
+        // Crear conversación de chat automáticamente
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ action: 'start', contact_request_id: id })
+        });
+        showMsg('Contacto aceptado. Ya podés chatear con el recruiter.', 'success');
+      } else {
+        showMsg('Solicitud rechazada.', 'success');
+      }
       loadSolicitudes();
     }
   } catch(e) {

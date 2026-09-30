@@ -20,11 +20,11 @@ export default async function handler(req, res) {
 
   const { data: profile } = await sb.from('profiles').select('role, nombre, apellido, company').eq('id', user.id).single();
 
-  // ── POST: enviar mensaje o iniciar chat ───────────────────
+  // ── POST ─────────────────────────────────────────────────
   if (req.method === 'POST') {
     const { action, contact_request_id, conversation_id, message } = req.body;
 
-    // Iniciar conversación cuando candidato acepta solicitud
+    // Iniciar conversación
     if (action === 'start') {
       if (!contact_request_id) return res.status(400).json({ error: 'contact_request_id requerido' });
 
@@ -37,12 +37,11 @@ export default async function handler(req, res) {
 
       if (!request) return res.status(404).json({ error: 'Solicitud no encontrada o no aceptada' });
 
-      // Verificar que el usuario es parte de la solicitud
       if (request.recruiter_id !== user.id && request.candidate_id !== user.id) {
         return res.status(403).json({ error: 'No autorizado' });
       }
 
-      // Verificar si ya existe una conversación
+      // Verificar si ya existe
       const { data: existing } = await sb
         .from('conversations')
         .select('id')
@@ -51,15 +50,18 @@ export default async function handler(req, res) {
 
       if (existing) return res.status(200).json({ conversation_id: existing.id });
 
-      // Crear conversación nueva
+      // Crear conversación con columnas correctas
       const { data: conv, error } = await sb.from('conversations').insert({
         contact_request_id,
         recruiter_id: request.recruiter_id,
         candidate_id: request.candidate_id,
-        recruiter_company: request.company,
+        status: 'active',
       }).select().single();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) {
+        console.error('Insert error:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
       return res.status(200).json({ conversation_id: conv.id });
     }
 
@@ -69,7 +71,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Mensaje inválido' });
       }
 
-      // Verificar que el usuario es parte de la conversación
       const { data: conv } = await sb
         .from('conversations')
         .select('recruiter_id, candidate_id')
@@ -88,8 +89,8 @@ export default async function handler(req, res) {
 
       if (error) return res.status(500).json({ error: error.message });
 
-      // Actualizar last_message_at en la conversación
-      await sb.from('conversations').update({ last_message_at: new Date().toISOString() }).eq('id', conversation_id);
+      // Actualizar updated_at
+      await sb.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversation_id);
 
       return res.status(200).json({ message: msg });
     }
@@ -97,11 +98,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Parámetros inválidos' });
   }
 
-  // ── GET: listar conversaciones o mensajes ─────────────────
+  // ── GET ──────────────────────────────────────────────────
   if (req.method === 'GET') {
     const { conversation_id } = req.query;
 
-    // Obtener mensajes de una conversación
     if (conversation_id) {
       const { data: conv } = await sb
         .from('conversations')
@@ -119,7 +119,9 @@ export default async function handler(req, res) {
         .eq('conversation_id', conversation_id)
         .order('created_at', { ascending: true });
 
-      // Marcar mensajes como leídos
+      // Marcar como leídos
+      const unreadField = profile?.role === 'recruiter' ? 'unread_count_recruiter' : 'unread_count_candidate';
+      await sb.from('conversations').update({ [unreadField]: 0 }).eq('id', conversation_id);
       await sb.from('messages')
         .update({ read_at: new Date().toISOString() })
         .eq('conversation_id', conversation_id)
@@ -129,22 +131,19 @@ export default async function handler(req, res) {
       return res.status(200).json({ conversation: conv, messages: messages || [] });
     }
 
-    // Listar todas las conversaciones del usuario
+    // Listar conversaciones
     const field = profile?.role === 'recruiter' ? 'recruiter_id' : 'candidate_id';
+    const unreadField = profile?.role === 'recruiter' ? 'unread_count_recruiter' : 'unread_count_candidate';
+
     const { data: conversations } = await sb
       .from('conversations')
-      .select('*, recruiter:profiles!conversations_recruiter_id_fkey(nombre, apellido, company), candidate:profiles!conversations_candidate_id_fkey(nombre, apellido)')
+      .select(`*, recruiter:profiles!conversations_recruiter_id_fkey(nombre, apellido, company), candidate:profiles!conversations_candidate_id_fkey(nombre, apellido)`)
       .eq(field, user.id)
-      .order('last_message_at', { ascending: false, nullsFirst: false });
+      .order('updated_at', { ascending: false, nullsFirst: false });
 
-    // Contar mensajes no leídos por conversación
-    const convsWithUnread = await Promise.all((conversations || []).map(async conv => {
-      const { count } = await sb.from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('conversation_id', conv.id)
-        .neq('sender_id', user.id)
-        .is('read_at', null);
-      return { ...conv, unread: count || 0 };
+    const convsWithUnread = (conversations || []).map(c => ({
+      ...c,
+      unread: c[unreadField] || 0
     }));
 
     return res.status(200).json({ conversations: convsWithUnread });

@@ -123,10 +123,10 @@ export default async function handler(req, res) {
       const unreadField = profile?.role === 'recruiter' ? 'unread_count_recruiter' : 'unread_count_candidate';
       await sb.from('conversations').update({ [unreadField]: 0 }).eq('id', conversation_id);
       await sb.from('messages')
-        .update({ read_at: new Date().toISOString() })
+        .update({ read_by_recipient: true })
         .eq('conversation_id', conversation_id)
         .neq('sender_id', user.id)
-        .is('read_at', null);
+        .eq('read_by_recipient', false);
 
       return res.status(200).json({ conversation: conv, messages: messages || [] });
     }

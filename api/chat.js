@@ -144,13 +144,25 @@ export default async function handler(req, res) {
     const field = profile?.role === 'recruiter' ? 'recruiter_id' : 'candidate_id';
     const unreadField = profile?.role === 'recruiter' ? 'unread_count_recruiter' : 'unread_count_candidate';
 
-    const { data: conversations } = await sb
+    const { data: conversations, error: convError } = await sb
       .from('conversations')
-      .select(`*, recruiter:profiles!conversations_recruiter_id_fkey(nombre, apellido, company), candidate:profiles!conversations_candidate_id_fkey(nombre, apellido)`)
+      .select('*')
       .eq(field, user.id)
-      .order('updated_at', { ascending: false, nullsFirst: false });
+      .order('created_at', { ascending: false });
 
-    const convsWithUnread = (conversations || []).map(c => ({
+    if (convError) {
+      console.error('Conversations error:', convError.message);
+      return res.status(500).json({ error: convError.message });
+    }
+
+    // Enriquecer con datos de perfiles
+    const enriched = await Promise.all((conversations || []).map(async c => {
+      const { data: recruiter } = await sb.from('profiles').select('nombre, apellido, company').eq('id', c.recruiter_id).single();
+      const { data: candidate } = await sb.from('profiles').select('nombre, apellido').eq('id', c.candidate_id).single();
+      return { ...c, recruiter, candidate };
+    }));
+
+    const convsWithUnread = enriched.map(c => ({
       ...c,
       unread: c[unreadField] || 0
     }));

@@ -114,12 +114,14 @@ export default async function handler(req, res) {
     if (conversation_id) {
       const { data: conv } = await sb
         .from('conversations')
-        .select('*, recruiter:profiles!conversations_recruiter_id_fkey(nombre, apellido, company), candidate:profiles!conversations_candidate_id_fkey(nombre, apellido)')
+        .select('*')
         .eq('id', conversation_id)
         .single();
 
+      console.log('Conv check:', { conv_recruiter: conv?.recruiter_id, conv_candidate: conv?.candidate_id, user_id: user.id });
+
       if (!conv || (conv.recruiter_id !== user.id && conv.candidate_id !== user.id)) {
-        return res.status(403).json({ error: 'No autorizado' });
+        return res.status(403).json({ error: 'No autorizado', user_id: user.id, conv_ids: { recruiter: conv?.recruiter_id, candidate: conv?.candidate_id } });
       }
 
       const { data: messages } = await sb

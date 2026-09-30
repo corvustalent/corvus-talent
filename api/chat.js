@@ -11,12 +11,19 @@ export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'No autorizado' });
 
-  const sb = createClient(supabaseUrl, supabaseServiceKey, {
+  // Cliente para verificar auth (con token del usuario)
+  const sbAuth = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
 
-  const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.split(' ')[1]);
+  const { data: { user }, error: authError } = await sbAuth.auth.getUser(authHeader.split(' ')[1]);
   if (authError || !user) return res.status(401).json({ error: 'Sesión inválida' });
+
+  // Cliente admin para operaciones DB (bypasea RLS)
+  const sb = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${supabaseServiceKey}` } }
+  });
 
   const { data: profile } = await sb.from('profiles').select('role, nombre, apellido, company').eq('id', user.id).single();
 

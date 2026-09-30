@@ -62,4 +62,1009 @@
   label{font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;font-weight:500}
   input[type=text],input[type=email],input[type=tel],select,textarea{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
   input:focus,select:focus,textarea:focus{border-color:var(--slate)}
-  select
+  select option{background:var(--navy-mid)}
+  textarea{resize:vertical;min-height:80px;line-height:1.5}
+  ::placeholder{color:var(--gray)}
+
+  /* PRIVACY TOGGLES */
+  .privacy-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--navy);border:1px solid var(--border);border-radius:8px;margin-top:6px}
+  .privacy-label{font-size:12px;color:var(--gray)}
+  .privacy-label span{color:var(--slate)}
+
+  /* CHIPS */
+  .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{background:rgba(143,168,200,0.08);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gray);cursor:pointer;transition:all 0.15s;user-select:none}
+  .chip:hover{border-color:var(--slate);color:var(--white)}
+  .chip.selected{border-color:var(--slate);background:rgba(143,168,200,0.15);color:var(--white)}
+
+  /* ANALYSES */
+  .analysis-item{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .analysis-score{font-size:24px;font-weight:700;min-width:52px;text-align:center}
+  .analysis-info{flex:1}
+  .analysis-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
+  .analysis-date{font-size:12px;color:var(--gray)}
+  .empty-state{text-align:center;padding:48px 20px;color:var(--gray)}
+  .empty-state p{font-size:14px;margin-bottom:16px}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 24px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s}
+  .btn-primary{background:var(--white);color:var(--navy)}
+  .btn-primary:hover{background:var(--off-white);transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+  .btn-ghost{background:transparent;color:var(--slate);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--slate);color:var(--white)}
+
+  /* MSG */
+  .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+  .msg.success{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);display:block}
+  .msg.error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);display:block}
+
+  /* QUICK ACCESS */
+  .quick-access{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
+  .quick-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:all 0.15s;display:flex;align-items:flex-start;gap:12px}
+  .quick-card:hover{border-color:var(--slate);transform:translateY(-2px);box-shadow:0 4px 12px rgba(143,168,200,0.1)}
+  .quick-icon{font-size:28px;flex-shrink:0}
+  .quick-name{font-size:13px;font-weight:700;color:var(--white)}
+  .quick-desc{font-size:11px;color:var(--gray);margin-top:3px;line-height:1.4}
+
+  .solicitud-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:10px}
+  .solicitud-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .solicitud-company{font-size:14px;font-weight:600;color:var(--white)}
+  .solicitud-date{font-size:11px;color:var(--gray)}
+  .solicitud-msg{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:14px}
+  .solicitud-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-accept{background:var(--green);color:#0A1628;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
+  .btn-accept:hover{opacity:0.85}
+  .btn-reject{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 16px;font-size:12px;color:var(--gray);cursor:pointer;font-family:inherit;transition:all 0.15s}
+  .btn-reject:hover{border-color:var(--red);color:var(--red)}
+  .status-badge{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
+  .status-pending{background:rgba(251,191,36,0.15);color:var(--yellow)}
+  .status-accepted{background:rgba(74,222,128,0.15);color:var(--green)}
+  .status-rejected{background:rgba(248,113,113,0.1);color:var(--red)}
+  @media(max-width:600px){
+    main{padding:20px 16px}
+    .quick-access{grid-template-columns:1fr}
+    .quick-card{padding:12px;gap:10px}
+    .quick-icon{font-size:24px}
+    .quick-name{font-size:12px}
+    .quick-desc{font-size:10px}
+    .form-grid{grid-template-columns:1fr}
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0}
+    .tab{white-space:nowrap;padding:10px 12px;font-size:12px}
+    nav{padding:12px 16px}
+    .nav-right{gap:8px}
+    .nav-user{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .visibility-card{flex-direction:column;align-items:flex-start}
+    #ubicacion-desktop{display:none !important}
+    #p-ubicacion-search{display:block !important}
+    #p-pais,#p-provincia,#p-ciudad{font-size:16px}
+    .solicitud-actions{flex-direction:column}
+    .btn-accept,.btn-reject{width:100%;text-align:center;padding:10px}
+    .dashboard-header h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-email"></span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<main>
+  <div class="dashboard-header">
+    <h1 class="welcome">Hola, <span id="user-name">—</span></h1>
+    <p class="header-sub">Este es tu espacio en el ecosistema Corvus.</p>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div id="onboarding-banner" style="display:none;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px">¡Bienvenido al ecosistema Corvus! 🎉</div>
+        <div style="font-size:12px;color:var(--gray)">Completá estos pasos para sacarle el máximo provecho.</div>
+      </div>
+      <button onclick="dismissOnboarding()" style="background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+      <div id="ob-step-1" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div id="ob-check-1" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">1</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--white)">Completá tu perfil</div>
+          <div style="font-size:11px;color:var(--gray)">Nombre, rubro y ubicación</div>
+        </div>
+      </div>
+      <div id="ob-step-2" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div id="ob-check-2" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">2</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--white)">Primer análisis</div>
+          <div style="font-size:11px;color:var(--gray)">Usá Corvus Fit con una JD</div>
+        </div>
+      </div>
+      <div id="ob-step-3" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div id="ob-check-3" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px">3</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--white)">Activá tu visibilidad</div>
+          <div style="font-size:11px;color:var(--gray)">Para que recruiters te encuentren</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCESOS RÁPIDOS A HERRAMIENTAS -->
+  <div style="margin-bottom:28px">
+    <div style="font-size:12px;font-weight:600;color:var(--slate);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">Nuestras herramientas</div>
+    <div class="quick-access">
+      <!-- CORVIT -->
+      <a href="/corvit" class="quick-card">
+        <span class="quick-icon">🏆</span>
+        <div>
+          <div class="quick-name">Corvit</div>
+          <div class="quick-desc">Simulador de entrevistas</div>
+          <div style="font-size:10px;color:var(--slate);margin-top:4px">14 rubros • Feedback IA</div>
+        </div>
+      </a>
+      <!-- CORVUS FIT -->
+      <a href="/corvus-fit" class="quick-card">
+        <span class="quick-icon">🧩</span>
+        <div>
+          <div class="quick-name">Corvus Fit</div>
+          <div class="quick-desc">CV vs Job Description</div>
+          <div style="font-size:10px;color:var(--slate);margin-top:4px">Score 0-100 • Análisis</div>
+        </div>
+      </a>
+      <!-- CORVUS CRAFT -->
+      <a href="/corvus-craft" class="quick-card">
+        <span class="quick-icon">✦</span>
+        <div>
+          <div class="quick-name">Corvus Craft</div>
+          <div class="quick-desc">Generador de JDs</div>
+          <div style="font-size:10px;color:var(--slate);margin-top:4px">Para recruiters • IA</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- VISIBILIDAD -->
+  <div class="visibility-card">
+    <div class="visibility-text">
+      <strong>Perfil visible para recruiters</strong>
+      <p>Cuando está activado, los recruiters pueden ver tu perfil y tus análisis de compatibilidad.</p>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="visibility-toggle" onchange="updateVisibility()">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('perfil')">Mi perfil</button>
+    <button class="tab" onclick="switchTab('deseos')">Qué busco</button>
+    <button class="tab" onclick="switchTab('analisis')">Mis análisis</button>
+    <button class="tab" onclick="switchTab('solicitudes')">Solicitudes <span id="solicitudes-badge" style="display:none;background:var(--slate);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px">0</span></button>
+  </div>
+
+  <!-- MSG -->
+  <div class="msg" id="msg"></div>
+
+  <!-- TAB: PERFIL -->
+  <div class="section active" id="section-perfil">
+    <div class="section-title">Datos personales</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="p-nombre" placeholder="Tu nombre">
+      </div>
+      <div class="field">
+        <label>Apellido</label>
+        <input type="text" id="p-apellido" placeholder="Tu apellido">
+      </div>
+      <div class="field">
+        <label>Rubro principal</label>
+        <select id="p-rubro">
+          <option value="">Seleccioná...</option>
+          <option>Tecnología IT</option>
+          <option>Recursos Humanos</option>
+          <option>Ventas</option>
+          <option>Marketing</option>
+          <option>Administración</option>
+          <option>Finanzas</option>
+          <option>Legal / Derecho</option>
+          <option>Salud</option>
+          <option>Ingeniería</option>
+          <option>Logística</option>
+          <option>Turismo y Hotelería</option>
+          <option>Atención al Cliente</option>
+          <option>Diseño Gráfico</option>
+          <option>Docencia</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Seniority</label>
+        <select id="p-seniority">
+          <option value="">Seleccioná...</option>
+          <option>Junior</option>
+          <option>Semi Senior</option>
+          <option>Senior</option>
+          <option>Lead / Tech Lead</option>
+          <option>Manager</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>Ubicación</label>
+        <div id="ubicacion-container">
+          <!-- Desktop: 3 selectores en cascada -->
+          <div id="ubicacion-desktop" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <select id="p-pais" onchange="updateProvincias()">
+              <option value="">País...</option>
+              <option value="AR">Argentina</option>
+              <option value="BR">Brasil</option>
+              <option value="otro">Otro</option>
+            </select>
+            <select id="p-provincia" onchange="updateCiudades()" disabled>
+              <option value="">Provincia/Estado...</option>
+            </select>
+            <select id="p-ciudad" disabled>
+              <option value="">Ciudad...</option>
+            </select>
+          </div>
+          <!-- Mobile: Input text con autocomplete -->
+          <input type="text" id="p-ubicacion-search" 
+            placeholder="Ej: Rosario, Argentina" 
+            style="display:none;width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--navy);color:var(--white);font-family:inherit;font-size:13px"
+            onkeyup="suggestUbicaciones()">
+          <div id="ubicacion-suggestions" 
+            style="display:none;margin-top:8px;background:var(--navy-mid);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto"></div>
+        </div>
+        <input type="text" id="p-ubicacion-otro" placeholder="Ingresá tu ciudad y país" style="display:none;margin-top:8px">
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:8px">Datos de contacto <span style="font-size:11px;font-weight:400;color:var(--gray);text-transform:none;letter-spacing:0">— elegí cuáles mostrar a recruiters</span></div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Email de contacto</label>
+        <input type="email" id="p-email" placeholder="tu@email.com">
+        <div class="privacy-row">
+          <span class="privacy-label">Mostrar a recruiters <span>Email</span></span>
+          <label class="toggle" style="width:36px;height:20px">
+            <input type="checkbox" id="priv-email">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Teléfono / WhatsApp</label>
+        <input type="tel" id="p-telefono" placeholder="+54 9 341 000 0000">
+        <div class="privacy-row">
+          <span class="privacy-label">Mostrar a recruiters <span>Teléfono</span></span>
+          <label class="toggle" style="width:36px;height:20px">
+            <input type="checkbox" id="priv-telefono">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label>LinkedIn</label>
+        <input type="text" id="p-linkedin" placeholder="linkedin.com/in/tuperfil">
+        <div class="privacy-row">
+          <span class="privacy-label">Mostrar a recruiters <span>LinkedIn</span></span>
+          <label class="toggle" style="width:36px;height:20px">
+            <input type="checkbox" id="priv-linkedin">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Género <span style="color:var(--gray);font-size:10px;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <select id="p-genero">
+          <option value="">Prefiero no decir</option>
+          <option>Masculino</option>
+          <option>Femenino</option>
+          <option>No binario</option>
+          <option>Otro</option>
+        </select>
+        <div class="privacy-row">
+          <span class="privacy-label">Mostrar a recruiters <span>Género</span></span>
+          <label class="toggle" style="width:36px;height:20px">
+            <input type="checkbox" id="priv-genero">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveProfile()">Guardar perfil</button>
+  </div>
+
+  <!-- TAB: DESEOS -->
+  <div class="section" id="section-deseos">
+    <div class="section-title">¿Qué estás buscando?</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Tipo de puesto</label>
+        <select id="d-tipo">
+          <option value="">Seleccioná...</option>
+          <option>Full time</option>
+          <option>Part time</option>
+          <option>Freelance / Por proyecto</option>
+          <option>Cualquiera</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Modalidad</label>
+        <select id="d-modalidad">
+          <option value="">Seleccioná...</option>
+          <option>Remoto</option>
+          <option>Híbrido</option>
+          <option>Presencial</option>
+          <option>Cualquiera</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Seniority al que aspiro</label>
+        <select id="d-seniority">
+          <option value="">Seleccioná...</option>
+          <option>Junior</option>
+          <option>Semi Senior</option>
+          <option>Senior</option>
+          <option>Lead / Manager</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Disponibilidad</label>
+        <select id="d-disponibilidad">
+          <option value="">Seleccioná...</option>
+          <option>Inmediata</option>
+          <option>2 semanas</option>
+          <option>1 mes</option>
+          <option>Solo escucho propuestas</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>Rubros de interés</label>
+        <div class="chips-wrap" id="rubros-chips">
+          <div class="chip" onclick="toggleChip(this)">💻 IT</div>
+          <div class="chip" onclick="toggleChip(this)">👥 RRHH</div>
+          <div class="chip" onclick="toggleChip(this)">📈 Ventas</div>
+          <div class="chip" onclick="toggleChip(this)">📣 Marketing</div>
+          <div class="chip" onclick="toggleChip(this)">📋 Administración</div>
+          <div class="chip" onclick="toggleChip(this)">💰 Finanzas</div>
+          <div class="chip" onclick="toggleChip(this)">⚖️ Legal</div>
+          <div class="chip" onclick="toggleChip(this)">🏥 Salud</div>
+          <div class="chip" onclick="toggleChip(this)">⚙️ Ingeniería</div>
+          <div class="chip" onclick="toggleChip(this)">📦 Logística</div>
+          <div class="chip" onclick="toggleChip(this)">🏨 Turismo</div>
+          <div class="chip" onclick="toggleChip(this)">🤝 Atención al Cliente</div>
+          <div class="chip" onclick="toggleChip(this)">🎨 Diseño</div>
+          <div class="chip" onclick="toggleChip(this)">📚 Docencia</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Pretensión salarial en ARS <span style="color:var(--gray);font-size:10px;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <input type="text" id="d-salario-ars" placeholder="ej. $800.000 - $1.200.000">
+      </div>
+      <div class="field">
+        <label>Pretensión salarial en USD <span style="color:var(--gray);font-size:10px;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <input type="text" id="d-salario-usd" placeholder="ej. $1.500 - $2.500">
+      </div>
+      <div class="field full">
+        <label>Algo más que quieras contar</label>
+        <textarea id="d-notas" placeholder="ej. Busco proyectos de impacto social, open to relocation, experiencia liderando equipos..."></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveDeseos()">Guardar preferencias</button>
+  </div>
+
+  <!-- TAB: ANÁLISIS -->
+  <div class="section" id="section-analisis">
+    <div class="section-title">Historial de Corvus Fit</div>
+    <div id="analyses-list">
+      <div class="empty-state" style="padding:48px 20px;text-align:center;background:var(--navy-mid);border:2px dashed var(--border);border-radius:12px;margin-bottom:16px">
+        <div style="font-size:42px;margin-bottom:12px">🧩</div>
+        <p style="font-size:14px;margin-bottom:8px;font-weight:600;color:var(--white)">No hay análisis aún</p>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Hacé tu primer análisis de compatibilidad y descubrí cuánto te ajustás a cada posición.</p>
+        <a href="/corvus-fit" class="btn btn-primary" style="text-decoration:none;display:inline-flex">Ir a Corvus Fit 🧩</a>
+      </div>
+    </div>
+  </div>
+  <!-- TAB: SOLICITUDES -->
+  <div class="section" id="section-solicitudes">
+    <div class="section-title">Solicitudes de contacto</div>
+    <div id="solicitudes-list">
+      <div class="empty-state" style="padding:48px 20px;text-align:center;background:var(--navy-mid);border:2px dashed var(--border);border-radius:12px;margin-bottom:16px">
+        <div style="font-size:42px;margin-bottom:12px">📧</div>
+        <p style="font-size:14px;margin-bottom:8px;font-weight:600;color:var(--white)">Esperando contactos</p>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6">Cuando los recruiters vean tu perfil, podrán contactarte. Activá tu visibilidad para acelerar el proceso.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('visibility-toggle').click();window.scrollTo({top:0,behavior:'smooth'})" style="display:inline-flex">Activar visibilidad ⚡</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── AUTH CHECK ─────────────────────────────────────────────
+const userRaw = localStorage.getItem('corvus_user');
+const token = localStorage.getItem('corvus_token');
+
+if (!userRaw || !token) {
+  window.location.href = '/auth';
+}
+
+const user = JSON.parse(userRaw || '{}');
+if (user.role === 'recruiter') {
+  window.location.href = '/dashboard/recruiter';
+}
+
+// Set user info
+document.getElementById('nav-email').textContent = user.email || '';
+document.getElementById('user-name').textContent = user.nombre || user.email?.split('@')[0] || 'candidato';
+
+// ── DATOS DE UBICACIÓN ─────────────────────────────────────
+const LOCATION_DATA = {
+  AR: {
+    name: 'Argentina',
+    provincias: {
+      'Buenos Aires': ['Buenos Aires (CABA)', 'La Plata', 'Mar del Plata', 'Quilmes', 'Lanús', 'Lomas de Zamora', 'Morón', 'San Isidro', 'Tigre', 'Bahía Blanca', 'Tandil', 'Otra'],
+      'Córdoba': ['Córdoba', 'Villa María', 'Río Cuarto', 'San Francisco', 'Alta Gracia', 'Otra'],
+      'Santa Fe': ['Rosario', 'Santa Fe', 'Rafaela', 'Venado Tuerto', 'Villa Gobernador Gálvez', 'Otra'],
+      'Mendoza': ['Mendoza', 'San Rafael', 'Godoy Cruz', 'Luján de Cuyo', 'Otra'],
+      'Tucumán': ['San Miguel de Tucumán', 'Tafí Viejo', 'Otra'],
+      'Entre Ríos': ['Paraná', 'Concordia', 'Gualeguaychú', 'Otra'],
+      'Salta': ['Salta', 'San Ramón de la Nueva Orán', 'Otra'],
+      'Misiones': ['Posadas', 'Oberá', 'Eldorado', 'Otra'],
+      'Chaco': ['Resistencia', 'Presidencia Roque Sáenz Peña', 'Otra'],
+      'Corrientes': ['Corrientes', 'Goya', 'Otra'],
+      'Santiago del Estero': ['Santiago del Estero', 'La Banda', 'Otra'],
+      'San Juan': ['San Juan', 'Rawson', 'Otra'],
+      'Jujuy': ['San Salvador de Jujuy', 'Palpalá', 'Otra'],
+      'Río Negro': ['Viedma', 'Bariloche', 'Cipolletti', 'Otra'],
+      'Neuquén': ['Neuquén', 'Zapala', 'Otra'],
+      'Formosa': ['Formosa', 'Otra'],
+      'Chubut': ['Rawson', 'Comodoro Rivadavia', 'Trelew', 'Otra'],
+      'San Luis': ['San Luis', 'Villa Mercedes', 'Otra'],
+      'Catamarca': ['San Fernando del Valle de Catamarca', 'Otra'],
+      'La Rioja': ['La Rioja', 'Otra'],
+      'La Pampa': ['Santa Rosa', 'General Pico', 'Otra'],
+      'Santa Cruz': ['Río Gallegos', 'Caleta Olivia', 'Otra'],
+      'Tierra del Fuego': ['Ushuaia', 'Río Grande', 'Otra'],
+    }
+  },
+  BR: {
+    name: 'Brasil',
+    provincias: {
+      'São Paulo': ['São Paulo', 'Campinas', 'Santos', 'São Bernardo do Campo', 'Guarulhos', 'Outra'],
+      'Rio de Janeiro': ['Rio de Janeiro', 'Niterói', 'Nova Iguaçu', 'Outra'],
+      'Minas Gerais': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Outra'],
+      'Bahia': ['Salvador', 'Feira de Santana', 'Outra'],
+      'Rio Grande do Sul': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Outra'],
+      'Paraná': ['Curitiba', 'Londrina', 'Maringá', 'Outra'],
+      'Pernambuco': ['Recife', 'Caruaru', 'Outra'],
+      'Ceará': ['Fortaleza', 'Caucaia', 'Outra'],
+      'Pará': ['Belém', 'Ananindeua', 'Outra'],
+      'Goiás': ['Goiânia', 'Aparecida de Goiânia', 'Outra'],
+      'Amazonas': ['Manaus', 'Parintins', 'Outra'],
+      'Santa Catarina': ['Florianópolis', 'Joinville', 'Blumenau', 'Outra'],
+      'Distrito Federal': ['Brasília'],
+      'Espírito Santo': ['Vitória', 'Vila Velha', 'Outra'],
+      'Mato Grosso do Sul': ['Campo Grande', 'Dourados', 'Outra'],
+    }
+  }
+};
+
+function updateProvincias() {
+  const pais = document.getElementById('p-pais').value;
+  const provSelect = document.getElementById('p-provincia');
+  const ciudadSelect = document.getElementById('p-ciudad');
+  const otroInput = document.getElementById('p-ubicacion-otro');
+
+  provSelect.innerHTML = '<option value="">Provincia/Estado...</option>';
+  ciudadSelect.innerHTML = '<option value="">Ciudad...</option>';
+  provSelect.disabled = true;
+  ciudadSelect.disabled = true;
+  otroInput.style.display = 'none';
+
+  if (pais === 'otro') {
+    otroInput.style.display = 'block';
+    return;
+  }
+
+  if (pais && LOCATION_DATA[pais]) {
+    const provincias = Object.keys(LOCATION_DATA[pais].provincias);
+    provincias.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p; opt.textContent = p;
+      provSelect.appendChild(opt);
+    });
+    provSelect.disabled = false;
+  }
+}
+
+function updateCiudades() {
+  const pais = document.getElementById('p-pais').value;
+  const provincia = document.getElementById('p-provincia').value;
+  const ciudadSelect = document.getElementById('p-ciudad');
+
+  ciudadSelect.innerHTML = '<option value="">Ciudad...</option>';
+  ciudadSelect.disabled = true;
+
+  if (pais && provincia && LOCATION_DATA[pais]?.provincias[provincia]) {
+    const ciudades = LOCATION_DATA[pais].provincias[provincia];
+    ciudades.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      ciudadSelect.appendChild(opt);
+    });
+    ciudadSelect.disabled = false;
+  }
+}
+
+function getUbicacion() {
+  const search = document.getElementById('p-ubicacion-search');
+  
+  // Si estamos en mobile y el input está visible, usar ese
+  if (search && search.style.display !== 'none' && search.value.trim()) {
+    return search.value.trim();
+  }
+  
+  // Si no, usar selectores en cascada
+  const pais = document.getElementById('p-pais').value;
+  if (pais === 'otro') return document.getElementById('p-ubicacion-otro').value.trim();
+  if (!pais) return '';
+  const provincia = document.getElementById('p-provincia').value;
+  const ciudad = document.getElementById('p-ciudad').value;
+  const paisName = LOCATION_DATA[pais]?.name || pais;
+  return [ciudad, provincia, paisName].filter(Boolean).join(', ');
+}
+
+function setUbicacion(ubicacion) {
+  if (!ubicacion) return;
+  // Intentar parsear "Ciudad, Provincia, País"
+  const parts = ubicacion.split(',').map(s => s.trim());
+  if (parts.length >= 3) {
+    const paisName = parts[parts.length - 1];
+    const paisCode = Object.entries(LOCATION_DATA).find(([k, v]) => v.name === paisName)?.[0];
+    if (paisCode) {
+      document.getElementById('p-pais').value = paisCode;
+      updateProvincias();
+      const provincia = parts[parts.length - 2];
+      if (LOCATION_DATA[paisCode]?.provincias[provincia]) {
+        document.getElementById('p-provincia').value = provincia;
+        document.getElementById('p-provincia').disabled = false;
+        updateCiudades();
+        const ciudad = parts[0];
+        document.getElementById('p-ciudad').value = ciudad;
+        document.getElementById('p-ciudad').disabled = false;
+        return;
+      }
+    }
+  }
+  // Fallback: campo libre
+  document.getElementById('p-pais').value = 'otro';
+  updateProvincias();
+  document.getElementById('p-ubicacion-otro').value = ubicacion;
+}
+
+// ── TABS ───────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['perfil', 'deseos', 'analisis', 'solicitudes'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + tab).classList.add('active');
+  hideMsg();
+}
+
+// ── CHIPS ──────────────────────────────────────────────────
+function toggleChip(chip) {
+  chip.classList.toggle('selected');
+}
+
+// ── MSG ────────────────────────────────────────────────────
+function showMsg(text, type='success') {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+function hideMsg() {
+  document.getElementById('msg').className = 'msg';
+}
+
+// ── VISIBILITY ─────────────────────────────────────────────
+async function updateVisibility() {
+  const visible = document.getElementById('visibility-toggle').checked;
+  try {
+    await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'update_visibility', visible })
+    });
+    showMsg(visible ? 'Tu perfil ahora es visible para recruiters.' : 'Tu perfil está oculto.');
+  } catch(e) {
+    showMsg('Error al actualizar la visibilidad.', 'error');
+  }
+}
+
+function updateOnboarding(profile, analyses) {
+  const dismissed = localStorage.getItem('corvus_onboarding_dismissed');
+  if (dismissed) return;
+
+  const step1Done = !!(profile?.nombre && profile?.rubro && profile?.ubicacion);
+  const step2Done = analyses && analyses.length > 0;
+  const step3Done = !!profile?.visible;
+
+  if (step1Done && step2Done && step3Done) {
+    localStorage.setItem('corvus_onboarding_dismissed', '1');
+    return;
+  }
+
+  document.getElementById('onboarding-banner').style.display = 'block';
+
+  const checkStyle = 'background:rgba(74,222,128,0.15);border-color:#4ADE80;color:#4ADE80;font-size:13px';
+  if (step1Done) document.getElementById('ob-check-1').style.cssText = checkStyle, document.getElementById('ob-check-1').textContent = '✓', document.getElementById('ob-step-1').style.opacity = '0.6';
+  if (step2Done) document.getElementById('ob-check-2').style.cssText = checkStyle, document.getElementById('ob-check-2').textContent = '✓', document.getElementById('ob-step-2').style.opacity = '0.6';
+  if (step3Done) document.getElementById('ob-check-3').style.cssText = checkStyle, document.getElementById('ob-check-3').textContent = '✓', document.getElementById('ob-step-3').style.opacity = '0.6';
+}
+
+function dismissOnboarding() {
+  localStorage.setItem('corvus_onboarding_dismissed', '1');
+  document.getElementById('onboarding-banner').style.display = 'none';
+}
+
+// ── LOAD PROFILE ───────────────────────────────────────────
+async function loadProfile() {
+  try {
+    const res = await fetch('/api/profile', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!data.profile) return;
+    const p = data.profile;
+
+    // Visibilidad
+    document.getElementById('visibility-toggle').checked = p.visible || false;
+
+    // Perfil
+    if (p.nombre) document.getElementById('p-nombre').value = p.nombre;
+    if (p.apellido) document.getElementById('p-apellido').value = p.apellido;
+    if (p.rubro) document.getElementById('p-rubro').value = p.rubro;
+    if (p.seniority) document.getElementById('p-seniority').value = p.seniority;
+    if (p.ubicacion) setUbicacion(p.ubicacion);
+    if (p.email_contacto) document.getElementById('p-email').value = p.email_contacto;
+    if (p.telefono) document.getElementById('p-telefono').value = p.telefono;
+    if (p.linkedin) document.getElementById('p-linkedin').value = p.linkedin;
+    if (p.genero) document.getElementById('p-genero').value = p.genero;
+
+    // Privacy toggles
+    if (p.mostrar_email) document.getElementById('priv-email').checked = true;
+    if (p.mostrar_telefono) document.getElementById('priv-telefono').checked = true;
+    if (p.mostrar_linkedin) document.getElementById('priv-linkedin').checked = true;
+    if (p.mostrar_genero) document.getElementById('priv-genero').checked = true;
+
+    // Deseos
+    if (p.tipo_puesto) document.getElementById('d-tipo').value = p.tipo_puesto;
+    if (p.modalidad) document.getElementById('d-modalidad').value = p.modalidad;
+    if (p.seniority_deseado) document.getElementById('d-seniority').value = p.seniority_deseado;
+    if (p.disponibilidad) document.getElementById('d-disponibilidad').value = p.disponibilidad;
+    if (p.salario_ars) document.getElementById('d-salario-ars').value = p.salario_ars;
+    if (p.salario_usd) document.getElementById('d-salario-usd').value = p.salario_usd;
+    if (p.notas) document.getElementById('d-notas').value = p.notas;
+
+    // Rubros chips
+    if (p.rubros_interes && Array.isArray(p.rubros_interes)) {
+      document.querySelectorAll('#rubros-chips .chip').forEach(chip => {
+        const text = chip.textContent.trim().replace(/^\S+\s/, '');
+        if (p.rubros_interes.some(r => chip.textContent.includes(r))) {
+          chip.classList.add('selected');
+        }
+      });
+    }
+
+    // Actualizar nombre en header
+    if (p.nombre) {
+      document.getElementById('user-name').textContent = p.nombre;
+    }
+
+    // Análisis
+    if (data.analyses && data.analyses.length > 0) {
+      renderAnalyses(data.analyses);
+    }
+
+    // Onboarding
+    updateOnboarding(data.profile, data.analyses);
+
+  } catch(e) {
+    console.error('Error loading profile:', e);
+  }
+}
+
+function renderAnalyses(analyses) {
+  const list = document.getElementById('analyses-list');
+  list.innerHTML = analyses.map(a => {
+    const color = a.score >= 70 ? '#4ADE80' : a.score >= 40 ? '#FBBF24' : '#F87171';
+    const date = new Date(a.created_at).toLocaleDateString('es-AR');
+    return `
+      <div class="analysis-item">
+        <div class="analysis-score" style="color:${color}">${a.score}%</div>
+        <div class="analysis-info">
+          <div class="analysis-title">${a.job_title || 'Análisis de compatibilidad'}</div>
+          <div class="analysis-date">${date}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── SAVE PROFILE ───────────────────────────────────────────
+async function saveProfile() {
+  const btn = document.querySelector('#section-perfil .btn-primary');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const payload = {
+    action: 'update_profile',
+    nombre: document.getElementById('p-nombre').value.trim(),
+    apellido: document.getElementById('p-apellido').value.trim(),
+    rubro: document.getElementById('p-rubro').value,
+    seniority: document.getElementById('p-seniority').value,
+    ubicacion: getUbicacion(),
+    email_contacto: document.getElementById('p-email').value.trim(),
+    telefono: document.getElementById('p-telefono').value.trim(),
+    linkedin: document.getElementById('p-linkedin').value.trim(),
+    genero: document.getElementById('p-genero').value,
+    mostrar_email: document.getElementById('priv-email').checked,
+    mostrar_telefono: document.getElementById('priv-telefono').checked,
+    mostrar_linkedin: document.getElementById('priv-linkedin').checked,
+    mostrar_genero: document.getElementById('priv-genero').checked,
+  };
+
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('Perfil guardado correctamente.');
+      // Update local user name
+      if (payload.nombre) {
+        document.getElementById('user-name').textContent = payload.nombre;
+        const u = JSON.parse(localStorage.getItem('corvus_user') || '{}');
+        u.nombre = payload.nombre;
+        localStorage.setItem('corvus_user', JSON.stringify(u));
+      }
+    } else {
+      showMsg(data.error || 'Error al guardar.', 'error');
+    }
+  } catch(e) {
+    showMsg('Error de conexión.', 'error');
+  } finally {
+    const btn = document.querySelector('#section-perfil .btn-primary');
+    btn.disabled = false; btn.textContent = 'Guardar perfil';
+  }
+}
+
+// ── SAVE DESEOS ────────────────────────────────────────────
+async function saveDeseos() {
+  const btn = document.querySelector('#section-deseos .btn-primary');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const selectedRubros = [...document.querySelectorAll('#rubros-chips .chip.selected')]
+    .map(c => c.textContent.trim().replace(/^\S+\s/, ''));
+
+  const payload = {
+    action: 'update_deseos',
+    tipo_puesto: document.getElementById('d-tipo').value,
+    modalidad: document.getElementById('d-modalidad').value,
+    seniority_deseado: document.getElementById('d-seniority').value,
+    disponibilidad: document.getElementById('d-disponibilidad').value,
+    rubros_interes: selectedRubros,
+    salario_ars: document.getElementById('d-salario-ars').value.trim(),
+    salario_usd: document.getElementById('d-salario-usd').value.trim(),
+    notas: document.getElementById('d-notas').value.trim(),
+  };
+
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) showMsg('Preferencias guardadas correctamente.');
+    else showMsg(data.error || 'Error al guardar.', 'error');
+  } catch(e) {
+    showMsg('Error de conexión.', 'error');
+  } finally {
+    const btn = document.querySelector('#section-deseos .btn-primary');
+    btn.disabled = false; btn.textContent = 'Guardar preferencias';
+  }
+}
+
+// ── SOLICITUDES ────────────────────────────────────────────
+async function loadSolicitudes() {
+  try {
+    const res = await fetch('/api/contact?action=list', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) return;
+
+    const solicitudes = data.solicitudes || [];
+    const pending = solicitudes.filter(s => s.status === 'pending').length;
+
+    // Mostrar badge
+    const badge = document.getElementById('solicitudes-badge');
+    if (pending > 0) {
+      badge.style.display = 'inline';
+      badge.textContent = pending;
+    }
+
+    renderSolicitudes(solicitudes);
+  } catch(e) {
+    console.error('Error loading solicitudes:', e);
+  }
+}
+
+function renderSolicitudes(solicitudes) {
+  const list = document.getElementById('solicitudes-list');
+  if (!solicitudes.length) return;
+
+  list.innerHTML = solicitudes.map(s => {
+    const date = new Date(s.created_at).toLocaleDateString('es-AR');
+    const statusLabel = s.status === 'pending' ? 'Pendiente' : s.status === 'accepted' ? 'Aceptada' : 'Rechazada';
+    const statusClass = `status-${s.status}`;
+
+    const actions = s.status === 'pending' ? `
+      <button class="btn-accept" onclick="respondSolicitud('${s.id}', 'accepted')">Aceptar contacto</button>
+      <button class="btn-reject" onclick="respondSolicitud('${s.id}', 'rejected')">Rechazar</button>
+    ` : `<span class="status-badge ${statusClass}">${statusLabel}</span>`;
+
+    return `
+      <div class="solicitud-card" id="sol-${s.id}">
+        <div class="solicitud-header">
+          <div>
+            <div class="solicitud-company">💼 ${s.company || 'Empresa'}</div>
+            <div class="solicitud-date">${date}</div>
+          </div>
+          ${s.status !== 'pending' ? `<span class="status-badge ${statusClass}">${statusLabel}</span>` : ''}
+        </div>
+        <div class="solicitud-msg">${s.message}</div>
+        <div class="solicitud-actions">${actions}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function respondSolicitud(id, status) {
+  if (status === 'rejected') {
+    if (!confirm('¿Estás seguro que querés rechazar esta solicitud?')) return;
+  }
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'respond', solicitud_id: id, status })
+    });
+    if (res.ok) {
+      showMsg(status === 'accepted' ? 'Contacto aceptado. El recruiter recibirá tu confirmación.' : 'Solicitud rechazada.', status === 'accepted' ? 'success' : 'success');
+      
+      // NUEVA LÓGICA: Si acepta, crear conversación de chat
+      if (status === 'accepted') {
+        try {
+          const chatRes = await fetch('/api/chat/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ contact_request_id: id })
+          });
+          const chatData = await chatRes.json();
+          if (chatData.success) {
+            // Mostrar botón "Ir al chat"
+            const card = document.getElementById(`sol-${id}`);
+            if (card) {
+              const actions = card.querySelector('.solicitud-actions');
+              actions.innerHTML = `
+                <a href="/chat" class="btn" style="background:var(--slate);color:var(--navy);text-decoration:none;display:inline-flex;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">💬 Ir al chat</a>
+              `;
+            }
+          }
+        } catch (err) {
+          console.error('Chat creation error:', err);
+        }
+      }
+      
+      loadSolicitudes();
+    }
+  } catch(e) {
+    showMsg('Error al responder.', 'error');
+  }
+}
+
+// ── LOGOUT ─────────────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('corvus_token');
+  localStorage.removeItem('corvus_user');
+  window.location.href = '/';
+}
+
+// ── MOBILE UBICACIÓN ───────────────────────────────────────
+window.addEventListener('resize', adjustUbicacionLayout);
+window.addEventListener('load', adjustUbicacionLayout);
+
+function adjustUbicacionLayout() {
+  const desktop = document.getElementById('ubicacion-desktop');
+  const search = document.getElementById('p-ubicacion-search');
+  
+  if (window.innerWidth < 600) {
+    desktop.style.display = 'none';
+    search.style.display = 'block';
+  } else {
+    desktop.style.display = 'grid';
+    search.style.display = 'none';
+    document.getElementById('ubicacion-suggestions').style.display = 'none';
+  }
+}
+
+function suggestUbicaciones() {
+  const search = document.getElementById('p-ubicacion-search').value.toLowerCase();
+  const suggestions = document.getElementById('ubicacion-suggestions');
+  
+  if (!search || search.length < 2) {
+    suggestions.style.display = 'none';
+    return;
+  }
+
+  const allCities = [
+    'Rosario, Argentina',
+    'Buenos Aires, Argentina',
+    'Córdoba, Argentina',
+    'Santa Fe, Argentina',
+    'Mendoza, Argentina',
+    'La Plata, Argentina',
+    'Mar del Plata, Argentina',
+    'San Miguel de Tucumán, Argentina',
+    'Paraná, Argentina',
+    'Salta, Argentina',
+    'Bariloche, Argentina',
+    'Bahía Blanca, Argentina',
+    'Tandil, Argentina',
+    'São Paulo, Brasil',
+    'Rio de Janeiro, Brasil',
+    'Belo Horizonte, Brasil',
+    'Salvador, Brasil',
+    'Brasília, Brasil',
+    'Recife, Brasil',
+    'Curitiba, Brasil'
+  ];
+
+  const filtered = allCities.filter(c => c.toLowerCase().includes(search));
+  
+  if (filtered.length === 0) {
+    suggestions.style.display = 'none';
+    return;
+  }
+
+  suggestions.innerHTML = filtered.map(city => `
+    <div onclick="selectUbicacion('${city}')" 
+      style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;color:var(--white);transition:background 0.15s"
+      onmouseover="this.style.background='rgba(143,168,200,0.1)'"
+      onmouseout="this.style.background='transparent'">${city}</div>
+  `).join('');
+  
+  suggestions.style.display = 'block';
+}
+
+function selectUbicacion(city) {
+  document.getElementById('p-ubicacion-search').value = city;
+  document.getElementById('ubicacion-suggestions').style.display = 'none';
+}
+
+// ── INIT ───────────────────────────────────────────────────
+loadProfile();
+loadSolicitudes();
+</script>
+</body>
+</html>

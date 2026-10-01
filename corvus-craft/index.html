@@ -1,526 +1,649 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Corvus Craft — Generador de Job Descriptions</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
-    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
-    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
-    --green:#4ADE80;--yellow:#FBBF24;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-  nav{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-  .nav-brand{font-size:16px;font-weight:700;letter-spacing:1px;color:var(--white)}
-  .nav-brand span{color:var(--slate)}
-  .nav-tag{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase}
-  main{flex:1;display:flex;flex-direction:column;align-items:center;padding:40px 24px}
-  .container{width:100%;max-width:680px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corvus Craft — Generador de Job Descriptions</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* HEADER */
-  .header{margin-bottom:36px}
-  .header-eyebrow{font-size:11px;color:var(--slate);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-  .header-title{font-size:clamp(28px,5vw,40px);font-weight:700;line-height:1.2;margin-bottom:10px}
-  .header-title span{color:var(--slate)}
-  .header-sub{font-size:14px;color:var(--gray);line-height:1.6}
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0A1628 0%, #19273B 100%);
+      color: #BABDC2;
+      min-height: 100vh;
+      padding: 2rem;
+    }
 
-  /* FORM */
-  .form-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px}
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .field{display:flex;flex-direction:column;gap:6px}
-  .field.full{grid-column:1/-1}
-  label{font-size:11px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;font-weight:500}
-  input,select,textarea{
-    background:var(--navy);border:1px solid var(--border);border-radius:8px;
-    padding:10px 14px;color:var(--white);font-family:inherit;font-size:14px;
-    outline:none;transition:border-color 0.2s;width:100%;
-  }
-  input:focus,select:focus,textarea:focus{border-color:var(--slate)}
-  select option{background:var(--navy-mid)}
-  textarea{resize:vertical;min-height:80px;line-height:1.5}
-  ::placeholder{color:var(--gray)}
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-  /* CHIPS */
-  .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-  .chip{
-    background:rgba(143,168,200,0.08);border:1px solid var(--border);
-    border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gray);
-    cursor:pointer;transition:all 0.15s;user-select:none;
-  }
-  .chip:hover{border-color:var(--slate);color:var(--white)}
-  .chip.selected{border-color:var(--slate);background:rgba(143,168,200,0.15);color:var(--white)}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
 
-  /* LANG TOGGLE */
-  .lang-toggle{display:flex;gap:0;background:var(--navy);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-  .lang-btn{flex:1;padding:10px;background:none;border:none;color:var(--gray);font-family:inherit;font-size:13px;cursor:pointer;transition:all 0.15s}
-  .lang-btn.active{background:var(--navy-light);color:var(--white);font-weight:500}
+    h1 {
+      font-size: 2rem;
+      color: #FFFFFF;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
 
-  /* GENERATE BTN */
-  .btn-generate{
-    width:100%;padding:14px;border-radius:8px;background:var(--white);color:var(--navy);
-    font-family:inherit;font-size:15px;font-weight:600;border:none;cursor:pointer;
-    transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:10px;
-    margin-bottom:24px;
-  }
-  .btn-generate:hover{background:var(--off-white);transform:translateY(-1px)}
-  .btn-generate:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+    .header-subtitle {
+      font-size: 0.9rem;
+      color: #8FA8C8;
+      margin-top: 0.25rem;
+    }
 
-  /* RESULT */
-  .result-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px;display:none}
-  .result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
-  .result-label{font-size:11px;color:var(--green);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
-  .result-actions{display:flex;gap:10px}
-  .btn-copy,.btn-regen{
-    background:none;border:1px solid var(--border);border-radius:6px;
-    padding:6px 14px;font-family:inherit;font-size:12px;color:var(--slate);
-    cursor:pointer;transition:all 0.15s;
-  }
-  .btn-copy:hover,.btn-regen:hover{border-color:var(--slate);color:var(--white)}
-  .result-body{font-size:14px;color:rgba(255,255,255,0.85);line-height:1.8}
-  .result-body h1,.result-body h2,.result-body h3{color:var(--white);font-size:15px;font-weight:600;margin:20px 0 8px}
-  .result-body p{margin-bottom:10px}
-  .result-body ul{padding-left:0;list-style:none;margin-bottom:12px}
-  .result-body ul li{padding:3px 0;color:rgba(255,255,255,0.85)}
-  .result-body ul li::before{content:'·';color:var(--slate);margin-right:8px}
-  .result-body hr{border:none;border-top:1px solid var(--border);margin:16px 0}
-  .result-body.streaming{border-right:2px solid var(--slate);padding-right:2px;animation:blink 0.8s step-end infinite}
-  @keyframes blink{50%{border-color:transparent}}
+    nav {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
 
-  /* LOADING */
-  .loading{text-align:center;padding:32px;display:none}
-  .loading-dots{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--slate);animation:bounce 1.2s ease-in-out infinite}
-  .dot:nth-child(2){animation-delay:0.15s}
-  .dot:nth-child(3){animation-delay:0.3s}
-  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
-  .loading p{font-size:13px;color:var(--slate)}
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
 
-  /* CORVUS CTA */
-  .corvus-cta{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-  .cta-text{font-size:13px;color:var(--slate);line-height:1.5}
-  .cta-text strong{color:var(--white);display:block;margin-bottom:4px}
-  .btn-cta{background:var(--white);color:var(--navy);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+    .btn-primary {
+      background: #8FA8C8;
+      color: #0A1628;
+    }
 
-  footer{padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-  .footer-brand{font-size:12px;color:var(--gray)}
-  .footer-brand span{color:var(--slate)}
-  .footer-link{font-size:12px;color:var(--gray);text-decoration:none}
-  .footer-link:hover{color:var(--slate)}
+    .btn-primary:hover {
+      background: #A8BFD8;
+      transform: translateY(-2px);
+    }
 
-  @media(max-width:520px){.form-grid{grid-template-columns:1fr}.result-header{flex-direction:column;align-items:flex-start}}
-</style>
+    .btn-secondary {
+      background: transparent;
+      color: #8FA8C8;
+      border: 1px solid #8FA8C8;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(143, 168, 200, 0.1);
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section {
+      background: #19273B;
+      border: 1px solid rgba(143, 168, 200, 0.2);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+    .section h2 {
+      color: #FFFFFF;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section h2 span {
+      color: #8FA8C8;
+      font-size: 1.3rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      color: #8FA8C8;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      background: #0A1628;
+      border: 1px solid #152132;
+      border-radius: 6px;
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #8FA8C8;
+      box-shadow: 0 0 0 2px rgba(143, 168, 200, 0.1);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1rem;
+      background: #8FA8C8;
+      color: #0A1628;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-generate:hover {
+      background: #A8BFD8;
+      transform: translateY(-2px);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .output {
+      background: #0A1628;
+      border-left: 3px solid #8FA8C8;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #8FA8C8;
+      font-size: 0.95rem;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #8FA8C8;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* HISTORIAL */
+    .history-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      background: #0A1628;
+      border: 1px solid #152132;
+      border-radius: 6px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .history-item:hover {
+      border-color: #8FA8C8;
+      background: rgba(143, 168, 200, 0.05);
+    }
+
+    .history-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .history-item-title {
+      color: #FFFFFF;
+      font-weight: 600;
+      font-size: 0.95rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-item-meta {
+      color: #656D78;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .history-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #8FA8C8;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      font-size: 1.1rem;
+    }
+
+    .icon-btn:hover {
+      background: rgba(143, 168, 200, 0.2);
+      color: #FFFFFF;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #656D78;
+    }
+
+    .empty-state p {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .limit-badge {
+      display: inline-block;
+      background: rgba(143, 168, 200, 0.1);
+      color: #8FA8C8;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .limit-badge.warning {
+      background: rgba(255, 193, 7, 0.1);
+      color: #FFC107;
+    }
+
+    .success-message {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid #4CAF50;
+      color: #4CAF50;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 <body>
-<script src="/auth-check.js"></script>
-
-<nav>
-  <a href="/" style="font-size:14px;font-weight:500;color:var(--slate);text-decoration:none;display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:20px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--slate)';this.style.color='var(--white)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate)'">← Corvus Talent</a>
-  <div class="nav-brand">CORVUS <span>CRAFT</span></div>
-  <div class="nav-tag">Generador de Job Descriptions</div>
-  <div id="nav-auth-area"></div>
-</nav>
-
-<main>
-<div class="container">
-
-  <div class="header">
-    <div class="header-eyebrow">Corvus Ecosystem</div>
-    <h1 class="header-title">Generá tu <span>Job Description</span><br>en segundos.</h1>
-    <p class="header-sub">Completá los parámetros del puesto y la IA genera una descripción profesional, lista para publicar.</p>
-  </div>
-
-  <!-- FORM -->
-  <div class="form-card">
-    <div class="form-grid">
-
-      <div class="field full">
-        <label>Nombre del puesto *</label>
-        <input type="text" id="job-title" placeholder="ej. Desarrollador Backend Senior">
+  <div class="container">
+    <header>
+      <div>
+        <h1>✦ Corvus Craft</h1>
+        <p class="header-subtitle">Generador de Job Descriptions con IA</p>
       </div>
+      <nav>
+        <button class="btn btn-secondary" onclick="goToDashboard()">← Volver</button>
+      </nav>
+    </header>
 
-      <div class="field">
-        <label>Rubro / Industria *</label>
-        <select id="industry">
-          <option value="">Seleccioná...</option>
-          <option>Tecnología IT</option>
-          <option>Recursos Humanos</option>
-          <option>Ventas</option>
-          <option>Marketing</option>
-          <option>Finanzas</option>
-          <option>Legal / Derecho</option>
-          <option>Salud</option>
-          <option>Ingeniería</option>
-          <option>Logística</option>
-          <option>Turismo y Hotelería</option>
-          <option>Atención al Cliente</option>
-          <option>Diseño Gráfico</option>
-          <option>Docencia</option>
-          <option>Administración</option>
-          <option>Otro</option>
-        </select>
-      </div>
+    <div class="content">
+      <!-- GENERADOR -->
+      <div class="section">
+        <h2><span>⚙</span> Crear Job Description</h2>
+        
+        <form id="jdForm">
+          <div class="form-group">
+            <label for="jobTitle">Título del Puesto *</label>
+            <input type="text" id="jobTitle" placeholder="Ej: Senior Backend Engineer" required>
+          </div>
 
-      <div class="field">
-        <label>Seniority *</label>
-        <select id="seniority">
-          <option value="">Seleccioná...</option>
-          <option>Junior (0-2 años)</option>
-          <option>Semi Senior (2-4 años)</option>
-          <option>Senior (4+ años)</option>
-          <option>Lead / Tech Lead</option>
-          <option>Manager</option>
-          <option>Director</option>
-        </select>
-      </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="company">Empresa *</label>
+              <input type="text" id="company" placeholder="Ej: TechCorp" required>
+            </div>
+            <div class="form-group">
+              <label for="location">Ubicación</label>
+              <input type="text" id="location" placeholder="Ej: Buenos Aires, Remoto">
+            </div>
+          </div>
 
-      <div class="field">
-        <label>Modalidad</label>
-        <select id="modality">
-          <option value="">Seleccioná...</option>
-          <option>100% Remoto</option>
-          <option>Híbrido</option>
-          <option>Presencial</option>
-        </select>
-      </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="language">Idioma *</label>
+              <select id="language" required>
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tone">Tono *</label>
+              <select id="tone" required>
+                <option value="formal">Formal</option>
+                <option value="casual">Casual</option>
+                <option value="amigable">Amigable</option>
+                <option value="dinamico">Dinámico</option>
+                <option value="tecnico">Técnico</option>
+              </select>
+            </div>
+          </div>
 
-      <div class="field">
-        <label>Tipo de empresa</label>
-        <select id="company-type">
-          <option value="">Seleccioná...</option>
-          <option>Startup</option>
-          <option>Empresa mediana (Pyme)</option>
-          <option>Corporación / Multinacional</option>
-          <option>Consultora</option>
-          <option>Agencia</option>
-        </select>
-      </div>
+          <div class="form-group">
+            <label for="responsibilities">Responsabilidades principales *</label>
+            <textarea id="responsibilities" placeholder="Describe las principales responsabilidades del puesto" required></textarea>
+          </div>
 
-      <div class="field full">
-        <label>Skills técnicas requeridas</label>
-        <input type="text" id="skills" placeholder="ej. Python, SQL, AWS, React — separadas por coma">
-      </div>
+          <div class="form-group">
+            <label for="requirements">Requisitos *</label>
+            <textarea id="requirements" placeholder="Skills, experiencia, herramientas requeridas" required></textarea>
+          </div>
 
-      <div class="field full">
-        <label>Responsabilidades principales</label>
-        <textarea id="responsibilities" placeholder="ej. Desarrollar y mantener APIs REST, liderar code reviews, coordinar con el equipo de producto..."></textarea>
-      </div>
+          <div class="form-group">
+            <label for="benefits">Beneficios (opcional)</label>
+            <textarea id="benefits" placeholder="Ej: Remoto, flexible, stock options, etc."></textarea>
+          </div>
 
-      <div class="field full">
-        <label>Idioma de la JD</label>
-        <div class="lang-toggle">
-          <button class="lang-btn active" onclick="setLang('es', this)">Español</button>
-          <button class="lang-btn" onclick="setLang('en', this)">English</button>
+          <button type="submit" class="btn-generate" id="generateBtn">
+            Generar Job Description
+          </button>
+
+          <div id="limitInfo" class="limit-badge"></div>
+          <div id="successMessage" style="display: none;" class="success-message">
+            ✓ JD guardado en tu historial
+          </div>
+        </form>
+
+        <div id="loading" class="loading" style="display: none; margin-top: 1rem;">
+          <div class="spinner"></div>
+          <span>Generando...</span>
+        </div>
+
+        <div id="output" style="display: none;">
+          <div id="outputContent" class="output"></div>
+          <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="copyToClipboard()">
+            📋 Copiar al portapapeles
+          </button>
         </div>
       </div>
 
-      <div class="field full">
-        <label>Tono de la descripción</label>
-        <div class="chips-wrap" id="tone-chips">
-          <div class="chip selected" onclick="toggleTone(this)">Profesional</div>
-          <div class="chip" onclick="toggleTone(this)">Dinámico</div>
-          <div class="chip" onclick="toggleTone(this)">Cercano</div>
-          <div class="chip" onclick="toggleTone(this)">Técnico</div>
-          <div class="chip" onclick="toggleTone(this)">Corporativo</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <button class="btn-generate" id="btn-generate" onclick="generateJD()">
-    <span>✦</span> Generar Job Description
-  </button>
-
-  <!-- LÍMITE DIARIO -->
-  <div id="limit-banner" style="display:none;background:rgba(143,168,200,0.08);border:1px solid rgba(143,168,200,0.2);border-radius:10px;padding:16px 20px;text-align:center;margin-bottom:20px">
-    <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px">Alcanzaste el límite de <strong style="color:#FFFFFF">3 generaciones gratuitas</strong> por hoy. Volvé mañana o contactanos para acceso ilimitado.</p>
-    <a href="https://wa.me/5493412712847?text=Hola%2C%20quiero%20acceso%20ilimitado%20a%20Corvus%20Craft." target="_blank" style="display:inline-flex;align-items:center;background:#FFFFFF;color:#0A1628;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Contactar para acceso ilimitado</a>
-  </div>
-
-  <!-- LOADING -->
-  <div class="loading" id="loading">
-    <div class="loading-dots">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
-    <p id="loading-text">Generando tu Job Description...</p>
-  </div>
-
-  <!-- RESULT -->
-  <div class="result-card" id="result-card">
-    <div class="result-header">
-      <div class="result-label">✦ Job Description generada</div>
-      <div class="result-actions">
-        <button class="btn-copy" onclick="copyJD()">Copiar</button>
-        <button class="btn-regen" onclick="generateJD()">Regenerar</button>
+      <!-- HISTORIAL -->
+      <div class="section">
+        <h2><span>📚</span> Historial de JDs</h2>
+        <ul id="historyList" class="history-list">
+          <div class="empty-state">
+            <p>📭 No hay JDs generadas aún</p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Crea una para que aparezca aquí</p>
+          </div>
+        </ul>
+        <button class="btn btn-secondary" style="width: 100%; margin-top: 1rem;" onclick="clearHistory()">
+          🗑 Limpiar historial
+        </button>
       </div>
     </div>
-    <div class="result-body" id="result-body"></div>
   </div>
 
-  <!-- CTA -->
-  <div class="corvus-cta" id="corvus-cta" style="display:none">
-    <div class="cta-text">
-      <strong>¿Necesitás ayuda con el proceso de selección?</strong>
-      En Corvus Talent te ayudamos a encontrar el candidato ideal para este puesto.
-    </div>
-    <a href="https://wa.me/5493412712847?text=Hola%2C%20generé%20una%20JD%20con%20Corvus%20Craft%20y%20me%20interesa%20el%20servicio%20de%20selección." target="_blank" class="btn-cta">Contactar</a>
-  </div>
+  <script src="../auth-check.js"></script>
+  <script>
+    const DAILY_LIMIT = 3;
+    const STORAGE_KEY = 'corvus_craft_history';
+    const USAGE_KEY = 'corvus_craft_usage';
 
-</div>
-</main>
+    let currentOutput = null;
 
-<footer>
-  <div class="footer-brand">CORVUS <span>CRAFT</span> · by Corvus Talent</div>
-  <a href="/" target="_blank" class="footer-link">corvustalent.com.ar</a>
-</footer>
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      updateLimitBadge();
+      renderHistory();
+    });
 
-<script>
-let selectedLang = 'es';
-let selectedTone = 'Profesional';
+    // Manejo del formulario
+    document.getElementById('jdForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-function setLang(lang, btn) {
-  selectedLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
+      const generateBtn = document.getElementById('generateBtn');
+      const loading = document.getElementById('loading');
+      const output = document.getElementById('output');
+      const outputContent = document.getElementById('outputContent');
+      const successMessage = document.getElementById('successMessage');
 
-function toggleTone(chip) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  chip.classList.add('selected');
-  selectedTone = chip.textContent;
-}
-
-function getFormData() {
-  return {
-    title: document.getElementById('job-title').value.trim(),
-    industry: document.getElementById('industry').value,
-    seniority: document.getElementById('seniority').value,
-    modality: document.getElementById('modality').value,
-    companyType: document.getElementById('company-type').value,
-    skills: document.getElementById('skills').value.trim(),
-    responsibilities: document.getElementById('responsibilities').value.trim(),
-    lang: selectedLang,
-    tone: selectedTone,
-  };
-}
-
-function buildPrompt(data) {
-  const langInstruction = data.lang === 'en'
-    ? 'Write the entire job description in English.'
-    : 'Escribí toda la descripción del puesto en español (Argentina).';
-
-  const toneMap = {
-    'Profesional': 'profesional y claro, sin jerga innecesaria',
-    'Dinámico': 'dinámico y energético, mostrando cultura activa',
-    'Cercano': 'cercano y humano, usando "vos" y un tono conversacional',
-    'Técnico': 'técnico y preciso, orientado a profesionales especializados',
-    'Corporativo': 'formal y corporativo, apropiado para grandes empresas',
-  };
-  const tone = toneMap[data.tone] || 'profesional';
-
-  return `${langInstruction}
-
-Generá una Job Description completa y atractiva para el siguiente puesto. El tono debe ser ${tone}.
-
-DATOS DEL PUESTO:
-- Título: ${data.title}
-- Rubro: ${data.industry || 'No especificado'}
-- Seniority: ${data.seniority || 'No especificado'}
-- Modalidad: ${data.modality || 'No especificada'}
-- Tipo de empresa: ${data.companyType || 'No especificado'}
-- Skills técnicas: ${data.skills || 'No especificadas'}
-- Responsabilidades: ${data.responsibilities || 'No especificadas'}
-
-La JD debe incluir estas secciones en orden:
-1. Sobre el rol (2-3 oraciones que enganchen al candidato)
-2. Responsabilidades principales (5-7 bullets concisos)
-3. Requisitos (4-6 bullets: skills técnicas + experiencia)
-4. Deseable (2-3 bullets opcionales)
-5. Lo que ofrecemos (3-4 bullets atractivos, podés inferir según el tipo de empresa)
-
-Usá bullets con "·" (punto centrado). No pongas títulos con #. Hacé la JD realista, atractiva y directa — que un candidato quiera postularse.`;
-}
-
-// ── LÍMITE DIARIO ─────────────────────────────────────────────
-const CRAFT_LIMIT = 3;
-const CRAFT_KEY = 'corvus_craft_usage';
-
-function getUsage() {
-  try {
-    const raw = localStorage.getItem(CRAFT_KEY);
-    if (!raw) return { date: null, count: 0 };
-    return JSON.parse(raw);
-  } catch(e) { return { date: null, count: 0 }; }
-}
-
-function incrementUsage() {
-  const today = new Date().toDateString();
-  const usage = getUsage();
-  const newCount = usage.date === today ? usage.count + 1 : 1;
-  try { localStorage.setItem(CRAFT_KEY, JSON.stringify({ date: today, count: newCount })); } catch(e) {}
-  return newCount;
-}
-
-function getRemainingUses() {
-  const today = new Date().toDateString();
-  const usage = getUsage();
-  if (usage.date !== today) return CRAFT_LIMIT;
-  return Math.max(0, CRAFT_LIMIT - usage.count);
-}
-
-function updateLimitBanner() {
-  const remaining = getRemainingUses();
-  const banner = document.getElementById('limit-banner');
-  const btn = document.getElementById('btn-generate');
-  if (remaining === 0) {
-    banner.style.display = 'block';
-    btn.disabled = true;
-    btn.textContent = 'Límite diario alcanzado';
-  } else {
-    banner.style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = `<span>✦</span> Generar Job Description <span style="font-size:12px;opacity:0.6">(${remaining} restante${remaining !== 1 ? 's' : ''} hoy)</span>`;
-  }
-}
-
-let sampleAPI = null;
-if (typeof claude !== 'undefined' && claude.use) {
-  claude.use('sample').then(api => { sampleAPI = api; });
-}
-
-async function callAI(data) {
-  if (sampleAPI) {
-    const prompt = buildPrompt(data);
-    const result = await sampleAPI(prompt, { modelTier: 'default' });
-    return result.text || '';
-  }
-  // Backend serverless — manda solo parámetros, el prompt se arma en el servidor
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + (token || '')
-    },
-    body: JSON.stringify({
-      title: data.title,
-      industry: data.industry,
-      seniority: data.seniority,
-      modality: data.modality,
-      companyType: data.companyType,
-      skills: data.skills,
-      responsibilities: data.responsibilities,
-      lang: data.lang,
-      tone: data.tone,
-    })
-  });
-  const result = await response.json();
-  if (result.error) throw new Error(result.error);
-  return result.text || '';
-}
-
-async function generateJD() {
-  if (getRemainingUses() <= 0) { updateLimitBanner(); return; }
-  const data = getFormData();
-  if (!data.title) {
-    document.getElementById('job-title').focus();
-    document.getElementById('job-title').style.borderColor = '#F87171';
-    setTimeout(() => document.getElementById('job-title').style.borderColor = '', 2000);
-    return;
-  }
-
-  const btn = document.getElementById('btn-generate');
-  const loading = document.getElementById('loading');
-  const resultCard = document.getElementById('result-card');
-  const resultBody = document.getElementById('result-body');
-  const corvusCta = document.getElementById('corvus-cta');
-
-  btn.disabled = true;
-  loading.style.display = 'block';
-  resultCard.style.display = 'none';
-  corvusCta.style.display = 'none';
-  resultBody.textContent = '';
-
-  const loadingMsgs = ['Generando tu Job Description...', 'Redactando responsabilidades...', 'Puliendo el tono...', 'Casi listo...'];
-  let msgIdx = 0;
-  const msgInterval = setInterval(() => {
-    msgIdx = (msgIdx + 1) % loadingMsgs.length;
-    document.getElementById('loading-text').textContent = loadingMsgs[msgIdx];
-  }, 2000);
-
-  const prompt = buildPrompt(data);
-
-  try {
-    const text = await callAI(data);
-
-    clearInterval(msgInterval);
-    loading.style.display = 'none';
-    resultCard.style.display = 'block';
-    corvusCta.style.display = 'flex';
-    btn.disabled = false;
-
-    // Animate text
-    resultBody.classList.add('streaming');
-    incrementUsage();
-    updateLimitBanner();
-    let i = 0;
-    const speed = Math.max(5, Math.floor(30 / (text.length / 500)));
-    const interval = setInterval(() => {
-      resultBody.innerHTML = renderMarkdown(text.slice(0, i));
-      i += 3;
-      if (i >= text.length) {
-        resultBody.innerHTML = renderMarkdown(text);
-        resultBody.classList.remove('streaming');
-        resultBody.dataset.raw = text;
-        clearInterval(interval);
+      // Validar límite diario
+      const remaining = getDailyRemaining();
+      if (remaining <= 0) {
+        alert('Límite diario alcanzado. Vuelve mañana.');
+        return;
       }
-    }, speed);
 
-  } catch(e) {
-    clearInterval(msgInterval);
-    loading.style.display = 'none';
-    resultCard.style.display = 'block';
-    resultBody.textContent = 'Hubo un error al generar la descripción. Verificá tu conexión e intentá de nuevo.';
-    btn.disabled = false;
-  }
-}
+      // Recopilar datos
+      const formData = {
+        jobTitle: document.getElementById('jobTitle').value,
+        company: document.getElementById('company').value,
+        location: document.getElementById('location').value,
+        language: document.getElementById('language').value,
+        tone: document.getElementById('tone').value,
+        responsibilities: document.getElementById('responsibilities').value,
+        requirements: document.getElementById('requirements').value,
+        benefits: document.getElementById('benefits').value
+      };
 
-function renderMarkdown(text) {
-  return text
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/^---$/gm, '<hr>')
-    .replace(/^[·•\-] (.+)$/gm, '<ul><li>$1</li></ul>')
-    .replace(/<\/ul>\n<ul>/g, '')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[hup]|<hr)(.+)$/gm, '<p>$1</p>')
-    .replace(/<p><\/p>/g, '')
-    .trim();
-}
+      generateBtn.disabled = true;
+      loading.style.display = 'flex';
+      output.style.display = 'none';
+      successMessage.style.display = 'none';
 
-async function copyJD() {
-  const el = document.getElementById('result-body');
-  const text = el.dataset.raw || el.textContent;
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    const btn = document.querySelector('.btn-copy');
-    btn.textContent = '✓ Copiado';
-    setTimeout(() => btn.textContent = 'Copiar', 2000);
-  } catch(e) {}
-}
+      try {
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
 
-// Init
-window.addEventListener('DOMContentLoaded', updateLimitBanner);
-</script>
-<script src="/auth-nav.js"></script>
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Error generando JD');
+        }
+
+        const result = await response.json();
+        currentOutput = result.jd;
+        outputContent.textContent = result.jd;
+        output.style.display = 'block';
+
+        // Guardar en historial
+        saveToHistory({
+          title: formData.jobTitle,
+          company: formData.company,
+          language: formData.language,
+          tone: formData.tone,
+          content: result.jd,
+          timestamp: new Date().toISOString()
+        });
+
+        // Actualizar uso
+        addDailyUsage();
+        updateLimitBadge();
+        renderHistory();
+        successMessage.style.display = 'block';
+      } catch (error) {
+        alert('Error: ' + error.message);
+      } finally {
+        generateBtn.disabled = false;
+        loading.style.display = 'none';
+      }
+    });
+
+    // HISTORIAL FUNCIONES
+    function saveToHistory(item) {
+      const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      history.unshift(item);
+      history = history.slice(0, 50); // Mantener últimas 50
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const historyList = document.getElementById('historyList');
+
+      if (history.length === 0) {
+        historyList.innerHTML = `
+          <div class="empty-state">
+            <p>📭 No hay JDs generadas aún</p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Crea una para que aparezca aquí</p>
+          </div>
+        `;
+        return;
+      }
+
+      historyList.innerHTML = history.map((item, index) => `
+        <li class="history-item">
+          <div class="history-item-content" onclick="loadFromHistory(${index})">
+            <div class="history-item-title">${item.title} @ ${item.company}</div>
+            <div class="history-item-meta">
+              ${item.language === 'en' ? '🇺🇸' : '🇦🇷'} ${item.tone} • ${new Date(item.timestamp).toLocaleDateString()}
+            </div>
+          </div>
+          <div class="history-item-actions">
+            <button class="icon-btn" onclick="copyHistoryItem(${index})" title="Copiar">📋</button>
+            <button class="icon-btn" onclick="deleteHistoryItem(${index})" title="Eliminar">🗑</button>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    function loadFromHistory(index) {
+      const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const item = history[index];
+      if (item) {
+        currentOutput = item.content;
+        document.getElementById('outputContent').textContent = item.content;
+        document.getElementById('output').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function copyHistoryItem(index) {
+      const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const item = history[index];
+      if (item) {
+        navigator.clipboard.writeText(item.content);
+        alert('✓ Copiado al portapapeles');
+      }
+    }
+
+    function deleteHistoryItem(index) {
+      if (confirm('¿Eliminar este JD del historial?')) {
+        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        history.splice(index, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        renderHistory();
+      }
+    }
+
+    function clearHistory() {
+      if (confirm('¿Limpiar todo el historial? No se puede deshacer.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+      }
+    }
+
+    // LÍMITE DIARIO
+    function getDailyRemaining() {
+      const today = new Date().toDateString();
+      const usage = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
+      const todayUsage = usage[today] || 0;
+      return Math.max(0, DAILY_LIMIT - todayUsage);
+    }
+
+    function addDailyUsage() {
+      const today = new Date().toDateString();
+      const usage = JSON.parse(localStorage.getItem(USAGE_KEY) || '{}');
+      usage[today] = (usage[today] || 0) + 1;
+      localStorage.setItem(USAGE_KEY, JSON.stringify(usage));
+    }
+
+    function updateLimitBadge() {
+      const remaining = getDailyRemaining();
+      const badge = document.getElementById('limitInfo');
+      if (remaining > 0) {
+        badge.textContent = `${remaining} generaciones disponibles hoy`;
+        badge.classList.remove('warning');
+      } else {
+        badge.textContent = 'Límite diario alcanzado';
+        badge.classList.add('warning');
+      }
+    }
+
+    function copyToClipboard() {
+      if (currentOutput) {
+        navigator.clipboard.writeText(currentOutput);
+        alert('✓ Copiado al portapapeles');
+      }
+    }
+
+    function goToDashboard() {
+      window.location.href = '../dashboard/candidato/';
+    }
+  </script>
 </body>
 </html>

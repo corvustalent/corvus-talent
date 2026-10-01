@@ -607,20 +607,138 @@
       await loadMessages(token);
     }
 
-    // UPDATE CHAT HEADER CON AVATAR
-    function updateChatHeader(user) {
-      const initials = getInitials(user?.nombre, user?.apellido);
-      const avatarEl = document.getElementById('chatHeaderAvatar');
-      
-      if (user?.avatar_url) {
-        avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="">`;
-      } else {
-        avatarEl.textContent = initials;
-      }
+   // ACTUALIZACIÓN PARA: chat-notif-avatares.html
+// Reemplazar la función updateChatHeader con esta versión mejorada
 
-      document.getElementById('chatHeaderName').textContent = `${user?.nombre || 'Usuario'} ${user?.apellido || ''}`;
-      document.getElementById('chatHeaderRole').textContent = user?.company || '-';
+function updateChatHeader(user) {
+  const initials = getInitials(user?.nombre, user?.apellido);
+  const avatarEl = document.getElementById('chatHeaderAvatar');
+  
+  if (user?.avatar_url) {
+    avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="">`;
+  } else {
+    avatarEl.textContent = initials;
+  }
+
+  // NUEVO: Mostrar badges de reputación y verificación
+  let headerHtml = `${user?.nombre || 'Usuario'} ${user?.apellido || ''}`;
+  let roleText = user?.company || '-';
+
+  // Badge de verificación
+  if (user?.corporate_email_verified) {
+    headerHtml += ' <span style="color: #4CAF50; font-size: 0.8rem;">🔵</span>';
+  }
+
+  // Badge de recruiter de confianza
+  if (user?.es_recruiter_confianza) {
+    headerHtml += ' <span style="color: #FFC107; font-size: 0.8rem;">⭐</span>';
+  }
+
+  document.getElementById('chatHeaderName').innerHTML = headerHtml;
+  
+  // Mostrar empresa + métricas de reputación si es recruiter
+  if (user?.role === 'recruiter') {
+    let metricsHtml = user?.company || '-';
+    
+    if (user?.solicitudes_aceptadas > 0) {
+      const tasa = Math.round(user?.tasa_aceptacion || 0);
+      metricsHtml += ` • ${user?.solicitudes_aceptadas} aceptaciones (${tasa}%)`;
     }
+
+    if (user?.es_recruiter_confianza) {
+      metricsHtml = `<span style="color: #FFC107;">⭐ Recruiter de confianza</span> • ${metricsHtml}`;
+    } else if (user?.corporate_email_verified) {
+      metricsHtml = `<span style="color: #4CAF50;">🔵 Verificado</span> • ${metricsHtml}`;
+    }
+
+    roleText = metricsHtml;
+  }
+
+  document.getElementById('chatHeaderRole').innerHTML = roleText;
+}
+
+// ACTUALIZACIÓN: Enriquecer los datos de usuario al cargar conversaciones
+// Reemplazar la función selectConversation para incluir todos los datos de reputación
+
+async function selectConversation(convId, element) {
+  currentConversationId = convId;
+  
+  // UI update
+  document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+
+  document.getElementById('chatHeader').style.display = 'flex';
+  document.getElementById('chatInputSection').style.display = 'flex';
+  document.getElementById('chatMessages').innerHTML = '<div class="loading">Cargando mensajes...</div>';
+
+  // Load conversation data
+  const conv = conversations.find(c => c.id === convId);
+  const isRecruiter = currentUser.role === 'recruiter';
+  const otherUserId = isRecruiter ? conv.candidate_id : conv.recruiter_id;
+
+  // NUEVO: Obtener datos completos del usuario incluyendo reputación
+  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+  try {
+    const res = await fetch(`/api/profile?user_id=${otherUserId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const otherUser = await res.json();
+    updateChatHeader(otherUser);
+  } catch (err) {
+    // Fallback: usar datos básicos
+    const otherUser = isRecruiter ? conv.candidate : conv.recruiter;
+    updateChatHeader(otherUser);
+  }
+  
+  await loadMessages(token);
+}
+
+// ACTUALIZACIÓN: Mostrar badges en los mensajes también
+// Reemplazar la parte de renderizar mensajes en loadMessages
+
+function renderMessagesWithReputation(messages) {
+  const messagesContainer = document.getElementById('chatMessages');
+  
+  if (messages.length === 0) {
+    messagesContainer.innerHTML = '<div class="empty-state"><p>📭 Inicia la conversación</p></div>';
+    return;
+  }
+
+  messagesContainer.innerHTML = messages.map(msg => {
+    const isOwn = msg.sender_id === userId;
+    const initials = getInitials(msg.sender?.nombre, msg.sender?.apellido);
+    const avatarHtml = msg.sender?.avatar_url 
+      ? `<img src="${msg.sender.avatar_url}" alt="">`
+      : initials;
+
+    // NUEVO: Mostrar badges en el mensaje también
+    let senderBadges = '';
+    if (msg.sender?.corporate_email_verified) {
+      senderBadges += ' <span style="color: #4CAF50; font-size: 0.7rem;">🔵</span>';
+    }
+    if (msg.sender?.es_recruiter_confianza) {
+      senderBadges += ' <span style="color: #FFC107; font-size: 0.7rem;">⭐</span>';
+    }
+
+    return `
+      <div class="message ${isOwn ? 'own' : ''}">
+        <div class="message-avatar">${avatarHtml}</div>
+        <div class="message-bubble">
+          <div class="message-sender">${msg.sender_name}${senderBadges}</div>
+          <div class="message-content">${escapeHtml(msg.content)}</div>
+          <div class="message-time">${formatTime(msg.created_at)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Scroll to bottom
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // Mark as read
+  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+  markAsRead(token);
+}
 
     // LOAD MESSAGES
     async function loadMessages(token) {

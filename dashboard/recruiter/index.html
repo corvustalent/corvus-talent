@@ -463,5 +463,134 @@ async function loadChatBadge() {
 loadCandidates();
 loadChatBadge();
 </script>
+  // FRAGMENTO A AGREGAR EN dashboard/recruiter/index.html
+// Agregar al final del <script>, antes del cierre
+
+// ==========================================
+// NOTIFICACIONES PUSH — SOLICITUDES ACEPTADAS
+// ==========================================
+
+// Verificar permiso de notificaciones al cargar
+function initializeNotifications() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    // Mostrar banner de opt-in personalizado
+    const notifBanner = document.createElement('div');
+    notifBanner.id = 'notificationBanner';
+    notifBanner.style.cssText = `
+      background: rgba(143, 168, 200, 0.1);
+      border: 1px solid #8FA8C8;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    `;
+    notifBanner.innerHTML = `
+      <p style="color: #BABDC2; flex: 1;">Activa notificaciones para saber cuándo un candidato acepta tu solicitud.</p>
+      <button id="enableNotifBtn" style="padding: 0.5rem 1rem; background: #8FA8C8; color: #0A1628; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">Activar</button>
+      <button id="dismissNotifBtn" style="padding: 0.5rem 1rem; background: transparent; color: #8FA8C8; border: 1px solid #8FA8C8; border-radius: 4px; font-weight: 600; cursor: pointer;">Descartar</button>
+    `;
+    
+    const mainSection = document.querySelector('.section') || document.querySelector('main');
+    if (mainSection) {
+      mainSection.parentElement.insertBefore(notifBanner, mainSection);
+    }
+
+    document.getElementById('enableNotifBtn').addEventListener('click', () => {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          notifBanner.remove();
+        }
+      });
+    });
+
+    document.getElementById('dismissNotifBtn').addEventListener('click', () => {
+      notifBanner.remove();
+      localStorage.setItem('corvus_notif_dismissed', 'true');
+    });
+  }
+}
+
+// Polling para detectar cambios en solicitudes (cada 5 segundos)
+let lastSolicitudStates = {};
+
+async function pollForContactRequests() {
+  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+  
+  try {
+    const res = await fetch('/api/contact?type=sent', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const solicitudes = await res.json();
+
+    solicitudes.forEach(sol => {
+      const key = sol.id;
+      const lastState = lastSolicitudStates[key];
+      
+      // Detectar cambio de status a "accepted"
+      if (lastState && lastState.status !== 'accepted' && sol.status === 'accepted') {
+        showAcceptanceNotification(sol);
+      }
+
+      // Guardar estado actual
+      lastSolicitudStates[key] = { status: sol.status };
+    });
+  } catch (err) {
+    console.error('Error polling contact requests:', err);
+  }
+}
+
+function showAcceptanceNotification(solicitud) {
+  const candidateName = solicitud.candidate?.nombre || 'Un candidato';
+  
+  // Notificación del navegador
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('✓ ¡Solicitud aceptada!', {
+      body: `${candidateName} aceptó tu solicitud de contacto. Podés empezar a chatear.`,
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      tag: 'acceptance-' + solicitud.id,
+      requireInteraction: true // Persiste hasta que el usuario la cierre
+    }).addEventListener('click', () => {
+      // Al hacer click, ir al chat
+      window.location.href = '/chat/';
+    });
+  }
+
+  // Audio opcional (sonido suave)
+  playNotificationSound();
+}
+
+function playNotificationSound() {
+  // Sonido SVG inline (generado con Web Audio API)
+  // Para MVP, solo un feedback visual. En producción, agregar audio file
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.frequency.value = 800; // Hz
+  oscillator.type = 'sine';
+
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.5);
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem('corvus_notif_dismissed')) {
+    initializeNotifications();
+  }
+
+  // Polling cada 5 segundos
+  pollForContactRequests();
+  setInterval(pollForContactRequests, 5000);
+});
 </body>
 </html>

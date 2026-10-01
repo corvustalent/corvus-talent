@@ -126,277 +126,63 @@
     <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
   </div>
 </nav>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificar Email Corporativo — Corvus Talent</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
 
-    body {
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0A1628 0%, #19273B 100%);
-      color: #BABDC2;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-
-    .container {
-      background: #19273B;
-      border: 1px solid rgba(143, 168, 200, 0.2);
-      border-radius: 12px;
-      padding: 3rem;
-      max-width: 500px;
-      width: 100%;
-      text-align: center;
-    }
-
-    h1 {
-      color: #FFFFFF;
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-    }
-
-    .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    p {
-      color: #BABDC2;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      margin-bottom: 1.5rem;
-    }
-
-    .status-box {
-      background: #0A1628;
-      border-left: 3px solid #8FA8C8;
-      padding: 1.5rem;
-      border-radius: 6px;
-      margin: 2rem 0;
-      min-height: 80px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .status-message {
-      font-size: 1rem;
-      color: #BABDC2;
-      margin-bottom: 0.5rem;
-    }
-
-    .status-sub {
-      font-size: 0.85rem;
-      color: #656D78;
-    }
-
-    .spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid #8FA8C8;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      background: #8FA8C8;
-      color: #0A1628;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.3s ease;
-      font-family: inherit;
-      font-size: 0.95rem;
-    }
-
-    .btn:hover {
-      background: #A8BFD8;
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: #8FA8C8;
-      border: 1px solid #8FA8C8;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(143, 168, 200, 0.1);
-    }
-
-    .success {
-      color: #4CAF50;
-    }
-
-    .error {
-      color: #F87171;
-    }
-
-    .badge {
-      display: inline-block;
-      background: rgba(143, 168, 200, 0.1);
-      color: #8FA8C8;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-    }
-
-    .footer {
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(143, 168, 200, 0.2);
-      font-size: 0.85rem;
-      color: #656D78;
-    }
-
-    .footer a {
-      color: #8FA8C8;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div id="content">
-      <div class="icon">🔍</div>
-      <h1>Verificando tu email...</h1>
-      <div class="status-box">
-        <div class="spinner"></div>
-        <p class="status-message">Un momento, estamos verificando tu email corporativo.</p>
-      </div>
-    </div>
-
-    <div class="footer">
-      <a href="https://corvustalent.com.ar/">Volver a Corvus Talent</a>
-    </div>
-  </div>
-
-  <script>
-    async function verifyEmail() {
-      // Obtener token de URL
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
-
-      if (!token) {
-        showError('❌ Token inválido o no proporcionado', 'Por favor, intenta desde el email de verificación nuevamente.');
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/verify-corporate-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            action: 'verify-token',
-            token: token
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            showError('❌ Token expirado o inválido', 'Los tokens expiran en 24 horas. Por favor, solicita uno nuevo desde tu dashboard.');
-          } else if (response.status === 400 && data.error.includes('expired')) {
-            showError('❌ Token expirado', 'Los tokens expiran en 24 horas. Por favor, solicita uno nuevo desde tu dashboard.');
-          } else {
-            showError('❌ Error en la verificación', data.error || 'Algo salió mal. Intenta de nuevo.');
-          }
-          return;
-        }
-
-        showSuccess('✓ Email verificado correctamente', 'Tu email corporativo está verificado. Los candidatos verán un badge de confianza 🔵 en tu perfil.');
-      } catch (error) {
-        console.error('Error:', error);
-        showError('❌ Error de conexión', 'No pudimos conectar con el servidor. Intenta de nuevo.');
-      }
-    }
-
-    function showSuccess(title, message) {
-      const content = document.getElementById('content');
-      content.innerHTML = `
-        <div class="icon success">✓</div>
-        <h1 class="success">¡Verificación exitosa!</h1>
-        <div class="status-box">
-          <p class="status-message success">${title}</p>
-          <p class="status-sub">${message}</p>
-          <div class="badge">Email verificado 🔵</div>
-        </div>
-        <p style="margin-top: 2rem;">Tu perfil ahora muestra que eres un recruiter verificado. Los candidatos confían más en recruiters verificados.</p>
-        <div style="margin-top: 2rem;">
-          <a href="https://corvustalent.com.ar/dashboard/recruiter/" class="btn">Ir a mi Dashboard</a>
-        </div>
-      `;
-    }
-
-    function showError(title, message) {
-      const content = document.getElementById('content');
-      content.innerHTML = `
-        <div class="icon error">⚠️</div>
-        <h1 class="error">${title}</h1>
-        <div class="status-box">
-          <p class="status-message error">${message}</p>
-        </div>
-        <div style="margin-top: 2rem;">
-          <a href="https://corvustalent.com.ar/dashboard/recruiter/" class="btn">Volver al Dashboard</a>
-          <a href="https://corvustalent.com.ar/" class="btn btn-secondary" style="margin-left: 1rem;">Ir a Inicio</a>
-        </div>
-      `;
-    }
-
-    // Ejecutar verificación al cargar
-    document.addEventListener('DOMContentLoaded', verifyEmail);
-  </script>
-</body>
-</html>
 <main>
   <div class="dashboard-header">
-    <h1 class="welcome">Hola, <span id="user-name">—</span></h1>
-    <p class="header-sub" id="company-sub">Panel de búsqueda de talento.</p>
+    <h1 class="welcome">Hola, <span id="welcome-name"></span></h1>
+    <p class="header-sub">Panel de búsqueda de talento — Corvus Talent</p>
+  </div>
+
+  <!-- SECCIÓN DE VERIFICACIÓN DE EMAIL CORPORATIVO -->
+  <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+    <h3 style="color: #FFFFFF; margin-top: 0; margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">🔐 Verifica tu email corporativo</h3>
+    
+    <div id="verification-status" style="display: none; padding: 1rem; background: #0A1628; border-left: 3px solid #4CAF50; border-radius: 4px; margin-bottom: 1rem;">
+      <p style="color: #4CAF50; margin: 0; font-size: 0.9rem;"><strong>✓ Email verificado</strong></p>
+      <p id="verified-email" style="color: #BABDC2; margin: 0.5rem 0 0 0; font-size: 0.85rem;"></p>
+    </div>
+
+    <div id="verification-form" style="">
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+        <input 
+          type="email" 
+          id="corporate-email-input" 
+          placeholder="tu.email@empresa.com" 
+          style="flex: 1; padding: 0.75rem; background: #0A1628; border: 1px solid #152132; border-radius: 4px; color: #BABDC2; font-size: 0.9rem;"
+        >
+        <button 
+          id="send-verification-btn" 
+          onclick="sendVerification()" 
+          style="padding: 0.75rem 1.5rem; background: #8FA8C8; color: #0A1628; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Enviar verificación
+        </button>
+      </div>
+      <p id="verification-message" style="color: #656D78; font-size: 0.85rem; margin: 0;"></p>
+    </div>
+
+    <div id="reputation-metrics" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #152132; display: none;">
+      <p style="color: #656D78; font-size: 0.85rem; margin: 0.5rem 0;">
+        <strong style="color: #BABDC2;">Solicitudes aceptadas:</strong> <span id="metric-aceptadas">0</span>
+      </p>
+      <p style="color: #656D78; font-size: 0.85rem; margin: 0.5rem 0;">
+        <strong style="color: #BABDC2;">Tasa de aceptación:</strong> <span id="metric-tasa">0</span>%
+      </p>
+    </div>
   </div>
 
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat-card">
-      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-num" id="stat-candidates">0</div>
       <div class="stat-label">candidatos disponibles</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" id="stat-high">—</div>
+      <div class="stat-num" id="stat-high-score">0</div>
       <div class="stat-label">con score +70</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" id="stat-immediate">—</div>
+      <div class="stat-num" id="stat-new">0</div>
       <div class="stat-label">disponibilidad inmediata</div>
     </div>
   </div>
@@ -406,264 +192,212 @@
     <div class="filters-title">Filtros de búsqueda</div>
     <div class="filters-grid">
       <div>
-        <span class="filter-label">Rubro</span>
+        <label class="filter-label">Rubro</label>
         <select id="filter-rubro">
-          <option value="">Todos los rubros</option>
-          <option>Tecnología IT</option>
-          <option>Recursos Humanos</option>
-          <option>Ventas</option>
-          <option>Marketing</option>
-          <option>Administración</option>
-          <option>Finanzas</option>
-          <option>Legal / Derecho</option>
-          <option>Salud</option>
-          <option>Ingeniería</option>
-          <option>Logística</option>
-          <option>Turismo y Hotelería</option>
-          <option>Atención al Cliente</option>
-          <option>Diseño Gráfico</option>
-          <option>Docencia</option>
+          <option>Todos los rubros</option>
         </select>
       </div>
       <div>
-        <span class="filter-label">Seniority</span>
+        <label class="filter-label">Seniority</label>
         <select id="filter-seniority">
-          <option value="">Cualquier nivel</option>
-          <option>Junior</option>
-          <option>Semi Senior</option>
-          <option>Senior</option>
-          <option>Lead / Tech Lead</option>
-          <option>Manager</option>
+          <option>Cualquier nivel</option>
         </select>
       </div>
       <div>
-        <span class="filter-label">Modalidad buscada</span>
-        <select id="filter-modalidad">
-          <option value="">Cualquiera</option>
-          <option>Remoto</option>
-          <option>Híbrido</option>
-          <option>Presencial</option>
+        <label class="filter-label">Modalidad buscada</label>
+        <select id="filter-modality">
+          <option>Cualquiera</option>
         </select>
       </div>
       <div>
-        <span class="filter-label">Disponibilidad</span>
-        <select id="filter-disponibilidad">
-          <option value="">Cualquiera</option>
-          <option>Inmediata</option>
-          <option>2 semanas</option>
-          <option>1 mes</option>
+        <label class="filter-label">Disponibilidad</label>
+        <select id="filter-availability">
+          <option>Cualquiera</option>
         </select>
-      </div>
-      <div>
-        <span class="filter-label">Score mínimo: <span id="score-val">0</span>%</span>
-        <input type="range" id="filter-score" min="0" max="90" step="10" value="0"
-          oninput="document.getElementById('score-val').textContent=this.value">
-      </div>
-      <div style="display:flex;align-items:flex-end">
-        <button class="btn-filter" onclick="loadCandidates()">Buscar candidatos</button>
       </div>
     </div>
+    <label class="filter-label" style="margin-top:12px">Score mínimo: <span class="score-display" id="score-display">0%</span></label>
+    <input type="range" id="filter-score" min="0" max="100" value="0" onchange="updateScoreDisplay()">
+    <button class="btn-filter" onclick="loadCandidates()">Buscar candidatos</button>
   </div>
 
-  <!-- RESULTS -->
+  <!-- CANDIDATES -->
   <div class="section-header">
     <div class="section-title">Candidatos</div>
-    <div class="results-count" id="results-count"></div>
+    <div class="results-count" id="results-count">0 resultados</div>
   </div>
-
-  <div id="msg" class="msg"></div>
-  <div id="candidates-list"><div class="loading">Cargando candidatos...</div></div>
+  <div id="candidates-list"></div>
 </main>
 
 <!-- MODAL CONTACTO -->
-<div class="modal-overlay" id="modal-overlay">
+<div class="modal-overlay" id="modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title">Solicitud de contacto</div>
-    <div class="modal-sub" id="modal-candidate-name">Enviás una solicitud al candidato.</div>
-    <div class="msg" id="modal-msg"></div>
+    <h2 class="modal-title">Contactar candidato</h2>
+    <p class="modal-sub">Envía un mensaje personalizado para iniciar la conversación.</p>
+    <div id="modal-msg" class="msg"></div>
+    <div class="modal-field">
+      <label>Candidato</label>
+      <p style="font-size:13px;color:var(--white);margin:0" id="modal-candidate-name"></p>
+    </div>
     <div class="modal-field">
       <label>Tu mensaje</label>
-      <textarea id="modal-message" placeholder="Presentate y contale por qué te interesa su perfil. Mencioná la posición y la empresa."></textarea>
+      <textarea id="modal-message" placeholder="Hola, nos interesa tu perfil..."></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-send" onclick="sendContact()">Enviar solicitud</button>
+      <button class="btn-send" id="modal-send-btn" onclick="sendContactRequest()">Enviar solicitud</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── AUTH CHECK ─────────────────────────────────────────────
-const userRaw = localStorage.getItem('corvus_user');
-const token = localStorage.getItem('corvus_token');
+// ── AUTH & STATE ────────────────────────────────────────────
+const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+const user = JSON.parse(localStorage.getItem('corvus_user') || '{}');
+let currentCandidateId = null;
+let currentPage = 1;
 
-if (!userRaw || !token) { window.location.href = '/auth'; }
-
-const user = JSON.parse(userRaw || '{}');
-if (user.role !== 'recruiter') { window.location.href = '/dashboard/candidato'; }
-
-document.getElementById('user-name').textContent = user.email?.split('@')[0] || 'recruiter';
-document.getElementById('nav-company').textContent = user.company || '';
-if (user.company) {
-  document.getElementById('company-sub').textContent = `Panel de búsqueda de talento — ${user.company}`;
+if (!token) {
+  window.location.href = '/login';
 }
 
-// ── LOAD CANDIDATES ────────────────────────────────────────
-let allCandidates = [];
-let selectedCandidateId = null;
+// ── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('welcome-name').textContent = user.company || user.nombre || 'Recruiter';
+  document.getElementById('nav-company').textContent = user.company || '—';
+  loadCandidates();
+  loadChatBadge();
+  loadVerificationStatus();
+  if (!localStorage.getItem('corvus_notif_dismissed')) {
+    initializeNotifications();
+  }
+  pollForContactRequests();
+  setInterval(pollForContactRequests, 5000);
+});
 
+// ── CANDIDATES ──────────────────────────────────────────────
 async function loadCandidates() {
   const rubro = document.getElementById('filter-rubro').value;
   const seniority = document.getElementById('filter-seniority').value;
-  const modalidad = document.getElementById('filter-modalidad').value;
-  const disponibilidad = document.getElementById('filter-disponibilidad').value;
-  const minScore = parseInt(document.getElementById('filter-score').value) || 0;
+  const modality = document.getElementById('filter-modality').value;
+  const availability = document.getElementById('filter-availability').value;
+  const score = document.getElementById('filter-score').value;
 
   document.getElementById('candidates-list').innerHTML = '<div class="loading">Buscando candidatos...</div>';
 
   try {
-    const params = new URLSearchParams();
-    if (rubro) params.set('rubro', rubro);
-    if (seniority) params.set('seniority', seniority);
-    if (modalidad) params.set('modalidad', modalidad);
-    if (disponibilidad) params.set('disponibilidad', disponibilidad);
-    if (minScore > 0) params.set('min_score', minScore);
+    const params = new URLSearchParams({
+      rubro: rubro !== 'Todos los rubros' ? rubro : '',
+      seniority: seniority !== 'Cualquier nivel' ? seniority : '',
+      modality: modality !== 'Cualquiera' ? modality : '',
+      availability: availability !== 'Cualquiera' ? availability : '',
+      score: score,
+      limit: 20
+    });
 
-    const [candidatesRes, contactsRes] = await Promise.all([
-      fetch('/api/candidates?' + params.toString(), {
-        headers: { 'Authorization': 'Bearer ' + token }
-      }),
-      fetch('/api/contact?action=sent', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      })
-    ]);
+    const res = await fetch(`/api/search?${params}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
 
-    const data = await candidatesRes.json();
-    const contactsData = contactsRes.ok ? await contactsRes.json() : { sent: [] };
-    const contactedIds = new Set((contactsData.sent || []).map(c => c.candidate_id));
-
-    if (!candidatesRes.ok) { showMsg(data.error || 'Error al cargar candidatos.', 'error'); return; }
-
-    allCandidates = data.candidates || [];
-    renderCandidates(allCandidates, contactedIds);
-    updateStats(allCandidates);
-
-  } catch(e) {
-    document.getElementById('candidates-list').innerHTML = '<div class="loading">Error de conexión.</div>';
-  }
-}
-
-function updateStats(candidates) {
-  document.getElementById('stat-total').textContent = candidates.length;
-  document.getElementById('stat-high').textContent = candidates.filter(c => (c.best_score || 0) >= 70).length;
-  document.getElementById('stat-immediate').textContent = candidates.filter(c => c.disponibilidad === 'Inmediata').length;
-}
-
-function renderCandidates(candidates, contactedIds = new Set()) {
-  const list = document.getElementById('candidates-list');
-  document.getElementById('results-count').textContent = candidates.length + ' resultado' + (candidates.length !== 1 ? 's' : '');
-
-  if (candidates.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <p>No hay candidatos que coincidan con tu búsqueda.</p>
-        <span>Probá ajustando los filtros.</span>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = candidates.map(c => {
-    const initial = c.nombre ? c.nombre[0].toUpperCase() : c.email?.[0]?.toUpperCase() || '?';
-    const name = c.nombre && c.apellido ? `${c.nombre} ${c.apellido}` : c.nombre || 'Candidato';
-    const score = c.best_score || null;
-    const scoreColor = score >= 70 ? '#4ADE80' : score >= 40 ? '#FBBF24' : '#F87171';
-
-    const tags = [
-      c.rubro, c.seniority, c.ubicacion, c.disponibilidad,
-      c.tipo_puesto, c.modalidad
-    ].filter(Boolean);
-
-    const contactBtns = [];
-    if (c.mostrar_email && c.email_contacto) {
-      contactBtns.push(`<a href="mailto:${c.email_contacto}" class="contact-btn">✉ ${c.email_contacto}</a>`);
+    if (!data.candidates || data.candidates.length === 0) {
+      document.getElementById('candidates-list').innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontraron candidatos</p><span>Intenta ajustar los filtros</span></div>';
+      document.getElementById('results-count').textContent = '0 resultados';
+      return;
     }
-    if (c.mostrar_telefono && c.telefono) {
-      contactBtns.push(`<a href="https://wa.me/${c.telefono.replace(/\D/g,'')}" target="_blank" class="contact-btn">💬 WhatsApp</a>`);
-    }
-    if (c.mostrar_linkedin && c.linkedin) {
-      contactBtns.push(`<a href="https://${c.linkedin.replace('https://','')}" target="_blank" class="contact-btn">in LinkedIn</a>`);
-    }
-    const alreadyContacted = contactedIds.has(c.id);
-    contactBtns.push(alreadyContacted
-      ? `<span style="font-size:12px;color:var(--slate);padding:7px 14px;border:1px solid var(--border);border-radius:6px">✓ Solicitud enviada</span>`
-      : `<button class="contact-btn primary" onclick="openModal('${c.id}','${name}')">Enviar solicitud</button>`
-    );
 
-    return `
+    document.getElementById('results-count').textContent = `${data.candidates.length} resultados`;
+    document.getElementById('stat-candidates').textContent = data.candidates.length;
+
+    const html = data.candidates.map(c => `
       <div class="candidate-card">
         <div class="candidate-top">
-          <div class="candidate-avatar">${initial}</div>
+          <div class="candidate-avatar">${getInitials(c.nombre, c.apellido)}</div>
           <div class="candidate-info">
-            <div class="candidate-name">${name}</div>
-            <div class="candidate-meta">${[c.rubro, c.seniority].filter(Boolean).join(' · ') || 'Sin datos de perfil'}</div>
+            <div class="candidate-name">${c.nombre} ${c.apellido}</div>
+            <div class="candidate-meta">${c.seniority || '—'} • ${c.location || '—'}</div>
           </div>
-          ${score !== null ? `
-            <div class="candidate-score">
-              <div class="score-num" style="color:${scoreColor}">${score}%</div>
-              <div class="score-label">mejor match</div>
-            </div>` : ''}
+          <div class="candidate-score">
+            <div class="score-num" style="color:${getSscoreColor(c.score)}">${c.score || 0}%</div>
+            <div class="score-label">match</div>
+          </div>
         </div>
-        ${tags.length > 0 ? `
-          <div class="candidate-tags">
-            ${tags.map(t => `<span class="tag ${['Inmediata','Remoto'].includes(t)?'highlight':''}">${t}</span>`).join('')}
-          </div>` : ''}
-        ${c.notas ? `<p style="font-size:12px;color:var(--gray);margin-bottom:14px;line-height:1.5">${c.notas}</p>` : ''}
-        <div class="candidate-contact">${contactBtns.join('')}</div>
-      </div>`;
-  }).join('');
+        <div class="candidate-tags">
+          ${(c.skills || []).slice(0, 3).map(s => `<span class="tag">${s}</span>`).join('')}
+        </div>
+        <div class="candidate-contact">
+          <button class="contact-btn" onclick="openModal('${c.id}', '${c.nombre} ${c.apellido}')">📧 Contactar</button>
+          <a href="/cv?id=${c.id}" class="contact-btn">📄 Ver CV</a>
+          <a href="https://linkedin.com/in/${c.linkedin || ''}" class="contact-btn" target="_blank">in LinkedIn</a>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('candidates-list').innerHTML = html;
+  } catch(e) {
+    document.getElementById('candidates-list').innerHTML = '<div class="empty-state"><p>Error cargando candidatos</p></div>';
+  }
 }
 
-// ── MODAL CONTACTO ─────────────────────────────────────────
-function openModal(id, name) {
-  selectedCandidateId = id;
-  document.getElementById('modal-candidate-name').textContent = `Solicitud de contacto para ${name}`;
+function getSscoreColor(score) {
+  if (score >= 80) return '#4ADE80';
+  if (score >= 60) return '#FBBF24';
+  return '#F87171';
+}
+
+function getInitials(nombre, apellido) {
+  return ((nombre ? nombre[0] : '') + (apellido ? apellido[0] : '')).toUpperCase();
+}
+
+function updateScoreDisplay() {
+  const val = document.getElementById('filter-score').value;
+  document.getElementById('score-display').textContent = val + '%';
+}
+
+// ── MODAL ───────────────────────────────────────────────────
+function openModal(candidateId, candidateName) {
+  currentCandidateId = candidateId;
+  document.getElementById('modal-candidate-name').textContent = candidateName;
   document.getElementById('modal-message').value = '';
-  document.getElementById('modal-msg').className = 'msg';
-  document.getElementById('modal-overlay').classList.add('visible');
+  document.getElementById('modal-msg').innerHTML = '';
+  document.getElementById('modal').classList.add('visible');
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('visible');
-  selectedCandidateId = null;
-  const sendBtn = document.querySelector('.btn-send');
-  if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Enviar solicitud'; }
+  document.getElementById('modal').classList.remove('visible');
 }
 
-async function sendContact() {
-  const message = document.getElementById('modal-message').value.trim();
-  if (!message || message.length < 20) {
-    const el = document.getElementById('modal-msg');
-    el.textContent = 'Escribí un mensaje de al menos 20 caracteres.';
-    el.className = 'msg error';
+async function sendContactRequest() {
+  const message = document.getElementById('modal-message').value;
+  const sendBtn = document.getElementById('modal-send-btn');
+
+  if (!message.trim()) {
+    alert('Por favor escribe un mensaje');
     return;
   }
 
-  const sendBtn = document.querySelector('.btn-send');
   sendBtn.disabled = true;
   sendBtn.textContent = 'Enviando...';
 
   try {
     const res = await fetch('/api/contact', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ candidate_id: selectedCandidateId, message })
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        candidate_id: currentCandidateId,
+        message: message
+      })
     });
+
     const data = await res.json();
+
     if (res.ok) {
       const el = document.getElementById('modal-msg');
-      el.textContent = '¡Solicitud enviada! El candidato la recibirá en su dashboard.';
+      el.textContent = '✓ Solicitud enviada correctamente.';
       el.className = 'msg success';
       setTimeout(closeModal, 2000);
     } else {
@@ -682,20 +416,14 @@ async function sendContact() {
   }
 }
 
-function showMsg(text, type='success') {
-  const el = document.getElementById('msg');
-  el.textContent = text;
-  el.className = 'msg ' + type;
-}
-
-// ── LOGOUT ─────────────────────────────────────────────────
+// ── LOGOUT ──────────────────────────────────────────────────
 function logout() {
   localStorage.removeItem('corvus_token');
   localStorage.removeItem('corvus_user');
   window.location.href = '/';
 }
 
-// ── CHAT BADGE ─────────────────────────────────────────────
+// ── CHAT BADGE ──────────────────────────────────────────────
 async function loadChatBadge() {
   try {
     const res = await fetch('/api/chat', {
@@ -711,21 +439,71 @@ async function loadChatBadge() {
   } catch(e) {}
 }
 
-// ── INIT ───────────────────────────────────────────────────
-loadCandidates();
-loadChatBadge();
-</script>
-  // FRAGMENTO A AGREGAR EN dashboard/recruiter/index.html
-// Agregar al final del <script>, antes del cierre
+// ── VERIFICACIÓN DE EMAIL ──────────────────────────────────
+async function loadVerificationStatus() {
+  if (!token) return;
 
-// ==========================================
-// NOTIFICACIONES PUSH — SOLICITUDES ACEPTADAS
-// ==========================================
+  try {
+    const res = await fetch('/api/verify-corporate-email', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
 
-// Verificar permiso de notificaciones al cargar
+    const formEl = document.getElementById('verification-form');
+    const statusEl = document.getElementById('verification-status');
+    const metricsEl = document.getElementById('reputation-metrics');
+
+    if (data.corporate_email_verified) {
+      formEl.style.display = 'none';
+      statusEl.style.display = 'block';
+      document.getElementById('verified-email').textContent = `${data.corporate_email}`;
+      metricsEl.style.display = 'block';
+      document.getElementById('metric-aceptadas').textContent = data.solicitudes_aceptadas;
+      document.getElementById('metric-tasa').textContent = data.tasa_aceptacion;
+    } else if (data.corporate_email) {
+      document.getElementById('corporate-email-input').value = data.corporate_email;
+    }
+  } catch (err) {
+    console.error('Error loading verification status:', err);
+  }
+}
+
+async function sendVerification() {
+  const email = document.getElementById('corporate-email-input').value;
+  const msgEl = document.getElementById('verification-message');
+
+  if (!email || !email.includes('@')) {
+    msgEl.textContent = '❌ Ingresa un email válido';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/verify-corporate-email', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ action: 'send-verification', email })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      msgEl.textContent = `✓ Email enviado a ${email}. Revisa tu inbox.`;
+      msgEl.style.color = '#4CAF50';
+    } else {
+      msgEl.textContent = `❌ ${data.error || 'Error enviando email'}`;
+      msgEl.style.color = '#F44336';
+    }
+  } catch (err) {
+    msgEl.textContent = '❌ Error enviando verificación';
+    console.error(err);
+  }
+}
+
+// ── NOTIFICACIONES ──────────────────────────────────────────
 function initializeNotifications() {
   if ('Notification' in window && Notification.permission === 'default') {
-    // Mostrar banner de opt-in personalizado
     const notifBanner = document.createElement('div');
     notifBanner.id = 'notificationBanner';
     notifBanner.style.cssText = `
@@ -744,7 +522,7 @@ function initializeNotifications() {
       <button id="dismissNotifBtn" style="padding: 0.5rem 1rem; background: transparent; color: #8FA8C8; border: 1px solid #8FA8C8; border-radius: 4px; font-weight: 600; cursor: pointer;">Descartar</button>
     `;
     
-    const mainSection = document.querySelector('.section') || document.querySelector('main');
+    const mainSection = document.querySelector('main');
     if (mainSection) {
       mainSection.parentElement.insertBefore(notifBanner, mainSection);
     }
@@ -764,12 +542,9 @@ function initializeNotifications() {
   }
 }
 
-// Polling para detectar cambios en solicitudes (cada 5 segundos)
 let lastSolicitudStates = {};
 
 async function pollForContactRequests() {
-  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-  
   try {
     const res = await fetch('/api/contact?type=sent', {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -780,12 +555,10 @@ async function pollForContactRequests() {
       const key = sol.id;
       const lastState = lastSolicitudStates[key];
       
-      // Detectar cambio de status a "accepted"
       if (lastState && lastState.status !== 'accepted' && sol.status === 'accepted') {
         showAcceptanceNotification(sol);
       }
 
-      // Guardar estado actual
       lastSolicitudStates[key] = { status: sol.status };
     });
   } catch (err) {
@@ -796,27 +569,22 @@ async function pollForContactRequests() {
 function showAcceptanceNotification(solicitud) {
   const candidateName = solicitud.candidate?.nombre || 'Un candidato';
   
-  // Notificación del navegador
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification('✓ ¡Solicitud aceptada!', {
       body: `${candidateName} aceptó tu solicitud de contacto. Podés empezar a chatear.`,
       icon: '/favicon.svg',
       badge: '/favicon.svg',
       tag: 'acceptance-' + solicitud.id,
-      requireInteraction: true // Persiste hasta que el usuario la cierre
+      requireInteraction: true
     }).addEventListener('click', () => {
-      // Al hacer click, ir al chat
       window.location.href = '/chat/';
     });
   }
 
-  // Audio opcional (sonido suave)
   playNotificationSound();
 }
 
 function playNotificationSound() {
-  // Sonido SVG inline (generado con Web Audio API)
-  // Para MVP, solo un feedback visual. En producción, agregar audio file
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
@@ -824,7 +592,7 @@ function playNotificationSound() {
   oscillator.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
-  oscillator.frequency.value = 800; // Hz
+  oscillator.frequency.value = 800;
   oscillator.type = 'sine';
 
   gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -833,16 +601,7 @@ function playNotificationSound() {
   oscillator.start(audioContext.currentTime);
   oscillator.stop(audioContext.currentTime + 0.5);
 }
+</script>
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-  if (!localStorage.getItem('corvus_notif_dismissed')) {
-    initializeNotifications();
-  }
-
-  // Polling cada 5 segundos
-  pollForContactRequests();
-  setInterval(pollForContactRequests, 5000);
-});
 </body>
 </html>

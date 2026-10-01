@@ -253,13 +253,13 @@
 
 <script>
 // ── AUTH & STATE ────────────────────────────────────────────
-const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
 const user = JSON.parse(localStorage.getItem('corvus_user') || '{}');
 let currentCandidateId = null;
 let currentPage = 1;
 
 if (!token) {
-  window.location.href = '/auth';
+  window.location.href = '/login';
 }
 
 // ── INIT ────────────────────────────────────────────────────
@@ -278,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── CANDIDATES ──────────────────────────────────────────────
 async function loadCandidates() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   const rubro = document.getElementById('filter-rubro').value;
   const seniority = document.getElementById('filter-seniority').value;
   const modality = document.getElementById('filter-modality').value;
@@ -369,6 +370,7 @@ function closeModal() {
 }
 
 async function sendContactRequest() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   const message = document.getElementById('modal-message').value;
   const sendBtn = document.getElementById('modal-send-btn');
 
@@ -425,6 +427,7 @@ function logout() {
 
 // ── CHAT BADGE ──────────────────────────────────────────────
 async function loadChatBadge() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   try {
     const res = await fetch('/api/chat', {
       headers: { 'Authorization': 'Bearer ' + token }
@@ -441,6 +444,7 @@ async function loadChatBadge() {
 
 // ── VERIFICACIÓN DE EMAIL ──────────────────────────────────
 async function loadVerificationStatus() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   if (!token) return;
 
   try {
@@ -470,6 +474,7 @@ async function loadVerificationStatus() {
 
 async function sendVerification() {
   const email = document.getElementById('corporate-email-input').value;
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   const msgEl = document.getElementById('verification-message');
 
   if (!email || !email.includes('@')) {
@@ -545,6 +550,7 @@ function initializeNotifications() {
 let lastSolicitudStates = {};
 
 async function pollForContactRequests() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   try {
     const res = await fetch('/api/contact?type=sent', {
       headers: { 'Authorization': `Bearer ${token}` }

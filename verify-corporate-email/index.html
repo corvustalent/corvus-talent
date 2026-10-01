@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar Email Corporativo — Corvus Talent</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0A1628 0%, #19273B 100%);
+      color: #BABDC2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      background: #19273B;
+      border: 1px solid rgba(143, 168, 200, 0.2);
+      border-radius: 12px;
+      padding: 3rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: #FFFFFF;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #BABDC2;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .status-box {
+      background: #0A1628;
+      border-left: 3px solid #8FA8C8;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin: 2rem 0;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .status-message {
+      font-size: 1rem;
+      color: #BABDC2;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-sub {
+      font-size: 0.85rem;
+      color: #656D78;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #8FA8C8;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background: #8FA8C8;
+      color: #0A1628;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    .btn:hover {
+      background: #A8BFD8;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #8FA8C8;
+      border: 1px solid #8FA8C8;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(143, 168, 200, 0.1);
+    }
+
+    .success {
+      color: #4CAF50;
+    }
+
+    .error {
+      color: #F87171;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(143, 168, 200, 0.1);
+      color: #8FA8C8;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(143, 168, 200, 0.2);
+      font-size: 0.85rem;
+      color: #656D78;
+    }
+
+    .footer a {
+      color: #8FA8C8;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="content">
+      <div class="icon">🔍</div>
+      <h1>Verificando tu email...</h1>
+      <div class="status-box">
+        <div class="spinner"></div>
+        <p class="status-message">Un momento, estamos verificando tu email corporativo.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="https://corvustalent.com.ar/">Volver a Corvus Talent</a>
+    </div>
+  </div>
+
+  <script>
+    async function verifyEmail() {
+      // Obtener token de URL
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token) {
+        showError('❌ Token inválido o no proporcionado', 'Por favor, intenta desde el email de verificación nuevamente.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/verify-corporate-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'verify-token',
+            token: token
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            showError('❌ Token expirado o inválido', 'Los tokens expiran en 24 horas. Por favor, solicita uno nuevo desde tu dashboard.');
+          } else if (response.status === 400 && data.error.includes('expired')) {
+            showError('❌ Token expirado', 'Los tokens expiran en 24 horas. Por favor, solicita uno nuevo desde tu dashboard.');
+          } else {
+            showError('❌ Error en la verificación', data.error || 'Algo salió mal. Intenta de nuevo.');
+          }
+          return;
+        }
+
+        showSuccess('✓ Email verificado correctamente', 'Tu email corporativo está verificado. Los candidatos verán un badge de confianza 🔵 en tu perfil.');
+      } catch (error) {
+        console.error('Error:', error);
+        showError('❌ Error de conexión', 'No pudimos conectar con el servidor. Intenta de nuevo.');
+      }
+    }
+
+    function showSuccess(title, message) {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <div class="icon success">✓</div>
+        <h1 class="success">¡Verificación exitosa!</h1>
+        <div class="status-box">
+          <p class="status-message success">${title}</p>
+          <p class="status-sub">${message}</p>
+          <div class="badge">Email verificado 🔵</div>
+        </div>
+        <p style="margin-top: 2rem;">Tu perfil ahora muestra que eres un recruiter verificado. Los candidatos confían más en recruiters verificados.</p>
+        <div style="margin-top: 2rem;">
+          <a href="https://corvustalent.com.ar/dashboard/recruiter/" class="btn">Ir a mi Dashboard</a>
+        </div>
+      `;
+    }
+
+    function showError(title, message) {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <div class="icon error">⚠️</div>
+        <h1 class="error">${title}</h1>
+        <div class="status-box">
+          <p class="status-message error">${message}</p>
+        </div>
+        <div style="margin-top: 2rem;">
+          <a href="https://corvustalent.com.ar/dashboard/recruiter/" class="btn">Volver al Dashboard</a>
+          <a href="https://corvustalent.com.ar/" class="btn btn-secondary" style="margin-left: 1rem;">Ir a Inicio</a>
+        </div>
+      `;
+    }
+
+    // Ejecutar verificación al cargar
+    document.addEventListener('DOMContentLoaded', verifyEmail);
+  </script>
+</body>
+</html>

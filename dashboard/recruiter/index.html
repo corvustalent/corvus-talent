@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRecruiterBadges();
   loadCandidates();
   loadChatBadge();
-  // loadVerificationStatus(); // TODO: Implementar endpoint de verificación
+  // loadVerificationStatus(); // TODO: Implementar /api/profile endpoint
   if (!localStorage.getItem('corvus_notif_dismissed')) {
     initializeNotifications();
   }
@@ -542,7 +542,6 @@ async function loadChatBadge() {
 }
 
 // ── VERIFICACIÓN DE EMAIL ──────────────────────────────────
-/* DISABLED: verify-corporate-email endpoint not implemented yet
 async function loadVerificationStatus() {
   const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   if (!token) return;
@@ -572,12 +571,7 @@ async function loadVerificationStatus() {
   }
 }
 
-}
-*/
-
 async function sendVerification() {
-  return; // DISABLED
-  /*
   const email = document.getElementById('corporate-email-input').value;
   const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   const msgEl = document.getElementById('verification-message');

@@ -332,7 +332,7 @@ async function analyzefit() {
     const response = await fetch('/api/corvus', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cvBase64, jd })
+      body: JSON.stringify({ action: 'analyze_fit', cvBase64, jd })
     });
 
     const data = await response.json();

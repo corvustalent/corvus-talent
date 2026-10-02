@@ -654,7 +654,8 @@ async function pollForContactRequests() {
     const res = await fetch('/api/moderation?type=sent', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    const solicitudes = await res.json();
+    const data = await res.json();
+    const solicitudes = data.requests || [];
 
     solicitudes.forEach(sol => {
       const key = sol.id;

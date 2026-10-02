@@ -329,7 +329,7 @@ async function analyzefit() {
   }, 2000);
 
   try {
-    const response = await fetch('/api/fit', {
+    const response = await fetch('/api/corvus', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cvBase64, jd })
@@ -350,10 +350,10 @@ async function analyzefit() {
     // Guardar en Supabase si hay sesión activa
     const token = localStorage.getItem('corvus_token');
     if (token && result.score !== undefined) {
-      fetch('/api/fit', {
+      fetch('/api/corvus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cvBase64, jd, save: true, token })
+        body: JSON.stringify({ action: 'analyze_fit', cvBase64, jd, token })
       }).catch(() => {}); // silent fail
     }
 

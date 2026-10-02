@@ -15,10 +15,54 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const sb = supabaseAdmin();
+
+  // ── GET: VERIFICAR EMAIL (desde link) ──────────────────────
+  if (req.method === 'GET') {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).send(errorPage('Token inválido', 'El link de verificación no es válido.'));
+    }
+
+    // Buscar token
+    const { data: tokenData, error } = await sb
+      .from('email_verification_tokens')
+      .select('*')
+      .eq('token', token)
+      .single();
+
+    if (error || !tokenData) {
+      return res.status(400).send(errorPage('Token inválido', 'Este link de verificación no existe o ya fue usado.'));
+    }
+
+    if (tokenData.used_at) {
+      return res.status(400).send(errorPage('Ya confirmado', 'Esta cuenta ya fue confirmada anteriormente.'));
+    }
+
+    if (new Date(tokenData.expires_at) < new Date()) {
+      return res.status(400).send(errorPage('Link vencido', 'Este link de verificación venció. Registrate de nuevo.'));
+    }
+
+    // Confirmar email en Supabase Auth
+    await sb.auth.admin.updateUserById(tokenData.user_id, {
+      email_confirm: true,
+    });
+
+    // Marcar token como usado
+    await sb.from('email_verification_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('token', token);
+
+    // Redirigir a login con mensaje de éxito
+    return res.redirect(302, '/auth?verified=1');
+  }
+
+  // POST REQUESTS BELOW
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { action } = req.body;
-  const sb = supabaseAdmin();
 
   // ── REGISTER ──────────────────────────────────────────────
   if (action === 'register') {
@@ -53,21 +97,22 @@ export default async function handler(req, res) {
       role,
       company: role === 'recruiter' ? company.trim() : null,
       visible: false,
+      plan: 'free',
     });
 
     // Generar token de verificación
-    const token = crypto.randomBytes(32).toString('hex');
+    const verifyToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24hs
 
     await sb.from('email_verification_tokens').insert({
       user_id: data.user.id,
-      token,
+      token: verifyToken,
       email,
       expires_at: expiresAt.toISOString(),
     });
 
-    // Enviar email via Resend API directamente
-    const verifyUrl = `${siteUrl}/api/verify?token=${token}`;
+    // Enviar email via Resend
+    const verifyUrl = `${siteUrl}/api/auth?token=${verifyToken}`;
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -84,16 +129,13 @@ export default async function handler(req, res) {
             <p style="color:#9CA3AF;margin-bottom:32px">Hacé clic en el botón para confirmar tu cuenta y empezar a usar el ecosistema.</p>
             <a href="${verifyUrl}" style="display:inline-block;background:#FFFFFF;color:#0A1628;padding:14px 28px;border-radius:8px;font-weight:600;text-decoration:none;font-size:15px">Confirmar mi cuenta</a>
             <p style="color:#656D78;margin-top:32px;font-size:12px">Este link vence en 24 horas. Si no creaste esta cuenta, ignorá este email.</p>
-            <p style="color:#656D78;font-size:12px;margin-top:4px">O copiá este link: <a href="${verifyUrl}" style="color:#8FA8C8">${verifyUrl}</a></p>
           </div>
         `,
       }),
     });
 
     if (!emailRes.ok) {
-      const emailError = await emailRes.json();
-      console.error('Resend error:', emailError);
-      // No fallamos el registro si el email falla — el admin puede confirmar manualmente
+      console.error('Resend error:', await emailRes.json());
     }
 
     return res.status(200).json({ message: 'Cuenta creada. Revisá tu email para confirmar.' });
@@ -116,7 +158,7 @@ export default async function handler(req, res) {
     }
 
     const { data: profile } = await sb.from('profiles')
-      .select('role, company, visible, nombre').eq('id', data.user.id).single();
+      .select('role, company, visible, nombre, plan').eq('id', data.user.id).single();
 
     return res.status(200).json({
       token: data.session.access_token,
@@ -127,17 +169,114 @@ export default async function handler(req, res) {
         company: profile?.company,
         visible: profile?.visible,
         nombre: profile?.nombre,
+        plan: profile?.plan || 'free',
       }
     });
   }
 
-  // ── CREATE PROFILE (llamado desde frontend tras signUp) ───
+  // ── CREATE PROFILE ────────────────────────────────────────
   if (action === 'create_profile') {
     const { userId, email, role, company } = req.body;
     if (!userId || !email || !role) return res.status(400).json({ error: 'Datos faltantes' });
-    await sb.from('profiles').upsert({ id: userId, email, role, company: company || null, visible: false });
+    await sb.from('profiles').upsert({ 
+      id: userId, 
+      email, 
+      role, 
+      company: company || null, 
+      visible: false,
+      plan: 'free'
+    });
+    return res.status(200).json({ ok: true });
+  }
+
+  // ── REQUEST PASSWORD RESET (email) ────────────────────────
+  if (action === 'request_reset') {
+    const { email } = req.body;
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(200).json({ ok: true }); // No revelar
+    }
+
+    const { data: { users } } = await sb.auth.admin.listUsers();
+    const user = users?.find(u => u.email === email);
+    if (!user) return res.status(200).json({ ok: true });
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await sb.from('email_verification_tokens').insert({
+      user_id: user.id,
+      token: resetToken,
+      email,
+      expires_at: expiresAt.toISOString(),
+    });
+
+    const resetUrl = `${siteUrl}/reset-password?token=${resetToken}`;
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${resendApiKey}` 
+      },
+      body: JSON.stringify({
+        from: 'Corvus Talent <noreply@corvustalent.com.ar>',
+        to: email,
+        subject: 'Restablecer contraseña — Corvus Talent',
+        html: `
+          <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;background:#0A1628;color:#FFFFFF;padding:40px;border-radius:12px">
+            <h1 style="font-size:22px;margin-bottom:8px">Restablecer <span style="color:#8FA8C8">contraseña</span></h1>
+            <p style="color:#9CA3AF;margin-bottom:32px">Hacé clic en el botón para crear una nueva contraseña. El link vence en 1 hora.</p>
+            <a href="${resetUrl}" style="display:inline-block;background:#FFFFFF;color:#0A1628;padding:14px 28px;border-radius:8px;font-weight:600;text-decoration:none">Restablecer contraseña</a>
+            <p style="color:#656D78;margin-top:32px;font-size:12px">Si no solicitaste esto, ignorá este email.</p>
+          </div>
+        `,
+      }),
+    });
+
+    return res.status(200).json({ ok: true });
+  }
+
+  // ── CHANGE PASSWORD (token + newPassword) ──────────────────
+  if (action === 'reset_password') {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token y contraseña requeridos' });
+    }
+
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ error: 'Contraseña no cumple los requisitos' });
+    }
+
+    const { data: tokenData, error } = await sb
+      .from('email_verification_tokens')
+      .select('*')
+      .eq('token', token)
+      .single();
+
+    if (error || !tokenData) return res.status(400).json({ error: 'Token inválido' });
+    if (tokenData.used_at) return res.status(400).json({ error: 'Este link ya fue usado' });
+    if (new Date(tokenData.expires_at) < new Date()) return res.status(400).json({ error: 'El link venció' });
+
+    await sb.auth.admin.updateUserById(tokenData.user_id, { password: newPassword });
+    await sb.from('email_verification_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('token', token);
+
     return res.status(200).json({ ok: true });
   }
 
   return res.status(400).json({ error: 'Acción inválida' });
+}
+
+function errorPage(title, message) {
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>${title} — Corvus Talent</title>
+<style>body{font-family:Inter,sans-serif;background:#0A1628;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center}
+.card{background:#142038;border:1px solid rgba(143,168,200,0.2);border-radius:14px;padding:40px;max-width:400px}
+h1{margin-bottom:12px;color:#F87171}p{color:#9CA3AF;margin-bottom:24px}
+a{background:#fff;color:#0A1628;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
+<body><div class="card"><h1>${title}</h1><p>${message}</p><a href="/auth">Ir al inicio</a></div></body></html>`;
 }

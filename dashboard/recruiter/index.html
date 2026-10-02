@@ -232,6 +232,67 @@
     <div class="results-count" id="results-count">0 resultados</div>
   </div>
   <div id="candidates-list"></div>
+
+  <!-- ╔═══════════════════════════════════════════════════════════════
+       ║ MODAL: REPORTAR USUARIO (SESIÓN 5)
+       ╚═══════════════════════════════════════════════════════════════ -->
+  <div id="reportModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,22,40,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--navy);border:1px solid rgba(143,168,200,0.3);border-radius:16px;padding:32px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">
+      
+      <!-- HEADER -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div style="font-size:20px;font-weight:700;color:var(--white)">Reportar Usuario</div>
+        <button onclick="closeReportModal()" style="background:none;border:none;color:var(--slate);font-size:24px;cursor:pointer;padding:0">✕</button>
+      </div>
+
+      <!-- FORM -->
+      <form id="reportForm" onsubmit="submitReport(event)">
+        
+        <!-- TIPO -->
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px">Tipo de reporte *</label>
+          <select id="reportType" required style="width:100%;padding:10px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:8px;color:var(--white);font-size:13px;font-family:inherit">
+            <option value="">Seleccioná...</option>
+            <option value="estafa">Estafa o fraude</option>
+            <option value="inactividad">Inactividad sospechosa</option>
+            <option value="acoso">Acoso o hostigamiento</option>
+            <option value="perfil_falso">Perfil falso</option>
+            <option value="cobranza">Cobranza fuera del sistema</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px">Descripción *</label>
+          <textarea id="reportDescription" required placeholder="Explica qué sucedió..." style="width:100%;padding:10px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:8px;color:var(--white);font-size:13px;min-height:100px;resize:vertical;font-family:inherit" maxlength="1000"></textarea>
+          <div style="font-size:11px;color:var(--gray);margin-top:4px" id="charCount">0/1000</div>
+        </div>
+
+        <!-- EVIDENCIA -->
+        <div style="margin-bottom:20px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="reportHasEvidence" style="cursor:pointer">
+            <span style="font-size:13px;color:var(--white)">Tengo un enlace de evidencia</span>
+          </label>
+          <input type="url" id="reportEvidenceUrl" placeholder="https://..." style="display:none;width:100%;padding:10px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:8px;color:var(--white);font-size:13px;margin-top:8px" maxlength="255">
+        </div>
+
+        <!-- AVISO -->
+        <div style="background:rgba(248,113,113,0.1);border-left:3px solid var(--red);padding:12px;border-radius:6px;margin-bottom:20px;font-size:12px;color:var(--gray)">
+          ⚠ Los reportes falsos pueden resultar en la suspensión de tu cuenta.
+        </div>
+
+        <!-- BOTONES -->
+        <div style="display:flex;gap:12px;justify-content:flex-end">
+          <button type="button" onclick="closeReportModal()" style="padding:8px 16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--white);cursor:pointer;font-family:inherit">Cancelar</button>
+          <button type="submit" id="reportSubmitBtn" style="padding:8px 16px;background:var(--slate);border:none;border-radius:8px;color:var(--navy);font-weight:600;cursor:pointer;font-family:inherit">Enviar Reporte</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
 </main>
 
 <!-- MODAL CONTACTO -->
@@ -366,6 +427,7 @@ async function loadCandidates() {
           <button class="contact-btn" onclick="openModal('${c.id}', '${c.nombre} ${c.apellido}')">📧 Contactar</button>
           <a href="/cv?id=${c.id}" class="contact-btn">📄 Ver CV</a>
           <a href="https://linkedin.com/in/${c.linkedin || ''}" class="contact-btn" target="_blank">in LinkedIn</a>
+          <button class="contact-btn" onclick="openReportModal('${c.id}')" style="color:var(--red);">🚩 Reportar</button>
         </div>
       </div>
     `).join('');
@@ -644,6 +706,99 @@ function playNotificationSound() {
   oscillator.start(audioContext.currentTime);
   oscillator.stop(audioContext.currentTime + 0.5);
 }
+
+// ── REPORTES (SESIÓN 5) ──────────────────────────────────────
+let reportedUserId = null;
+let reportConversationId = null;
+
+function openReportModal(userId, conversationId = null) {
+  reportedUserId = userId;
+  reportConversationId = conversationId;
+  document.getElementById('reportModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('reportForm').reset();
+  document.getElementById('charCount').textContent = '0/1000';
+  document.getElementById('reportEvidenceUrl').style.display = 'none';
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+  reportedUserId = null;
+  reportConversationId = null;
+}
+
+document.getElementById('reportDescription')?.addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length + '/1000';
+});
+
+document.getElementById('reportHasEvidence')?.addEventListener('change', function() {
+  const url = document.getElementById('reportEvidenceUrl');
+  url.style.display = this.checked ? 'block' : 'none';
+  if (!this.checked) url.value = '';
+});
+
+async function submitReport(e) {
+  e.preventDefault();
+  if (!reportedUserId) return alert('Error: usuario no identificado');
+
+  const type = document.getElementById('reportType').value;
+  const desc = document.getElementById('reportDescription').value;
+  const evidence = document.getElementById('reportHasEvidence').checked ? 
+                   document.getElementById('reportEvidenceUrl').value : null;
+
+  if (!type || desc.length < 10) {
+    return alert('Por favor completa todos los campos');
+  }
+
+  const btn = document.getElementById('reportSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+    const res = await fetch('/api/moderation', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'create_report',
+        reported_user_id: reportedUserId,
+        report_type: type,
+        description: desc,
+        evidence_url: evidence || null,
+        conversation_id: reportConversationId || null
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert('✓ Reporte enviado. Nuestro equipo lo revisará pronto.');
+      closeReportModal();
+    } else {
+      alert('Error: ' + (data.error || 'No se pudo enviar'));
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Error al enviar el reporte');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar Reporte';
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('reportModal').style.display === 'flex') {
+    closeReportModal();
+  }
+});
+
+document.getElementById('reportModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeReportModal();
+});
+
 </script>
 
 </body>

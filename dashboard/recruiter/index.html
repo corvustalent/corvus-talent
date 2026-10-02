@@ -423,16 +423,13 @@ async function sendContactRequest() {
   sendBtn.textContent = 'Enviando...';
 
   try {
-    const res = await fetch('/api/contact', {
+    const res = await fetch('/api/moderation', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        candidate_id: currentCandidateId,
-        message: message
-      })
+      body: JSON.stringify({action: 'send_contact_request', candidate_id: currentCandidateId, message: message})
     });
 
     const data = await res.json();
@@ -592,7 +589,7 @@ let lastSolicitudStates = {};
 async function pollForContactRequests() {
   const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   try {
-    const res = await fetch('/api/contact?type=sent', {
+    const res = await fetch('/api/moderation?type=sent', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const solicitudes = await res.json();

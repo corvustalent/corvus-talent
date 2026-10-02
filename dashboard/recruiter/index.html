@@ -317,7 +317,10 @@ async function loadCandidates() {
           <div class="candidate-avatar">${getInitials(c.nombre, c.apellido)}</div>
           <div class="candidate-info">
             <div class="candidate-name">${c.nombre} ${c.apellido}</div>
-            <div class="candidate-meta">${c.seniority || '—'} • ${c.location || '—'}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;min-height:20px">
+              ${(c.badges || []).map(b => `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:rgba(${hexToRgb(b.color)},0.15);border:1px solid ${b.color};border-radius:12px;font-size:11px;font-weight:600;color:${b.color}"><span style="font-size:11px">${b.icon}</span>${b.name}</span>`).join('')}
+            </div>
+            <div class="candidate-meta">${c.seniority || '—'} • ${c.ubicacion || '—'}</div>
           </div>
           <div class="candidate-score">
             <div class="score-num" style="color:${getSscoreColor(c.score)}">${c.score || 0}%</div>
@@ -349,6 +352,11 @@ function getSscoreColor(score) {
 
 function getInitials(nombre, apellido) {
   return ((nombre ? nombre[0] : '') + (apellido ? apellido[0] : '')).toUpperCase();
+}
+
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
 }
 
 function updateScoreDisplay() {

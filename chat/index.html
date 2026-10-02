@@ -469,7 +469,100 @@
     </div>
   </div>
 
-  <script src="../auth-check.js"></script>
+  <script src="../auth-check.js">
+// ── REPORTES (SESIÓN 5) ──────────────────────────────────────
+let reportedUserId = null;
+let reportConversationId = null;
+
+function openReportModal(userId, conversationId = null) {
+  reportedUserId = userId;
+  reportConversationId = conversationId;
+  document.getElementById('reportModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('reportForm').reset();
+  document.getElementById('charCount').textContent = '0/1000';
+  document.getElementById('reportEvidenceUrl').style.display = 'none';
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+  reportedUserId = null;
+  reportConversationId = null;
+}
+
+document.getElementById('reportDescription')?.addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length + '/1000';
+});
+
+document.getElementById('reportHasEvidence')?.addEventListener('change', function() {
+  const url = document.getElementById('reportEvidenceUrl');
+  url.style.display = this.checked ? 'block' : 'none';
+  if (!this.checked) url.value = '';
+});
+
+async function submitReport(e) {
+  e.preventDefault();
+  if (!reportedUserId) return alert('Error: usuario no identificado');
+
+  const type = document.getElementById('reportType').value;
+  const desc = document.getElementById('reportDescription').value;
+  const evidence = document.getElementById('reportHasEvidence').checked ? 
+                   document.getElementById('reportEvidenceUrl').value : null;
+
+  if (!type || desc.length < 10) {
+    return alert('Por favor completa todos los campos');
+  }
+
+  const btn = document.getElementById('reportSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+    const res = await fetch('/api/moderation', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'create_report',
+        reported_user_id: reportedUserId,
+        report_type: type,
+        description: desc,
+        evidence_url: evidence || null,
+        conversation_id: reportConversationId || null
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert('✓ Reporte enviado. Nuestro equipo lo revisará pronto.');
+      closeReportModal();
+    } else {
+      alert('Error: ' + (data.error || 'No se pudo enviar'));
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Error al enviar el reporte');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar Reporte';
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('reportModal').style.display === 'flex') {
+    closeReportModal();
+  }
+});
+
+document.getElementById('reportModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeReportModal();
+});
+
+</script>
   <script>
     // STATE
     let conversations = [];
@@ -873,6 +966,99 @@ function renderMessagesWithReputation(messages) {
         sendMessage();
       }
     }
-  </script>
+  
+// ── REPORTES (SESIÓN 5) ──────────────────────────────────────
+let reportedUserId = null;
+let reportConversationId = null;
+
+function openReportModal(userId, conversationId = null) {
+  reportedUserId = userId;
+  reportConversationId = conversationId;
+  document.getElementById('reportModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('reportForm').reset();
+  document.getElementById('charCount').textContent = '0/1000';
+  document.getElementById('reportEvidenceUrl').style.display = 'none';
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+  reportedUserId = null;
+  reportConversationId = null;
+}
+
+document.getElementById('reportDescription')?.addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length + '/1000';
+});
+
+document.getElementById('reportHasEvidence')?.addEventListener('change', function() {
+  const url = document.getElementById('reportEvidenceUrl');
+  url.style.display = this.checked ? 'block' : 'none';
+  if (!this.checked) url.value = '';
+});
+
+async function submitReport(e) {
+  e.preventDefault();
+  if (!reportedUserId) return alert('Error: usuario no identificado');
+
+  const type = document.getElementById('reportType').value;
+  const desc = document.getElementById('reportDescription').value;
+  const evidence = document.getElementById('reportHasEvidence').checked ? 
+                   document.getElementById('reportEvidenceUrl').value : null;
+
+  if (!type || desc.length < 10) {
+    return alert('Por favor completa todos los campos');
+  }
+
+  const btn = document.getElementById('reportSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+    const res = await fetch('/api/moderation', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'create_report',
+        reported_user_id: reportedUserId,
+        report_type: type,
+        description: desc,
+        evidence_url: evidence || null,
+        conversation_id: reportConversationId || null
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert('✓ Reporte enviado. Nuestro equipo lo revisará pronto.');
+      closeReportModal();
+    } else {
+      alert('Error: ' + (data.error || 'No se pudo enviar'));
+    }
+  } catch(err) {
+    console.error(err);
+    alert('Error al enviar el reporte');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enviar Reporte';
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('reportModal').style.display === 'flex') {
+    closeReportModal();
+  }
+});
+
+document.getElementById('reportModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeReportModal();
+});
+
+</script>
 </body>
 </html>

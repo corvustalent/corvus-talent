@@ -491,7 +491,7 @@
 
       try {
         const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-        const response = await fetch('/api/generate', {
+        const response = await fetch('/api/corvus', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

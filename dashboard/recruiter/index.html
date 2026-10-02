@@ -131,6 +131,11 @@
   <div class="dashboard-header">
     <h1 class="welcome">Hola, <span id="welcome-name"></span></h1>
     <p class="header-sub">Panel de búsqueda de talento — Corvus Talent</p>
+    
+    <!-- BADGES DEL RECRUITER -->
+    <div id="recruiter-badges-container" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;min-height:28px">
+      <!-- Se llena dinámicamente con loadRecruiterBadges() -->
+    </div>
   </div>
 
   <!-- SECCIÓN DE VERIFICACIÓN DE EMAIL CORPORATIVO -->
@@ -266,6 +271,7 @@ if (!token) {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('welcome-name').textContent = user.company || user.nombre || 'Recruiter';
   document.getElementById('nav-company').textContent = user.company || '—';
+  loadRecruiterBadges();
   loadCandidates();
   loadChatBadge();
   loadVerificationStatus();
@@ -277,6 +283,32 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── CANDIDATES ──────────────────────────────────────────────
+// ── RECRUITER BADGES ───────────────────────────────────────
+async function loadRecruiterBadges() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/profile', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const badges = data.badges || [];
+
+    const container = document.getElementById('recruiter-badges-container');
+    if (!container) return;
+
+    container.innerHTML = badges.map(badge => `
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(${hexToRgb(badge.color)},0.1);border:1px solid ${badge.color};border-radius:20px;font-size:12px;font-weight:600;color:${badge.color}">
+        <span style="font-size:14px">${badge.icon}</span>
+        <span>${badge.name}</span>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Error loading recruiter badges:', err);
+  }
+}
+
 async function loadCandidates() {
   const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
   const rubro = document.getElementById('filter-rubro').value;

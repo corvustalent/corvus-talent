@@ -142,6 +142,7 @@ export default async function handler(req, res) {
             gaps: result.gaps || [],
             mejoras: result.mejoras || [],
             entrevista: result.entrevista || [],
+            job_description: jd  // Guardar JD original
           });
 
           // Incrementar contador

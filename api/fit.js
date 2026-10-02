@@ -85,8 +85,54 @@ export default async function handler(req, res) {
           auth: { autoRefreshToken: false, persistSession: false }
         });
 
-        const { data: { user } } = await sb.auth.getUser(token);
-        if (user) {
+        const { data: { user }, error: authError } = await sb.auth.getUser(token);
+        if (user && !authError) {
+          // Obtener plan del usuario
+          const { data: profile } = await sb
+            .from('profiles')
+            .select('plan, fit_analyses_week_count, fit_analyses_week_reset_at')
+            .eq('id', user.id)
+            .single();
+
+          if (!profile) {
+            return res.status(500).json({ error: 'Perfil no encontrado' });
+          }
+
+          // VERIFICAR LÍMITES POR PLAN
+          const now = new Date();
+          let weekCount = profile.fit_analyses_week_count || 0;
+          let resetAt = profile.fit_analyses_week_reset_at ? new Date(profile.fit_analyses_week_reset_at) : now;
+
+          // Si pasó la fecha de reset, reiniciar contador
+          if (now > resetAt) {
+            weekCount = 0;
+            // Siguiente lunes a las 00:00
+            const nextMonday = new Date(now);
+            nextMonday.setDate(nextMonday.getDate() + (1 + 7 - nextMonday.getDay()) % 7);
+            nextMonday.setHours(0, 0, 0, 0);
+            resetAt = nextMonday;
+          }
+
+          // Límites por plan
+          const limits = {
+            'free': 2,
+            'pro': 15,
+            'premium': 999 // Ilimitado
+          };
+          const limit = limits[profile.plan] || 2;
+
+          // Verificar si llegó al límite
+          if (weekCount >= limit) {
+            return res.status(429).json({ 
+              error: `Límite de ${limit} análisis por semana alcanzado para plan ${profile.plan}`,
+              plan: profile.plan,
+              used: weekCount,
+              limit: limit,
+              reset_at: resetAt
+            });
+          }
+
+          // Guardar análisis
           const result = JSON.parse(text.replace(/```json|```/g, '').trim());
           await sb.from('fit_analyses').insert({
             user_id: user.id,
@@ -97,6 +143,12 @@ export default async function handler(req, res) {
             mejoras: result.mejoras || [],
             entrevista: result.entrevista || [],
           });
+
+          // Incrementar contador
+          await sb.from('profiles').update({
+            fit_analyses_week_count: weekCount + 1,
+            fit_analyses_week_reset_at: resetAt
+          }).eq('id', user.id);
         }
       } catch(e) {
         console.error('Error saving analysis:', e.message);

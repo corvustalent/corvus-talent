@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Moderación — Corvus Talent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #19273B;
+      --navy-light: #2A3E56;
+      --slate: #8FA8C8;
+      --white: #FFFFFF;
+      --gray: #BABDC2;
+      --muted: #656D78;
+      --green: #4ADE80;
+      --yellow: #FBBF24;
+      --red: #F87171;
+      --border: rgba(143, 168, 200, 0.15);
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       LAYOUT
+       ───────────────────────────────────────────────────────────────── */
+
+    nav {
+      background: var(--navy-mid);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    nav a {
+      color: var(--slate);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    nav a:hover {
+      color: var(--white);
+    }
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-badge {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .stat-badge .value {
+      color: var(--white);
+      font-weight: 600;
+      font-size: 16px;
+      display: block;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       FILTROS
+       ───────────────────────────────────────────────────────────────── */
+
+    .filters {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      color: var(--white);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--slate);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       TABLA DE REPORTES
+       ───────────────────────────────────────────────────────────────── */
+
+    .reports-container {
+      display: grid;
+      gap: 12px;
+    }
+
+    .report-card {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .report-card:hover {
+      border-color: var(--slate);
+    }
+
+    .report-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: start;
+    }
+
+    .report-title {
+      font-weight: 600;
+      color: var(--white);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .report-meta {
+      font-size: 12px;
+      color: var(--gray);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .report-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(143, 168, 200, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--slate);
+    }
+
+    .report-badge.type-estafa { color: var(--red); border-color: var(--red); background: rgba(248, 113, 113, 0.1); }
+    .report-badge.type-inactividad { color: var(--yellow); border-color: var(--yellow); background: rgba(251, 191, 36, 0.1); }
+    .report-badge.type-acoso { color: var(--red); border-color: var(--red); background: rgba(248, 113, 113, 0.1); }
+    .report-badge.type-perfil_falso { color: var(--red); border-color: var(--red); background: rgba(248, 113, 113, 0.1); }
+    .report-badge.type-cobranza { color: var(--yellow); border-color: var(--yellow); background: rgba(251, 191, 36, 0.1); }
+
+    .report-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .report-status.pending { background: rgba(251, 191, 36, 0.2); color: var(--yellow); }
+    .report-status.reviewed { background: rgba(74, 222, 128, 0.2); color: var(--green); }
+    .report-status.dismissed { background: rgba(101, 109, 120, 0.2); color: var(--muted); }
+    .report-status.action_taken { background: rgba(248, 113, 113, 0.2); color: var(--red); }
+
+    .report-description {
+      background: var(--navy);
+      border-left: 3px solid var(--slate);
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--gray);
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    .report-evidence {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 8px 0;
+    }
+
+    .report-evidence a {
+      color: var(--slate);
+      text-decoration: none;
+    }
+
+    .report-evidence a:hover {
+      text-decoration: underline;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--slate);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .action-btn:hover {
+      border-color: var(--slate);
+      color: var(--white);
+    }
+
+    .action-btn.primary {
+      background: var(--slate);
+      color: var(--navy);
+      border-color: var(--slate);
+    }
+
+    .action-btn.primary:hover {
+      background: var(--white);
+    }
+
+    .action-btn.danger {
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .action-btn.danger:hover {
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       EMPTY STATE & LOADING
+       ───────────────────────────────────────────────────────────────── */
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state p {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       MODAL
+       ───────────────────────────────────────────────────────────────── */
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 22, 40, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--slate);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      float: right;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      clear: both;
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .modal-field input,
+    .modal-field textarea {
+      width: 100%;
+      padding: 10px;
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--white);
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    .modal-field textarea {
+      min-height: 80px;
+    }
+
+    .modal-field input:focus,
+    .modal-field textarea:focus {
+      outline: none;
+      border-color: var(--slate);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .modal-actions button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--white);
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .modal-actions button:hover {
+      border-color: var(--slate);
+    }
+
+    .modal-actions .primary {
+      background: var(--slate);
+      color: var(--navy);
+      border-color: var(--slate);
+    }
+
+    .modal-actions .primary:hover {
+      background: var(--white);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────
+       RESPONSIVE
+       ───────────────────────────────────────────────────────────────── */
+
+    @media (max-width: 768px) {
+      main { padding: 20px 16px; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .filters { grid-template-columns: 1fr; }
+      .report-header { grid-template-columns: 1fr; }
+      .modal { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <a href="/">← Corvus Talent</a>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <span style="font-size:12px;color:var(--muted)">Admin</span>
+    <button onclick="logout()" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:13px;font-weight:600">Salir</button>
+  </div>
+</nav>
+
+<main>
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Dashboard de Moderación</h1>
+      <p style="font-size:13px;color:var(--muted);margin-top:6px">Revisar y gestionar reportes de usuarios</p>
+    </div>
+    <div class="stats">
+      <div class="stat-badge">
+        <div class="value" id="stat-pending">0</div>
+        Pendientes
+      </div>
+      <div class="stat-badge">
+        <div class="value" id="stat-reviewed">0</div>
+        Revisados
+      </div>
+      <div class="stat-badge">
+        <div class="value" id="stat-action">0</div>
+        Acciones
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>Estado</label>
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="">Todos</option>
+        <option value="pending">Pendientes</option>
+        <option value="reviewed">Revisados</option>
+        <option value="dismissed">Desestimados</option>
+        <option value="action_taken">Acción tomada</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Tipo</label>
+      <select id="filterType" onchange="applyFilters()">
+        <option value="">Todos</option>
+        <option value="estafa">Estafa/Fraude</option>
+        <option value="inactividad">Inactividad sospechosa</option>
+        <option value="acoso">Acoso/Hostigamiento</option>
+        <option value="perfil_falso">Perfil falso</option>
+        <option value="cobranza">Cobranza afuera</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Búsqueda</label>
+      <input type="text" id="filterSearch" placeholder="Usuario, email..." onkeyup="applyFilters()" style="padding:8px;background:var(--navy);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:13px">
+    </div>
+  </div>
+
+  <!-- LISTA DE REPORTES -->
+  <div id="reportsList" class="reports-container">
+    <div class="loading">Cargando reportes...</div>
+  </div>
+
+</main>
+
+<!-- MODAL: DETALLES DEL REPORTE -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    <h2 class="modal-title">Detalles del Reporte</h2>
+    
+    <div id="detailContent"></div>
+
+    <div class="modal-actions">
+      <button onclick="closeDetailModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SUSPENDER USUARIO -->
+<div class="modal-overlay" id="suspendModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSuspendModal()">✕</button>
+    <h2 class="modal-title">Suspender Usuario</h2>
+    
+    <div class="modal-field">
+      <label>Usuario a suspender</label>
+      <input type="text" id="suspendUserId" readonly style="opacity:0.7">
+    </div>
+
+    <div class="modal-field">
+      <label>Razón de suspensión *</label>
+      <textarea id="suspendReason" placeholder="Explica por qué se suspende este usuario..."></textarea>
+    </div>
+
+    <div class="modal-field" style="background:rgba(248,113,113,0.1);border-left:3px solid var(--red);padding:12px;border-radius:6px">
+      <p style="font-size:12px;color:var(--gray)">⚠ Esta acción es irreversible. El usuario perderá acceso a su cuenta.</p>
+    </div>
+
+    <div class="modal-actions">
+      <button onclick="closeSuspendModal()">Cancelar</button>
+      <button class="primary" onclick="confirmSuspend()">Suspender Usuario</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AUTH & STATE ────────────────────────────────────────────
+const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+const user = JSON.parse(localStorage.getItem('corvus_user') || '{}');
+
+let allReports = [];
+let filteredReports = [];
+let currentReport = null;
+let suspendingReportId = null;
+
+if (!token) {
+  window.location.href = '/auth';
+}
+
+if (user.email !== 'corvus.talent@gmail.com') {
+  alert('⛔ Acceso denegado. Solo el admin puede acceder.');
+  window.location.href = '/';
+}
+
+// ── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadReports();
+});
+
+// ── LOAD REPORTS ────────────────────────────────────────────
+async function loadReports() {
+  const container = document.getElementById('reportsList');
+  container.innerHTML = '<div class="loading">Cargando reportes...</div>';
+
+  try {
+    const res = await fetch('/api/moderation?action=list_reports', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.reports) {
+      allReports = data.reports;
+      filteredReports = [...allReports];
+      renderReports();
+      updateStats();
+    } else {
+      container.innerHTML = '<div class="empty-state"><p>❌ ' + (data.error || 'Error al cargar') + '</p></div>';
+    }
+  } catch(e) {
+    console.error(e);
+    container.innerHTML = '<div class="empty-state"><p>❌ Error de conexión</p></div>';
+  }
+}
+
+// ── RENDER REPORTS ──────────────────────────────────────────
+function renderReports() {
+  const container = document.getElementById('reportsList');
+
+  if (filteredReports.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>✓ No hay reportes para mostrar</p></div>';
+    return;
+  }
+
+  container.innerHTML = filteredReports.map(r => `
+    <div class="report-card">
+      <div class="report-header">
+        <div>
+          <div class="report-title">Reporte #${r.id.slice(0, 8)}</div>
+          <div class="report-meta">
+            <span>📋 ${formatReportType(r.report_type)}</span>
+            <span>👤 ${r.reported_user?.nombre || 'Usuario'}</span>
+            <span>📅 ${formatDate(r.created_at)}</span>
+          </div>
+        </div>
+        <div class="report-badge type-${r.report_type}" style="margin-bottom:8px">${formatReportType(r.report_type)}</div>
+      </div>
+
+      <div class="report-status ${r.status || 'pending'}">${formatStatus(r.status)}</div>
+
+      <div class="report-description">${r.description}</div>
+
+      ${r.evidence_url ? `<div class="report-evidence">📎 <a href="${r.evidence_url}" target="_blank">Ver evidencia</a></div>` : ''}
+
+      <div class="report-actions">
+        <button class="action-btn" onclick="openDetailModal('${r.id}')">👁 Ver detalles</button>
+        ${r.status === 'pending' ? `
+          <button class="action-btn primary" onclick="markReviewed('${r.id}')">✓ Marcar revisado</button>
+          <button class="action-btn danger" onclick="dismissReport('${r.id}')">✕ Desestimar</button>
+          <button class="action-btn danger" onclick="openSuspendModal('${r.id}', '${r.reported_user?.email || ''}')">⛔ Suspender</button>
+        ` : `
+          <span style="font-size:12px;color:var(--muted);padding:8px">Reporte ya procesado</span>
+        `}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── FILTROS ─────────────────────────────────────────────────
+function applyFilters() {
+  const status = document.getElementById('filterStatus').value;
+  const type = document.getElementById('filterType').value;
+  const search = document.getElementById('filterSearch').value.toLowerCase();
+
+  filteredReports = allReports.filter(r => {
+    const matchStatus = !status || r.status === status;
+    const matchType = !type || r.report_type === type;
+    const matchSearch = !search || 
+      (r.reported_user?.nombre?.toLowerCase().includes(search)) ||
+      (r.reported_user?.email?.toLowerCase().includes(search)) ||
+      (r.description.toLowerCase().includes(search));
+    
+    return matchStatus && matchType && matchSearch;
+  });
+
+  renderReports();
+}
+
+// ── ACCIONES ────────────────────────────────────────────────
+async function markReviewed(reportId) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    const res = await fetch('/api/moderation', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'update_report',
+        report_id: reportId,
+        status: 'reviewed'
+      })
+    });
+
+    if (res.ok) {
+      loadReports();
+    } else {
+      alert('Error al actualizar el reporte');
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Error de conexión');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✓ Marcar revisado';
+  }
+}
+
+async function dismissReport(reportId) {
+  if (!confirm('¿Desestimar este reporte?')) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/moderation', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'update_report',
+        report_id: reportId,
+        status: 'dismissed'
+      })
+    });
+
+    if (res.ok) {
+      loadReports();
+    } else {
+      alert('Error al desestimar');
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Error de conexión');
+  }
+}
+
+async function confirmSuspend() {
+  if (!suspendingReportId) return alert('Error: reporte no identificado');
+
+  const reason = document.getElementById('suspendReason').value.trim();
+  if (reason.length < 10) {
+    return alert('La razón debe tener al menos 10 caracteres');
+  }
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Suspendiendo...';
+
+  try {
+    const res = await fetch('/api/moderation', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'update_report',
+        report_id: suspendingReportId,
+        status: 'action_taken',
+        admin_action: 'suspend_user',
+        admin_reason: reason
+      })
+    });
+
+    if (res.ok) {
+      closeSuspendModal();
+      loadReports();
+      alert('✓ Usuario suspendido');
+    } else {
+      alert('Error al suspender el usuario');
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Error de conexión');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Suspender Usuario';
+  }
+}
+
+// ── MODALES ─────────────────────────────────────────────────
+function openDetailModal(reportId) {
+  const r = allReports.find(x => x.id === reportId);
+  if (!r) return;
+
+  currentReport = r;
+  const html = `
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">ID</p>
+      <p style="color:var(--white);font-family:monospace;font-size:12px">${r.id}</p>
+    </div>
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Usuario Reportado</p>
+      <p style="color:var(--white)">${r.reported_user?.nombre || 'N/A'} <span style="color:var(--gray)">(${r.reported_user?.email})</span></p>
+    </div>
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Tipo</p>
+      <p style="color:var(--white)">${formatReportType(r.report_type)}</p>
+    </div>
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Estado</p>
+      <div class="report-status ${r.status}">${formatStatus(r.status)}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Descripción</p>
+      <div class="report-description">${r.description}</div>
+    </div>
+    ${r.evidence_url ? `
+      <div style="margin-bottom:16px">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Evidencia</p>
+        <a href="${r.evidence_url}" target="_blank" style="color:var(--slate);text-decoration:none">${r.evidence_url}</a>
+      </div>
+    ` : ''}
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Fecha</p>
+      <p style="color:var(--white)">${new Date(r.created_at).toLocaleString('es-AR')}</p>
+    </div>
+  `;
+
+  document.getElementById('detailContent').innerHTML = html;
+  document.getElementById('detailModal').classList.add('visible');
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('visible');
+  currentReport = null;
+}
+
+function openSuspendModal(reportId, userEmail) {
+  suspendingReportId = reportId;
+  document.getElementById('suspendUserId').value = userEmail;
+  document.getElementById('suspendReason').value = '';
+  document.getElementById('suspendModal').classList.add('visible');
+}
+
+function closeSuspendModal() {
+  document.getElementById('suspendModal').classList.remove('visible');
+  suspendingReportId = null;
+}
+
+// ── STATS ───────────────────────────────────────────────────
+function updateStats() {
+  const pending = allReports.filter(r => r.status === 'pending').length;
+  const reviewed = allReports.filter(r => r.status === 'reviewed').length;
+  const action = allReports.filter(r => r.status === 'action_taken').length;
+
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-reviewed').textContent = reviewed;
+  document.getElementById('stat-action').textContent = action;
+}
+
+// ── HELPERS ─────────────────────────────────────────────────
+function formatReportType(type) {
+  const types = {
+    estafa: '⚠ Estafa/Fraude',
+    inactividad: '😴 Inactividad sospechosa',
+    acoso: '😠 Acoso/Hostigamiento',
+    perfil_falso: '🎭 Perfil falso',
+    cobranza: '💰 Cobranza afuera',
+    otro: '❓ Otro'
+  };
+  return types[type] || type;
+}
+
+function formatStatus(status) {
+  const statuses = {
+    pending: '⏳ Pendiente',
+    reviewed: '✓ Revisado',
+    dismissed: '✕ Desestimado',
+    action_taken: '⛔ Acción tomada'
+  };
+  return statuses[status] || status;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es-AR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function logout() {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = '/auth';
+}
+
+// Close modals with ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('detailModal').classList.remove('visible');
+    document.getElementById('suspendModal').classList.remove('visible');
+  }
+});
+
+// Close modals on outside click
+document.getElementById('detailModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeDetailModal();
+});
+
+document.getElementById('suspendModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeSuspendModal();
+});
+</script>
+
+</body>
+</html>

@@ -2,6 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+const resendApiKey = process.env.RESEND_API_KEY;
+
+function generateToken() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,7 +33,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    // Obtener perfil + análisis
+    // Obtener perfil + análisis + estado de verificación
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
@@ -48,8 +53,6 @@ export default async function handler(req, res) {
     if (profile) {
       if (profile.role === 'recruiter') {
         // BADGES PARA RECRUITER
-        
-        // Badge 1: Verificado (email corporativo verificado)
         if (profile.corporate_email_verified === true) {
           badges.push({
             id: 'verified',
@@ -59,7 +62,6 @@ export default async function handler(req, res) {
           });
         }
 
-        // Badge 2: De confianza (verificado + 80%+ aceptación + 5+ contactos)
         if (profile.corporate_email_verified === true && 
             profile.solicitudes_enviadas >= 5 &&
             profile.tasa_aceptacion >= 80) {
@@ -72,8 +74,6 @@ export default async function handler(req, res) {
         }
       } else {
         // BADGES PARA CANDIDATO
-        
-        // Badge 1: Perfil completo (5+ campos llenos)
         const requiredFields = ['nombre', 'apellido', 'rubro', 'seniority', 'ubicacion'];
         const filledCount = requiredFields.filter(f => profile[f]).length;
         if (filledCount >= 5) {
@@ -85,7 +85,6 @@ export default async function handler(req, res) {
           });
         }
 
-        // Badge 2: Analizado (≥1 análisis)
         if (analyses && analyses.length > 0) {
           badges.push({
             id: 'analyzed',
@@ -95,7 +94,6 @@ export default async function handler(req, res) {
           });
         }
 
-        // Badge 3: Activo (visible = true)
         if (profile.visible === true) {
           badges.push({
             id: 'active',
@@ -105,7 +103,6 @@ export default async function handler(req, res) {
           });
         }
 
-        // Badge 4: Score alto (max score ≥75)
         if (analyses && analyses.length > 0) {
           const maxScore = Math.max(...analyses.map(a => a.score || 0));
           if (maxScore >= 75) {
@@ -130,6 +127,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { action, ...data } = req.body;
 
+    // ── UPDATE PROFILE ────────────────────────────────────────
     if (action === 'update_visibility') {
       await supabase.from('profiles').update({ visible: data.visible }).eq('id', user.id);
       return res.status(200).json({ ok: true });
@@ -154,6 +152,127 @@ export default async function handler(req, res) {
       const { error } = await supabase.from('profiles').update(update).eq('id', user.id);
       if (error) return res.status(500).json({ error: error.message });
       return res.status(200).json({ ok: true });
+    }
+
+    // ── CORPORATE EMAIL VERIFICATION ──────────────────────────
+    if (action === 'send-verification') {
+      const { email } = data;
+      
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ error: 'Email inválido' });
+      }
+
+      // Verificar que es recruiter
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role !== 'recruiter') {
+        return res.status(403).json({ error: 'Solo recruiters pueden verificar email corporativo' });
+      }
+
+      // Generar token
+      const verificationToken = generateToken();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      // Guardar token
+      const { error: insertError } = await supabase
+        .from('corporate_email_verifications')
+        .insert({
+          user_id: user.id,
+          email: email,
+          token: verificationToken,
+          expires_at: expiresAt
+        });
+
+      if (insertError) {
+        return res.status(500).json({ error: 'Error al guardar token' });
+      }
+
+      // Enviar email
+      const verificationUrl = `https://corvustalent.com.ar/verify-corporate-email?token=${verificationToken}`;
+
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Corvus Talent <verify@corvustalent.com.ar>',
+            to: email,
+            subject: 'Verifica tu email corporativo en Corvus Talent',
+            html: `
+              <div style="font-family: Arial, sans-serif; background: #0A1628; color: #BABDC2; padding: 2rem;">
+                <div style="max-width: 600px; margin: 0 auto; background: #19273B; padding: 2rem; border-radius: 8px; border: 1px solid #152132;">
+                  <h2 style="color: #FFFFFF; margin-bottom: 1rem;">Verifica tu email corporativo</h2>
+                  <p>Hola,</p>
+                  <p>Haz click en el botón de abajo para verificar que trabajas en esta empresa. Una vez verificado, los candidatos verán un badge de confianza 🔵 en tu perfil.</p>
+                  <p style="margin: 2rem 0;">
+                    <a href="${verificationUrl}" style="background: #8FA8C8; color: #0A1628; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                      Verificar email
+                    </a>
+                  </p>
+                  <p style="color: #656D78; font-size: 0.9rem;">Este link vence en 24 horas.</p>
+                  <p style="color: #656D78; font-size: 0.85rem;">Si no solicitaste esto, ignora este email.</p>
+                  <hr style="border: none; border-top: 1px solid #152132; margin: 2rem 0;">
+                  <p style="color: #656D78; font-size: 0.85rem;">— Corvus Talent<br>Talento certero</p>
+                </div>
+              </div>
+            `
+          })
+        });
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+        return res.status(500).json({ error: 'Error al enviar email' });
+      }
+
+      return res.status(200).json({ message: 'Email de verificación enviado', email: email });
+    }
+
+    if (action === 'verify-token') {
+      const { token: verificationToken } = data;
+
+      if (!verificationToken) {
+        return res.status(400).json({ error: 'Token requerido' });
+      }
+
+      // Buscar token
+      const { data: verification, error: verifyError } = await supabase
+        .from('corporate_email_verifications')
+        .select('*')
+        .eq('token', verificationToken)
+        .eq('verified', false)
+        .single();
+
+      if (verifyError || !verification) {
+        return res.status(404).json({ error: 'Token inválido o expirado' });
+      }
+
+      // Verificar que no expiró
+      if (new Date(verification.expires_at) < new Date()) {
+        return res.status(400).json({ error: 'El token venció' });
+      }
+
+      // Marcar como verificado
+      await supabase
+        .from('corporate_email_verifications')
+        .update({ verified: true, verified_at: new Date().toISOString() })
+        .eq('id', verification.id);
+
+      // Actualizar profile
+      await supabase
+        .from('profiles')
+        .update({
+          corporate_email: verification.email,
+          corporate_email_verified: true
+        })
+        .eq('id', verification.user_id);
+
+      return res.status(200).json({ message: 'Email verificado correctamente' });
     }
 
     return res.status(400).json({ error: 'Acción inválida' });

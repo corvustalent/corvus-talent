@@ -435,6 +435,26 @@
   <!-- TAB: ANÁLISIS -->
   <div class="section" id="section-analisis">
     <div class="section-title">Historial de Corvus Fit</div>
+    
+    <!-- CONTADOR DE ANÁLISIS -->
+    <div id="analyses-counter-banner" style="background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:12px;padding:16px;margin-bottom:20px;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px" id="counter-text">Usados: 0/2 esta semana</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;max-width:150px;height:6px;background:rgba(143,168,200,0.1);border-radius:10px;overflow:hidden">
+              <div id="counter-progress" style="height:100%;background:var(--green);width:0%;transition:width 0.3s ease"></div>
+            </div>
+            <span id="counter-pct" style="font-size:12px;font-weight:600;color:var(--gray);min-width:30px">0%</span>
+          </div>
+        </div>
+        <div id="counter-cta" style="display:none">
+          <a href="/corvus-fit" class="btn btn-sm" style="background:var(--slate);color:var(--navy);text-decoration:none;padding:8px 16px;border-radius:6px;font-weight:600;font-size:12px">Ir a Corvus Fit 🧩</a>
+        </div>
+      </div>
+      <div id="counter-limit-msg" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(143,168,200,0.2);font-size:12px;color:var(--gray);display:none"></div>
+    </div>
+    
     <div id="analyses-list">
       <div class="empty-state">
         <p>Todavía no hiciste ningún análisis de compatibilidad.</p>
@@ -1082,8 +1102,68 @@ function hexToRgb(hex) {
   return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
 }
 
+// ── ANÁLISIS COUNTER ──────────────────────────────────────
+async function loadAnalysesCounter() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/profile', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) return;
+    
+    const profile = data.profile;
+    if (!profile) return;
+
+    const banner = document.getElementById('analyses-counter-banner');
+    const counterText = document.getElementById('counter-text');
+    const counterProgress = document.getElementById('counter-progress');
+    const counterPct = document.getElementById('counter-pct');
+    const counterMsg = document.getElementById('counter-limit-msg');
+    const counterCta = document.getElementById('counter-cta');
+
+    if (!banner) return;
+
+    // Mostrar banner
+    banner.style.display = 'block';
+
+    // Límites por plan
+    const limits = { 'free': 2, 'pro': 15, 'premium': 999 };
+    const limit = limits[profile.plan] || 2;
+    const used = profile.fit_analyses_week_count || 0;
+    const pct = Math.round((used / limit) * 100);
+
+    // Actualizar texto y barra
+    counterText.textContent = `Usados: ${used}/${limit} esta semana (plan ${profile.plan})`;
+    counterProgress.style.width = pct + '%';
+    counterPct.textContent = pct + '%';
+
+    // Si llegó al límite
+    if (used >= limit) {
+      counterProgress.style.background = '#F87171'; // rojo
+      counterMsg.style.display = 'block';
+      if (profile.plan === 'free') {
+        counterMsg.innerHTML = '⚠️ Límite alcanzado. <strong>Upgrade a Pro</strong> para 15 análisis/semana.';
+        counterCta.style.display = 'block';
+      } else if (profile.plan === 'pro') {
+        counterMsg.innerHTML = '⚠️ Límite alcanzado. <strong>Upgrade a Premium</strong> para análisis ilimitados.';
+        counterCta.style.display = 'block';
+      }
+    } else {
+      counterProgress.style.background = '#4ADE80'; // verde
+      counterMsg.style.display = 'none';
+      counterCta.style.display = 'block';
+    }
+  } catch(err) {
+    console.error('Error loading analyses counter:', err);
+  }
+}
+
 loadProfile();
 loadBadges();
+loadAnalysesCounter();
 loadSolicitudes();
 loadMensajes();
 setTimeout(updateOnboardingProgress, 300);

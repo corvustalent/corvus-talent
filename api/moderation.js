@@ -1,294 +1,323 @@
-// api/moderation.js - Solicitudes de contacto + Reportes de usuarios
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-const resendApiKey = process.env.RESEND_API_KEY;
-
-const VALID_REPORT_TYPES = [
-  'estafa',
-  'inactividad_sospechosa',
-  'acoso_hostigamiento',
-  'perfil_falso',
-  'cobranza_afuera',
-  'otro'
-];
-
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') return res.status(200).end();
-
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No autorizado' });
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY } = process.env;
+  
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return res.status(500).json({ error: 'Missing env' });
   }
 
-  const token = authHeader.split(' ')[1];
-  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
+  // ─────────────────────────────────────────────────────────────
+  // IMPORT SUPABASE
+  // ─────────────────────────────────────────────────────────────
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !user) {
-    return res.status(401).json({ error: 'Sesión inválida' });
-  }
+  // ─────────────────────────────────────────────────────────────
+  // AUTH
+  // ─────────────────────────────────────────────────────────────
+  const auth = req.headers.authorization?.split('Bearer ')[1];
+  if (!auth) return res.status(401).json({ error: 'No token' });
 
-  // ═══════════════════════════════════════════════════════════════
-  // ── CONTACT REQUESTS (Solicitudes de contacto) ─────────────────
-  // ═══════════════════════════════════════════════════════════════
+  const { data: { user }, error: authError } = await supabase.auth.getUser(auth);
+  if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-  if (req.method === 'GET' && (req.query.type === 'received' || req.query.type === 'sent')) {
-    const { type } = req.query;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, email, role')
+    .eq('email', user.email)
+    .single();
 
-    if (type === 'received') {
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select(`
-          id, recruiter_id, candidate_id, message, company, status, created_at,
-          recruiter:profiles!recruiter_id(nombre, apellido, email, linkedin, company)
-        `)
-        .eq('candidate_id', user.id)
-        .order('created_at', { ascending: false });
+  if (!profile) return res.status(401).json({ error: 'Profile not found' });
 
-      if (error) return res.status(500).json({ error: error.message });
-      return res.status(200).json(data);
-    } else if (type === 'sent') {
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select(`
-          id, recruiter_id, candidate_id, message, company, status, created_at,
-          candidate:profiles!candidate_id(nombre, apellido, email, linkedin, rubro)
-        `)
-        .eq('recruiter_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) return res.status(500).json({ error: error.message });
-      return res.status(200).json(data);
-    }
-  }
-
-  // ─── POST: Crear solicitud de contacto ──────────────────────
-  if (req.method === 'POST' && req.body.action === 'send_contact_request') {
-    const { candidate_id, message, company } = req.body;
-
-    if (!candidate_id || !message) {
-      return res.status(400).json({ error: 'candidate_id y message requeridos' });
-    }
-
-    // Verificar que es recruiter
-    const { data: recruiterProfile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (recruiterProfile?.role !== 'recruiter') {
-      return res.status(403).json({ error: 'Solo recruiters pueden enviar solicitudes' });
-    }
-
-    // Verificar que no existe solicitud previa
-    const { data: existing } = await supabase
-      .from('contact_requests')
-      .select('id')
-      .eq('recruiter_id', user.id)
-      .eq('candidate_id', candidate_id)
-      .maybeSingle();
-
-    if (existing) {
-      return res.status(409).json({ error: 'La solicitud ya existe' });
-    }
-
-    const { data: newRequest, error: insertError } = await supabase
-      .from('contact_requests')
-      .insert({
-        recruiter_id: user.id,
-        candidate_id,
-        message,
-        company: company || null,
-        status: 'pending'
-      })
-      .select()
-      .single();
-
-    if (insertError) return res.status(500).json({ error: insertError.message });
-    return res.status(201).json(newRequest);
-  }
-
-  // ─── PATCH: Responder solicitud (aceptar/rechazar) ───────────
-  if (req.method === 'PATCH' && req.body.action === 'respond_contact_request') {
-    const { request_id, status } = req.body;
-
-    if (!request_id || !['accepted', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'request_id y status requeridos' });
-    }
-
-    const { data: request } = await supabase
-      .from('contact_requests')
-      .select('candidate_id, recruiter_id')
-      .eq('id', request_id)
-      .single();
-
-    if (!request) {
-      return res.status(404).json({ error: 'Solicitud no encontrada' });
-    }
-
-    if (request.candidate_id !== user.id) {
-      return res.status(403).json({ error: 'Solo el candidato puede responder' });
-    }
-
-    const { data: updated, error: updateError } = await supabase
-      .from('contact_requests')
-      .update({ status })
-      .eq('id', request_id)
-      .select()
-      .single();
-
-    if (updateError) return res.status(500).json({ error: updateError.message });
-
-    // Tracking de reputación si es aceptado
-    if (status === 'accepted') {
-      const { data: recruiterProfile } = await supabase
-        .from('profiles')
-        .select('solicitudes_enviadas, solicitudes_aceptadas')
-        .eq('id', request.recruiter_id)
-        .single();
-
-      if (recruiterProfile) {
-        const newAceptadas = (recruiterProfile.solicitudes_aceptadas || 0) + 1;
-        const newTasa = recruiterProfile.solicitudes_enviadas > 0
-          ? (newAceptadas / recruiterProfile.solicitudes_enviadas) * 100
-          : 0;
-
-        await supabase
-          .from('profiles')
-          .update({
-            solicitudes_aceptadas: newAceptadas,
-            tasa_aceptacion: newTasa
-          })
-          .eq('id', request.recruiter_id);
-      }
-
-      // Crear conversación automáticamente
-      try {
-        const { data: existingConv } = await supabase
-          .from('conversations')
-          .select('id')
-          .eq('recruiter_id', request.recruiter_id)
-          .eq('candidate_id', user.id)
-          .maybeSingle();
-
-        if (!existingConv) {
-          await supabase.from('conversations').insert({
-            recruiter_id: request.recruiter_id,
-            candidate_id: user.id,
-            contact_request_id: request_id,
-            status: 'active'
-          });
-        }
-      } catch (e) {
-        console.error('Error creating conversation:', e);
-      }
-    }
-
-    return res.status(200).json(updated);
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // ── REPORTS (Reportes de usuarios) ────────────────────────────
-  // ═══════════════════════════════════════════════════════════════
-
-  // ─── GET: Ver reportes (solo admin) ────────────────────────
-  if (req.method === 'GET' && req.query.action === 'list_reports') {
-    if (user.email !== 'corvus.talent@gmail.com') {
-      return res.status(403).json({ error: 'Acceso denegado' });
-    }
-
-    const { status, limit = 50, offset = 0 } = req.query;
-
+  // ─────────────────────────────────────────────────────────────
+  // GET: CONTACT REQUESTS (candidato/recruiter)
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'GET' && req.query.type === 'received') {
     try {
-      let query = supabase
+      let query = supabase.from('contact_requests').select('*');
+      
+      if (profile.role === 'candidato') {
+        query = query.eq('candidate_id', profile.id);
+      } else {
+        query = query.eq('recruiter_id', profile.id);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return res.status(200).json({ requests: data || [] });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // GET: CONTACT REQUESTS SENT (recruiter)
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'GET' && req.query.type === 'sent') {
+    try {
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .select('*')
+        .eq('recruiter_id', profile.id);
+
+      if (error) throw error;
+      return res.status(200).json({ requests: data || [] });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // GET: LIST REPORTS (admin only)
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'GET' && req.query.action === 'list_reports') {
+    try {
+      // Verificar que es admin
+      if (profile.email !== 'corvus.talent@gmail.com') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const { data, error } = await supabase
         .from('reports')
         .select(`
-          id, reporter_id, reported_user_id, report_type, description,
-          evidence_url, status, resolution, created_at, resolved_at
+          id, report_type, description, evidence_url, status, conversation_id,
+          created_at, updated_at, admin_notes, admin_action, admin_reason,
+          reported_user:reported_user_id(id, email, nombre, apellido, avatar)
         `)
         .order('created_at', { ascending: false });
 
-      if (status) {
-        query = query.eq('status', status);
+      if (error) throw error;
+      return res.status(200).json({ reports: data || [] });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // POST: CREATE CONTACT REQUEST
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'POST' && req.body.action === 'send_contact_request') {
+    try {
+      const { candidate_id, message, company } = req.body;
+
+      if (profile.role !== 'recruiter') {
+        return res.status(403).json({ error: 'Solo recruiters pueden enviar solicitudes' });
       }
 
-      const { data: reports, error, count } = await query
-        .range(offset, offset + limit - 1);
+      // Verificar que la solicitud no exista ya
+      const { data: existing } = await supabase
+        .from('contact_requests')
+        .select('id')
+        .eq('recruiter_id', profile.id)
+        .eq('candidate_id', candidate_id)
+        .single();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (existing) {
+        return res.status(400).json({ error: 'Ya enviaste una solicitud a este candidato' });
+      }
 
-      return res.status(200).json({
-        reports: reports || [],
-        total: count,
-        limit,
-        offset
-      });
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .insert([{
+          recruiter_id: profile.id,
+          candidate_id,
+          message,
+          company: company || profile.company,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return res.status(200).json({ success: true, request: data });
     } catch (e) {
-      return res.status(500).json({ error: 'Error al obtener reportes' });
+      console.error(e);
+      return res.status(500).json({ error: e.message });
     }
   }
 
-  // ─── POST: Crear reporte ─────────────────────────────────
-  if (req.method === 'POST' && req.body.action === 'create_report') {
-    const { reported_user_id, report_type, description, evidence_url, conversation_id } = req.body;
-
-    // Validaciones
-    if (!reported_user_id || typeof reported_user_id !== 'string') {
-      return res.status(400).json({ error: 'Usuario a reportar requerido' });
-    }
-    if (!report_type || !VALID_REPORT_TYPES.includes(report_type)) {
-      return res.status(400).json({ error: 'Tipo de reporte inválido' });
-    }
-    if (!description || description.length < 10 || description.length > 1000) {
-      return res.status(400).json({ error: 'Descripción entre 10 y 1000 caracteres' });
-    }
-
-    if (user.id === reported_user_id) {
-      return res.status(400).json({ error: 'No puedes reportarte a ti mismo' });
-    }
-
-    // Verificar que el usuario existe
-    const { data: reportedUser } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', reported_user_id)
-      .single();
-
-    if (!reportedUser) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
+  // ─────────────────────────────────────────────────────────────
+  // PATCH: RESPOND TO CONTACT REQUEST (accept/reject)
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'PATCH' && req.body.action === 'respond_contact_request') {
     try {
-      const { data, error } = await supabase.from('reports').insert({
-        reporter_id: user.id,
-        reported_user_id,
-        report_type,
-        description,
-        evidence_url: evidence_url || null,
-        conversation_id: conversation_id || null,
-        status: 'pending'
-      }).select();
+      const { request_id, status } = req.body;
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (!['accepted', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: 'Status inválido' });
+      }
 
-      return res.status(201).json({
-        ok: true,
-        report_id: data?.[0]?.id,
-        message: 'Reporte enviado. Nuestro equipo lo revisará pronto.'
-      });
+      // Obtener la solicitud
+      const { data: request, error: fetchError } = await supabase
+        .from('contact_requests')
+        .select('*, recruiter:recruiter_id(id, nombre, apellido, company, email)')
+        .eq('id', request_id)
+        .single();
+
+      if (fetchError || !request) {
+        return res.status(404).json({ error: 'Solicitud no encontrada' });
+      }
+
+      // Verificar que es el candidato que recibió la solicitud
+      if (request.candidate_id !== profile.id) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      // Actualizar estado
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .update({ status })
+        .eq('id', request_id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Si es aceptado, crear conversación automáticamente
+      if (status === 'accepted') {
+        const { data: conv, error: convError } = await supabase
+          .from('conversations')
+          .insert([{
+            recruiter_id: request.recruiter_id.id,
+            candidate_id: profile.id,
+            contact_request_id: request_id,
+            status: 'active'
+          }])
+          .select()
+          .single();
+
+        if (convError) console.error('Error creando conversación:', convError);
+      }
+
+      return res.status(200).json({ success: true, request: data });
     } catch (e) {
-      return res.status(500).json({ error: 'Error al crear reporte' });
+      console.error(e);
+      return res.status(500).json({ error: e.message });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  // ─────────────────────────────────────────────────────────────
+  // POST: CREATE REPORT
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'POST' && req.body.action === 'create_report') {
+    try {
+      const { reported_user_id, report_type, description, evidence_url, conversation_id } = req.body;
+
+      // Validaciones
+      if (!reported_user_id || !report_type || !description) {
+        return res.status(400).json({ error: 'Campos requeridos faltando' });
+      }
+
+      if (description.length < 10 || description.length > 1000) {
+        return res.status(400).json({ error: 'Descripción debe tener 10-1000 caracteres' });
+      }
+
+      if (!['estafa', 'inactividad', 'acoso', 'perfil_falso', 'cobranza', 'otro'].includes(report_type)) {
+        return res.status(400).json({ error: 'Tipo de reporte inválido' });
+      }
+
+      // No permitir auto-reportes
+      if (reported_user_id === profile.id) {
+        return res.status(400).json({ error: 'No puedes reportarte a ti mismo' });
+      }
+
+      // Crear reporte
+      const { data, error } = await supabase
+        .from('reports')
+        .insert([{
+          reporter_id: profile.id,
+          reported_user_id,
+          report_type,
+          description,
+          evidence_url: evidence_url || null,
+          conversation_id: conversation_id || null,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return res.status(200).json({ success: true, report: data });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PATCH: UPDATE REPORT (mark reviewed, dismiss, or suspend user)
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'PATCH' && req.body.action === 'update_report') {
+    try {
+      // Solo admin
+      if (profile.email !== 'corvus.talent@gmail.com') {
+        return res.status(403).json({ error: 'Solo admin puede actualizar reportes' });
+      }
+
+      const { report_id, status, admin_action, admin_reason, admin_notes } = req.body;
+
+      if (!['pending', 'reviewed', 'dismissed', 'action_taken'].includes(status)) {
+        return res.status(400).json({ error: 'Status inválido' });
+      }
+
+      // Obtener el reporte
+      const { data: report, error: fetchError } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('id', report_id)
+        .single();
+
+      if (fetchError || !report) {
+        return res.status(404).json({ error: 'Reporte no encontrado' });
+      }
+
+      // Construir update
+      const updateData = {
+        status,
+        updated_at: new Date().toISOString(),
+        admin_notes: admin_notes || null,
+        admin_action: admin_action || null,
+        admin_reason: admin_reason || null
+      };
+
+      // Si es suspend_user, marcar usuario como suspendido
+      if (admin_action === 'suspend_user') {
+        const { error: suspendError } = await supabase
+          .from('profiles')
+          .update({ suspended: true, suspended_at: new Date().toISOString(), suspend_reason: admin_reason })
+          .eq('id', report.reported_user_id);
+
+        if (suspendError) {
+          console.error('Error suspendiendo usuario:', suspendError);
+          // No fallar si no puede suspender, pero logear el error
+        }
+
+        // Opcional: aquí irían notificaciones por email al usuario suspendido
+      }
+
+      // Actualizar reporte
+      const { data, error } = await supabase
+        .from('reports')
+        .update(updateData)
+        .eq('id', report_id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return res.status(200).json({ success: true, report: data });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 404
+  // ─────────────────────────────────────────────────────────────
+  return res.status(400).json({ error: 'Invalid request' });
 }

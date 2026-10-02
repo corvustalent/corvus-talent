@@ -152,6 +152,11 @@
   <div class="dashboard-header">
     <h1 class="welcome">Hola, <span id="user-name">—</span></h1>
     <p class="header-sub">Este es tu espacio en el ecosistema Corvus.</p>
+    
+    <!-- BADGES -->
+    <div id="badges-container" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;min-height:28px">
+      <!-- Se llena dinámicamente con loadBadges() -->
+    </div>
   </div>
 
   <!-- ONBOARDING -->
@@ -653,6 +658,7 @@ async function updateVisibility() {
       body: JSON.stringify({ action: 'update_visibility', visible })
     });
     showMsg(visible ? 'Tu perfil ahora es visible para recruiters.' : 'Tu perfil está oculto.');
+    loadBadges(); // Actualizar badges
   } catch(e) {
     showMsg('Error al actualizar la visibilidad.', 'error');
   }
@@ -798,6 +804,7 @@ async function saveProfile() {
     const data = await res.json();
     if (res.ok) {
       showMsg('Perfil guardado correctamente.');
+      loadBadges(); // Actualizar badges
       // Update local user name
       if (payload.nombre) {
         document.getElementById('user-name').textContent = payload.nombre;
@@ -1044,7 +1051,39 @@ if (visToggle) {
 }
 
 // ── INIT ───────────────────────────────────────────────────
+// ── BADGES ────────────────────────────────────────────────
+async function loadBadges() {
+  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/profile', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const badges = data.badges || [];
+
+    const container = document.getElementById('badges-container');
+    if (!container) return;
+
+    container.innerHTML = badges.map(badge => `
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(${hexToRgb(badge.color)},0.1);border:1px solid ${badge.color};border-radius:20px;font-size:12px;font-weight:600;color:${badge.color}">
+        <span style="font-size:14px">${badge.icon}</span>
+        <span>${badge.name}</span>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Error loading badges:', err);
+  }
+}
+
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
+}
+
 loadProfile();
+loadBadges();
 loadSolicitudes();
 loadMensajes();
 setTimeout(updateOnboardingProgress, 300);

@@ -882,7 +882,7 @@ async function saveDeseos() {
 // ── SOLICITUDES ────────────────────────────────────────────
 async function loadSolicitudes() {
   try {
-    const res = await fetch('/api/contact?action=list', {
+    const res = await fetch('/api/moderation?type=received', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const data = await res.json();
@@ -939,7 +939,7 @@ async function respondSolicitud(id, status) {
     if (!confirm('¿Estás seguro que querés rechazar esta solicitud?')) return;
   }
   try {
-    const res = await fetch('/api/contact', {
+    const res = await fetch('/api/moderation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ action: 'respond', solicitud_id: id, status })

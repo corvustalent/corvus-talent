@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   const { data: candidates, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
 
-  // Para cada candidato obtener su mejor score de Corvus Fit
+  // Para cada candidato obtener su mejor score y badges
   const candidatesWithScores = await Promise.all(
     (candidates || []).map(async c => {
       const { data: analyses } = await supabase
@@ -58,7 +58,51 @@ export default async function handler(req, res) {
         .limit(1);
 
       const bestScore = analyses?.[0]?.score || null;
-      return { ...c, best_score: bestScore };
+
+      // CALCULAR BADGES
+      const badges = [];
+
+      // Badge 1: Perfil completo (5+ campos)
+      const requiredFields = ['nombre', 'apellido', 'rubro', 'seniority', 'ubicacion'];
+      const filledCount = requiredFields.filter(f => c[f]).length;
+      if (filledCount >= 5) {
+        badges.push({
+          id: 'profile_complete',
+          icon: '✅',
+          name: 'Perfil completo',
+          color: '#4ADE80'
+        });
+      }
+
+      // Badge 2: Analizado (≥1 análisis)
+      if (analyses && analyses.length > 0) {
+        badges.push({
+          id: 'analyzed',
+          icon: '📊',
+          name: 'Analizado',
+          color: '#3B82F6'
+        });
+      }
+
+      // Badge 3: Activo (visible = true, pero ya está filtrado)
+      badges.push({
+        id: 'active',
+        icon: '🎯',
+        name: 'Activo',
+        color: '#8FA8C8'
+      });
+
+      // Badge 4: Score alto (max score ≥75)
+      if (bestScore && bestScore >= 75) {
+        badges.push({
+          id: 'high_score',
+          icon: '🔥',
+          name: 'Score alto',
+          color: '#F59E0B'
+        });
+      }
+
+      return { ...c, best_score: bestScore, badges: badges };
     })
   );
 

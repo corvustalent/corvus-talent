@@ -42,52 +42,80 @@ export default async function handler(req, res) {
       .order('created_at', { ascending: false })
       .limit(20);
 
-    // CALCULAR BADGES
+    // CALCULAR BADGES SEGÚN ROLE
     const badges = [];
     
     if (profile) {
-      // Badge 1: Perfil completo (5+ campos llenos)
-      const requiredFields = ['nombre', 'apellido', 'rubro', 'seniority', 'ubicacion'];
-      const filledCount = requiredFields.filter(f => profile[f]).length;
-      if (filledCount >= 5) {
-        badges.push({
-          id: 'profile_complete',
-          icon: '✅',
-          name: 'Perfil completo',
-          color: '#4ADE80'
-        });
-      }
-
-      // Badge 2: Analizado (≥1 análisis)
-      if (analyses && analyses.length > 0) {
-        badges.push({
-          id: 'analyzed',
-          icon: '📊',
-          name: 'Analizado',
-          color: '#3B82F6'
-        });
-      }
-
-      // Badge 3: Activo (visible = true)
-      if (profile.visible === true) {
-        badges.push({
-          id: 'active',
-          icon: '🎯',
-          name: 'Activo',
-          color: '#8FA8C8'
-        });
-      }
-
-      // Badge 4: Score alto (max score ≥75)
-      if (analyses && analyses.length > 0) {
-        const maxScore = Math.max(...analyses.map(a => a.score || 0));
-        if (maxScore >= 75) {
+      if (profile.role === 'recruiter') {
+        // BADGES PARA RECRUITER
+        
+        // Badge 1: Verificado (email corporativo verificado)
+        if (profile.corporate_email_verified === true) {
           badges.push({
-            id: 'high_score',
-            icon: '🔥',
-            name: 'Score alto',
-            color: '#F59E0B'
+            id: 'verified',
+            icon: '🔵',
+            name: 'Verificado',
+            color: '#3B82F6'
           });
+        }
+
+        // Badge 2: De confianza (verificado + 80%+ aceptación + 5+ contactos)
+        if (profile.corporate_email_verified === true && 
+            profile.solicitudes_enviadas >= 5 &&
+            profile.tasa_aceptacion >= 80) {
+          badges.push({
+            id: 'trusted',
+            icon: '⭐',
+            name: 'De confianza',
+            color: '#FBBF24'
+          });
+        }
+      } else {
+        // BADGES PARA CANDIDATO
+        
+        // Badge 1: Perfil completo (5+ campos llenos)
+        const requiredFields = ['nombre', 'apellido', 'rubro', 'seniority', 'ubicacion'];
+        const filledCount = requiredFields.filter(f => profile[f]).length;
+        if (filledCount >= 5) {
+          badges.push({
+            id: 'profile_complete',
+            icon: '✅',
+            name: 'Perfil completo',
+            color: '#4ADE80'
+          });
+        }
+
+        // Badge 2: Analizado (≥1 análisis)
+        if (analyses && analyses.length > 0) {
+          badges.push({
+            id: 'analyzed',
+            icon: '📊',
+            name: 'Analizado',
+            color: '#3B82F6'
+          });
+        }
+
+        // Badge 3: Activo (visible = true)
+        if (profile.visible === true) {
+          badges.push({
+            id: 'active',
+            icon: '🎯',
+            name: 'Activo',
+            color: '#8FA8C8'
+          });
+        }
+
+        // Badge 4: Score alto (max score ≥75)
+        if (analyses && analyses.length > 0) {
+          const maxScore = Math.max(...analyses.map(a => a.score || 0));
+          if (maxScore >= 75) {
+            badges.push({
+              id: 'high_score',
+              icon: '🔥',
+              name: 'Score alto',
+              color: '#F59E0B'
+            });
+          }
         }
       }
     }

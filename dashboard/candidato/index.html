@@ -839,7 +839,7 @@ async function loadPlans() {
 
           ${isCurrent ? 
             '<button class="plan-button secondary" disabled>Ya tienes este plan</button>' :
-            '<button class="plan-button primary" onclick="selectPlan(\'${key}\', \'${plan.name}\', ${plan.price})">Contratar</button>'
+            `<button class="plan-button primary" data-plan-key="${key}" data-plan-name="${plan.name}" data-plan-price="${plan.price}" onclick="const btn=this;selectPlan(btn.dataset.planKey, btn.dataset.planName, parseInt(btn.dataset.planPrice))">Contratar</button>`
           }
         </div>
       `;

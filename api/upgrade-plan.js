@@ -29,19 +29,19 @@ export default async function handler(req, res) {
   if (!profile) return res.status(401).json({ error: 'Profile not found' });
 
   // ─────────────────────────────────────────────────────────────
-  // PLANES (precios en centavos para MercadoPago)
+  // PLANES (precios en ARS, NO centavos)
   // ─────────────────────────────────────────────────────────────
   const PLANS = {
     pro: {
       name: 'Plan Pro Estratégico',
-      price: 399900, // $3,999 ARS en centavos
+      price: 3999, // $3,999 ARS
       currency: 'ARS',
       description: '5 análisis CV/mes + reportes detallados',
       analyses_per_month: 5
     },
     premium: {
       name: 'Plan Premium Pitch',
-      price: 799900, // $7,999 ARS en centavos
+      price: 7999, // $7,999 ARS
       currency: 'ARS',
       description: 'Análisis ilimitados + prioridad + soporte',
       analyses_per_month: 999
@@ -60,14 +60,14 @@ export default async function handler(req, res) {
       }
 
       const planData = PLANS[plan];
+      const externalRef = `${profile.id}-${plan}-${Date.now()}`;
 
-      // 🔥 HARDCODEAR la URL del webhook — Vercel Hobby no proporciona VERCEL_URL
-      const webhookUrl = 'https://corvustalent.com.ar/api/mercado';
-      const successUrl = 'https://corvustalent.com.ar/dashboard/candidato?payment=success&plan=' + plan;
-      const failureUrl = 'https://corvustalent.com.ar/dashboard/candidato?payment=failed';
-      const pendingUrl = 'https://corvustalent.com.ar/dashboard/candidato?payment=pending';
+      console.log('[upgrade-plan] Creando preferencia:');
+      console.log('  - external_reference:', externalRef);
+      console.log('  - plan:', plan);
+      console.log('  - price:', planData.price);
 
-      // Construir preferencia MercadoPago
+      // ✅ ESTRUCTURA CORRECTA PARA MERCADOPAGO
       const preference = {
         items: [
           {
@@ -75,32 +75,23 @@ export default async function handler(req, res) {
             title: planData.name,
             description: planData.description,
             quantity: 1,
-            unit_price: planData.price / 100 // Convertir centavos a ARS
+            unit_price: planData.price
           }
         ],
         payer: {
-          email: profile.email,
-          name: profile.nombre || 'Usuario'
+          email: profile.email
         },
         back_urls: {
-          success: successUrl,
-          failure: failureUrl,
-          pending: pendingUrl
+          success: 'https://corvustalent.com.ar/dashboard/candidato?payment=success',
+          failure: 'https://corvustalent.com.ar/dashboard/candidato?payment=failed',
+          pending: 'https://corvustalent.com.ar/dashboard/candidato?payment=pending'
         },
-        notification_url: webhookUrl,
-        external_reference: `${profile.id}-${plan}-${Date.now()}`,
-        auto_return: 'approved',
-        metadata: {
-          user_id: profile.id,
-          user_email: profile.email,
-          plan_type: plan
-        }
+        notification_url: 'https://corvustalent.com.ar/api/mercado',
+        external_reference: externalRef,
+        auto_return: 'approved'
       };
 
-      console.log('[upgrade-plan] Creando preferencia con:');
-      console.log('  - external_reference:', preference.external_reference);
-      console.log('  - notification_url:', webhookUrl);
-      console.log('  - plan:', plan);
+      console.log('[upgrade-plan] Enviando a MercadoPago:', JSON.stringify(preference));
 
       // Llamar a API de MercadoPago
       const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
@@ -114,9 +105,17 @@ export default async function handler(req, res) {
 
       const mpData = await mpRes.json();
 
+      console.log('[upgrade-plan] Respuesta MP status:', mpRes.status);
+      console.log('[upgrade-plan] Respuesta MP:', JSON.stringify(mpData).substring(0, 500));
+
       if (!mpRes.ok) {
         console.error('[upgrade-plan] MercadoPago error:', mpData);
         return res.status(400).json({ error: 'Error creating preference', details: mpData });
+      }
+
+      if (!mpData.id) {
+        console.error('[upgrade-plan] MercadoPago no retornó preference id');
+        return res.status(400).json({ error: 'No preference ID from MercadoPago' });
       }
 
       console.log('[upgrade-plan] Preferencia creada:', mpData.id);
@@ -127,10 +126,10 @@ export default async function handler(req, res) {
         .insert([{
           user_id: profile.id,
           plan_type: plan,
-          amount: planData.price / 100,
+          amount: planData.price,
           currency: planData.currency,
           mercadopago_preference_id: mpData.id,
-          external_reference: preference.external_reference,
+          external_reference: externalRef,
           status: 'pending',
           created_at: new Date().toISOString()
         }])
@@ -147,8 +146,8 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         preference_id: mpData.id,
-        init_point: mpData.init_point, // URL para redirigir al usuario
-        sandbox_init_point: mpData.sandbox_init_point // URL sandbox para testing
+        init_point: mpData.init_point,
+        sandbox_init_point: mpData.sandbox_init_point
       });
     } catch (e) {
       console.error('[upgrade-plan] Error:', e);
@@ -179,7 +178,7 @@ export default async function handler(req, res) {
       }
 
       return res.status(200).json({
-        status: payment.status, // approved, rejected, pending, etc.
+        status: payment.status,
         amount: payment.transaction_amount,
         external_reference: payment.external_reference
       });

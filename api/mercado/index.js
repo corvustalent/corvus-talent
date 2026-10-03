@@ -2,6 +2,7 @@ export default async function handler(req, res) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
   
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    console.error('[Webhook] Missing env');
     return res.status(200).json({ error: 'Missing env' });
   }
 
@@ -16,8 +17,11 @@ export default async function handler(req, res) {
   // Acepta múltiples formatos:
   // 1. IPN viejo: { "topic": "payment", "id": "123" }
   // 2. Order.processed: { "action": "order.processed", "data": { "transactions": { "payments": [...] } } }
+  // 3. payment.updated: { "action": "payment.updated", "data": {...} }
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
+    console.log('[Webhook] POST recibido');
+    
     // ACK INMEDIATO (no bloquear la respuesta)
     res.status(200).json({ received: true });
 
@@ -75,7 +79,18 @@ async function processWebhookAsync(body, supabase) {
     }
 
     // ───────────────────────────────────────────────────────────
-    // Formato 2: IPN viejo
+    // Formato 2: payment.updated
+    // ───────────────────────────────────────────────────────────
+    else if (body.action === 'payment.updated' && body.data?.id) {
+      action = 'payment.updated';
+      payment_id = body.data.id;
+      
+      console.log('[Webhook] Formato: payment.updated');
+      console.log('[Webhook] payment_id:', payment_id);
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // Formato 3: IPN viejo
     // ───────────────────────────────────────────────────────────
     else if (body.topic === 'payment' && body.id) {
       action = 'payment';
@@ -88,6 +103,7 @@ async function processWebhookAsync(body, supabase) {
     // Si no tenemos payment_id, no procesamos
     if (!payment_id) {
       console.log('[Webhook] ⚠️ No se encontró payment_id en el body');
+      console.log('[Webhook] Body keys:', Object.keys(body));
       return;
     }
 
@@ -112,7 +128,6 @@ async function processWebhookAsync(body, supabase) {
     console.log('  - Status:', payment.status);
     console.log('  - external_reference:', payment.external_reference);
     console.log('  - id:', payment.id);
-    console.log('  - Pago completo:', JSON.stringify(payment, null, 2));
     console.log('═════════════════════════════════════════════');
 
     // Si no tiene external_reference, no podemos emparejar con nuestra transacción

@@ -475,9 +475,12 @@ let reportedUserId = null;
 let reportConversationId = null;
 
 function openReportModal(userId, conversationId = null) {
+  if (!userId) return; // No abrir si no hay usuario
   reportedUserId = userId;
   reportConversationId = conversationId;
   document.getElementById('reportModal').style.display = 'flex';
+  document.getElementById('reportModal').style.alignItems = 'center';
+  document.getElementById('reportModal').style.justifyContent = 'center';
   document.body.style.overflow = 'hidden';
   document.getElementById('reportForm').reset();
   document.getElementById('charCount').textContent = '0/1000';
@@ -972,9 +975,12 @@ let reportedUserId = null;
 let reportConversationId = null;
 
 function openReportModal(userId, conversationId = null) {
+  if (!userId) return; // No abrir si no hay usuario
   reportedUserId = userId;
   reportConversationId = conversationId;
   document.getElementById('reportModal').style.display = 'flex';
+  document.getElementById('reportModal').style.alignItems = 'center';
+  document.getElementById('reportModal').style.justifyContent = 'center';
   document.body.style.overflow = 'hidden';
   document.getElementById('reportForm').reset();
   document.getElementById('charCount').textContent = '0/1000';

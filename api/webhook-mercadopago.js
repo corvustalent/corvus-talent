@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
   
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    return res.status(500).json({ error: 'Missing env' });
+    return res.status(200).json({ error: 'Missing env' });
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -12,32 +12,21 @@ export default async function handler(req, res) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
   // ─────────────────────────────────────────────────────────────
-  // WEBHOOK: MercadoPago Notification (IPN)
+  // WEBHOOK: MercadoPago Notification
+  // Acepta múltiples formatos:
+  // 1. IPN viejo: { "topic": "payment", "id": "123" }
+  // 2. Order.processed: { "action": "order.processed", "data": { "transactions": { "payments": [...] } } }
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
-    try {
-      // MercadoPago envía notificación IPN con formato:
-      // POST body: { "id": "12345678", "topic": "payment" }
-      
-      const { id: payment_id, topic } = req.body;
+    // ACK INMEDIATO (no bloquear la respuesta)
+    res.status(200).json({ received: true });
 
-      console.log(`[Webhook] Recibido: topic=${topic}, payment_id=${payment_id}`);
+    // Procesar de forma asincrónica
+    processWebhookAsync(req.body, supabase).catch(err => {
+      console.error('[Webhook] Error async:', err);
+    });
 
-      // ACK INMEDIATO (MercadoPago requiere respuesta 200 rápido)
-      res.status(200).json({ received: true });
-
-      // Procesar de forma asincrónica (sin bloquear la respuesta)
-      if (topic === 'payment' && payment_id) {
-        processPaymentAsync(payment_id, supabase).catch(err => {
-          console.error('[Webhook] Error async:', err);
-        });
-      }
-
-      return;
-    } catch (e) {
-      console.error('[Webhook] Parse error:', e);
-      return res.status(200).json({ received: true });
-    }
+    return;
   }
 
   // GET para verificar que el webhook está activo
@@ -49,13 +38,57 @@ export default async function handler(req, res) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Procesar pago de forma asincrónica
+// Procesar webhook de forma asincrónica
 // ─────────────────────────────────────────────────────────────
-async function processPaymentAsync(payment_id, supabase) {
+async function processWebhookAsync(body, supabase) {
   try {
-    console.log(`[Webhook] Procesando payment_id=${payment_id}`);
+    if (!body) {
+      console.log('[Webhook] Body vacío');
+      return;
+    }
 
+    let payment_id = null;
+    let action = null;
+
+    console.log('[Webhook] Recibido:', JSON.stringify(body).substring(0, 200));
+
+    // ───────────────────────────────────────────────────────────
+    // Formato 1: Order.processed (nuevo)
+    // ───────────────────────────────────────────────────────────
+    if (body.action === 'order.processed' && body.data) {
+      action = 'order.processed';
+      
+      // Extraer payment_id del primer pago en transactions
+      if (body.data.transactions && 
+          body.data.transactions.payments && 
+          body.data.transactions.payments.length > 0) {
+        payment_id = body.data.transactions.payments[0].id;
+        
+        console.log('[Webhook] Formato: order.processed, payment_id:', payment_id);
+      }
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // Formato 2: IPN viejo
+    // ───────────────────────────────────────────────────────────
+    else if (body.topic === 'payment' && body.id) {
+      action = 'payment';
+      payment_id = body.id;
+      
+      console.log('[Webhook] Formato: IPN payment, payment_id:', payment_id);
+    }
+
+    // Si no tenemos payment_id, no procesamos
+    if (!payment_id) {
+      console.log('[Webhook] No se encontró payment_id');
+      return;
+    }
+
+    // ───────────────────────────────────────────────────────────
     // Obtener detalles del pago desde MercadoPago
+    // ───────────────────────────────────────────────────────────
+    console.log('[Webhook] Obteniendo detalles de MercadoPago para payment_id:', payment_id);
+
     const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${payment_id}`, {
       headers: { 'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}` }
     });
@@ -66,9 +99,17 @@ async function processPaymentAsync(payment_id, supabase) {
     }
 
     const payment = await mpRes.json();
-    console.log(`[Webhook] Estado del pago: ${payment.status}, external_reference: ${payment.external_reference}`);
+    console.log(`[Webhook] Estado: ${payment.status}, external_reference: ${payment.external_reference}`);
 
+    // Si no tiene external_reference, no podemos emparejar con nuestra transacción
+    if (!payment.external_reference) {
+      console.log('[Webhook] Pago sin external_reference');
+      return;
+    }
+
+    // ───────────────────────────────────────────────────────────
     // Buscar la transacción por external_reference
+    // ───────────────────────────────────────────────────────────
     const { data: transaction, error: transError } = await supabase
       .from('payment_transactions')
       .select('*')
@@ -80,11 +121,13 @@ async function processPaymentAsync(payment_id, supabase) {
       return;
     }
 
-    console.log(`[Webhook] Transacción encontrada: id=${transaction.id}, user_id=${transaction.user_id}`);
+    console.log(`[Webhook] Transacción encontrada: id=${transaction.id}, user_id=${transaction.user_id}, plan=${transaction.plan_type}`);
 
+    // ───────────────────────────────────────────────────────────
     // Procesar según estado del pago
+    // ───────────────────────────────────────────────────────────
     if (payment.status === 'approved') {
-      console.log(`[Webhook] Pago APROBADO para usuario ${transaction.user_id}`);
+      console.log(`[Webhook] ✅ Pago APROBADO para usuario ${transaction.user_id}`);
 
       // Actualizar transacción a "approved"
       const { error: updateError } = await supabase
@@ -117,7 +160,7 @@ async function processPaymentAsync(payment_id, supabase) {
 
       console.log(`✅ ÉXITO: Usuario ${transaction.user_id} → Plan ${transaction.plan_type}`);
     } else if (payment.status === 'rejected') {
-      console.log(`[Webhook] Pago RECHAZADO para transacción ${transaction.id}`);
+      console.log(`[Webhook] ❌ Pago RECHAZADO para transacción ${transaction.id}`);
 
       await supabase
         .from('payment_transactions')
@@ -127,10 +170,9 @@ async function processPaymentAsync(payment_id, supabase) {
         })
         .eq('id', transaction.id);
     } else if (payment.status === 'pending') {
-      console.log(`[Webhook] Pago PENDIENTE para transacción ${transaction.id}`);
-      // No hacer nada, esperar confirmación
+      console.log(`[Webhook] ⏳ Pago PENDIENTE para transacción ${transaction.id}`);
     } else if (payment.status === 'cancelled') {
-      console.log(`[Webhook] Pago CANCELADO para transacción ${transaction.id}`);
+      console.log(`[Webhook] ⛔ Pago CANCELADO para transacción ${transaction.id}`);
 
       await supabase
         .from('payment_transactions')

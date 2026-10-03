@@ -8,6 +8,27 @@ export default async function handler(req, res) {
   const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+  // ─────────────────────────────────────────────────────────────
+  // PARSEAR BODY
+  // ─────────────────────────────────────────────────────────────
+  let body = {};
+  if (req.method === 'POST') {
+    try {
+      // Si req.body es string, parsearlo
+      if (typeof req.body === 'string') {
+        body = JSON.parse(req.body);
+      } else if (typeof req.body === 'object') {
+        body = req.body;
+      }
+    } catch (e) {
+      console.error('[upgrade-plan] Error parsing body:', e);
+      return res.status(400).json({ error: 'Invalid JSON' });
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // AUTH
+  // ─────────────────────────────────────────────────────────────
   const auth = req.headers.authorization?.split('Bearer ')[1];
   if (!auth) return res.status(401).json({ error: 'No token' });
 
@@ -39,9 +60,14 @@ export default async function handler(req, res) {
     }
   };
 
-  if (req.method === 'POST' && req.body.action === 'create_preference') {
+  // ─────────────────────────────────────────────────────────────
+  // POST: CREATE PREFERENCE
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'POST' && body.action === 'create_preference') {
     try {
-      const { plan } = req.body;
+      const { plan } = body;
+
+      console.log('[upgrade-plan] Action: create_preference, Plan:', plan);
 
       if (!PLANS[plan]) {
         return res.status(400).json({ error: 'Plan inválido' });
@@ -49,9 +75,6 @@ export default async function handler(req, res) {
 
       const planData = PLANS[plan];
       const externalRef = `${profile.id}-${plan}-${Date.now()}`;
-
-      console.log('[upgrade-plan] Iniciando...');
-      console.log('[upgrade-plan] Plan:', plan, 'Price:', planData.price);
 
       const preference = {
         items: [
@@ -76,6 +99,8 @@ export default async function handler(req, res) {
         auto_return: 'approved'
       };
 
+      console.log('[upgrade-plan] Calling MercadoPago API...');
+
       const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
         method: 'POST',
         headers: {
@@ -88,7 +113,7 @@ export default async function handler(req, res) {
       const mpData = await mpRes.json();
 
       console.log('[upgrade-plan] MP Status:', mpRes.status);
-      console.log('[upgrade-plan] MP Data:', JSON.stringify(mpData, null, 2));
+      console.log('[upgrade-plan] MP Response:', JSON.stringify(mpData).substring(0, 800));
 
       if (!mpRes.ok) {
         console.error('[upgrade-plan] MP Error:', mpData);
@@ -96,8 +121,8 @@ export default async function handler(req, res) {
       }
 
       if (!mpData.id) {
-        console.error('[upgrade-plan] No ID returned');
-        return res.status(400).json({ error: 'No ID from MP' });
+        console.error('[upgrade-plan] No preference ID');
+        return res.status(400).json({ error: 'No preference ID' });
       }
 
       const { data: transaction, error: transError } = await supabase
@@ -120,7 +145,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'DB error' });
       }
 
-      console.log('[upgrade-plan] Success - Returning init_point:', mpData.init_point || mpData.sandbox_init_point);
+      console.log('[upgrade-plan] Success - init_point:', mpData.init_point || mpData.sandbox_init_point);
 
       return res.status(200).json({
         success: true,
@@ -129,7 +154,7 @@ export default async function handler(req, res) {
         sandbox_init_point: mpData.sandbox_init_point
       });
     } catch (e) {
-      console.error('[upgrade-plan] Exception:', e.message, e.stack);
+      console.error('[upgrade-plan] Exception:', e.message);
       return res.status(500).json({ error: e.message });
     }
   }
@@ -137,7 +162,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET' && req.query.action === 'list_plans') {
     const plans = {
       free: { name: 'Plan Esencial ATS', price: 0, currency: 'ARS', description: '1 análisis CV/mes', analyses_per_month: 1 },
-      pro: { name: 'Plan Pro Estratégico', price: 3999, currency: 'ARS', description: '5 análisis CV/mes + reportes', analyses_per_month: 5 },
+      pro: { name: 'Plan Pro Estratégico', price: 3999, currency: 'ARS', description: '5 análisis CV/mes', analyses_per_month: 5 },
       premium: { name: 'Plan Premium Pitch', price: 7999, currency: 'ARS', description: 'Análisis ilimitados', analyses_per_month: 999 }
     };
     return res.status(200).json({ plans, current_plan: profile.plan || 'free' });

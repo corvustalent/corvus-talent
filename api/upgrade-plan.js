@@ -175,9 +175,48 @@ export default async function handler(req, res) {
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'GET' && query.action === 'list_plans') {
     const plans = {
-      free: { name: 'Plan Esencial ATS', price: 0, currency: 'ARS', description: '1 análisis CV/mes', analyses_per_month: 1 },
-      pro: { name: 'Plan Pro Estratégico', price: 3999, currency: 'ARS', description: '5 análisis CV/mes', analyses_per_month: 5 },
-      premium: { name: 'Plan Premium Pitch', price: 7999, currency: 'ARS', description: 'Análisis ilimitados', analyses_per_month: 999 }
+      free: {
+        name: 'Plan Esencial ATS',
+        price: 0,
+        currency: 'ARS',
+        description: '1 análisis CV/mes',
+        analyses_per_month: 1,
+        features: [
+          '1 análisis CV vs JD por mes',
+          'Feedback básico en español',
+          'Perfil candidato visible para recruiters'
+        ]
+      },
+      pro: {
+        name: 'Plan Pro Estratégico',
+        price: 3999,
+        currency: 'ARS',
+        description: '5 análisis CV/mes + reportes detallados',
+        analyses_per_month: 5,
+        features: [
+          '5 análisis CV vs JD por mes',
+          'Reportes detallados en PDF',
+          'Prioridad en soporte',
+          'Acceso a Corvit (juego de entrevistas)',
+          'Perfil destacado para recruiters'
+        ]
+      },
+      premium: {
+        name: 'Plan Premium Pitch',
+        price: 7999,
+        currency: 'ARS',
+        description: 'Análisis ilimitados + prioridad + soporte',
+        analyses_per_month: 999,
+        features: [
+          'Análisis CV ilimitados',
+          'Reportes premium con recomendaciones IA',
+          'Soporte prioritario 24/7',
+          'Acceso completo a Corvit con sugerencias',
+          'Generador de cover letter con IA',
+          'Perfil verificado y destacado',
+          'Consultoría personalizada mensual'
+        ]
+      }
     };
     return res.status(200).json({ plans, current_plan: profile.plan || 'free' });
   }

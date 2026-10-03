@@ -61,6 +61,12 @@ export default async function handler(req, res) {
 
       const planData = PLANS[plan];
 
+      // 🔥 HARDCODEAR la URL del webhook — Vercel Hobby no proporciona VERCEL_URL
+      const webhookUrl = 'https://corvustalent.com.ar/api/mercado';
+      const successUrl = 'https://corvustalent.com.ar/dashboard/candidato?payment=success&plan=' + plan;
+      const failureUrl = 'https://corvustalent.com.ar/dashboard/candidato?payment=failed';
+      const pendingUrl = 'https://corvustalent.com.ar/dashboard/candidato?payment=pending';
+
       // Construir preferencia MercadoPago
       const preference = {
         items: [
@@ -77,11 +83,11 @@ export default async function handler(req, res) {
           name: profile.nombre || 'Usuario'
         },
         back_urls: {
-          success: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/dashboard/candidato?payment=success&plan=${plan}`,
-          failure: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/dashboard/candidato?payment=failed`,
-          pending: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/dashboard/candidato?payment=pending`
+          success: successUrl,
+          failure: failureUrl,
+          pending: pendingUrl
         },
-        notification_url: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/api/mercado`,
+        notification_url: webhookUrl,
         external_reference: `${profile.id}-${plan}-${Date.now()}`,
         auto_return: 'approved',
         metadata: {
@@ -90,6 +96,11 @@ export default async function handler(req, res) {
           plan_type: plan
         }
       };
+
+      console.log('[upgrade-plan] Creando preferencia con:');
+      console.log('  - external_reference:', preference.external_reference);
+      console.log('  - notification_url:', webhookUrl);
+      console.log('  - plan:', plan);
 
       // Llamar a API de MercadoPago
       const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
@@ -104,9 +115,11 @@ export default async function handler(req, res) {
       const mpData = await mpRes.json();
 
       if (!mpRes.ok) {
-        console.error('MercadoPago error:', mpData);
+        console.error('[upgrade-plan] MercadoPago error:', mpData);
         return res.status(400).json({ error: 'Error creating preference', details: mpData });
       }
+
+      console.log('[upgrade-plan] Preferencia creada:', mpData.id);
 
       // Guardar intención de pago en Supabase
       const { data: transaction, error: transError } = await supabase
@@ -125,8 +138,11 @@ export default async function handler(req, res) {
         .single();
 
       if (transError) {
-        console.error('Error saving transaction:', transError);
+        console.error('[upgrade-plan] Error saving transaction:', transError);
+        return res.status(400).json({ error: 'Error saving transaction' });
       }
+
+      console.log('[upgrade-plan] Transacción guardada:', transaction.id);
 
       return res.status(200).json({
         success: true,
@@ -135,7 +151,7 @@ export default async function handler(req, res) {
         sandbox_init_point: mpData.sandbox_init_point // URL sandbox para testing
       });
     } catch (e) {
-      console.error(e);
+      console.error('[upgrade-plan] Error:', e);
       return res.status(500).json({ error: e.message });
     }
   }

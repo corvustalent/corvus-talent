@@ -47,10 +47,15 @@ async function processWebhookAsync(body, supabase) {
       return;
     }
 
+    // 🔥 DEBUG: Registrar TODO lo que recibe
+    console.log('═════════════════════════════════════════════');
+    console.log('[Webhook] NOTIFICACIÓN RECIBIDA');
+    console.log('═════════════════════════════════════════════');
+    console.log('[Webhook] Body completo:', JSON.stringify(body, null, 2));
+    console.log('═════════════════════════════════════════════');
+
     let payment_id = null;
     let action = null;
-
-    console.log('[Webhook] Recibido:', JSON.stringify(body).substring(0, 200));
 
     // ───────────────────────────────────────────────────────────
     // Formato 1: Order.processed (nuevo)
@@ -64,7 +69,8 @@ async function processWebhookAsync(body, supabase) {
           body.data.transactions.payments.length > 0) {
         payment_id = body.data.transactions.payments[0].id;
         
-        console.log('[Webhook] Formato: order.processed, payment_id:', payment_id);
+        console.log('[Webhook] Formato: order.processed');
+        console.log('[Webhook] payment_id:', payment_id);
       }
     }
 
@@ -75,12 +81,13 @@ async function processWebhookAsync(body, supabase) {
       action = 'payment';
       payment_id = body.id;
       
-      console.log('[Webhook] Formato: IPN payment, payment_id:', payment_id);
+      console.log('[Webhook] Formato: IPN payment');
+      console.log('[Webhook] payment_id:', payment_id);
     }
 
     // Si no tenemos payment_id, no procesamos
     if (!payment_id) {
-      console.log('[Webhook] No se encontró payment_id');
+      console.log('[Webhook] ⚠️ No se encontró payment_id en el body');
       return;
     }
 
@@ -99,17 +106,26 @@ async function processWebhookAsync(body, supabase) {
     }
 
     const payment = await mpRes.json();
-    console.log(`[Webhook] Estado: ${payment.status}, external_reference: ${payment.external_reference}`);
+    
+    console.log('═════════════════════════════════════════════');
+    console.log('[Webhook] Detalles del pago desde MP:');
+    console.log('  - Status:', payment.status);
+    console.log('  - external_reference:', payment.external_reference);
+    console.log('  - id:', payment.id);
+    console.log('  - Pago completo:', JSON.stringify(payment, null, 2));
+    console.log('═════════════════════════════════════════════');
 
     // Si no tiene external_reference, no podemos emparejar con nuestra transacción
     if (!payment.external_reference) {
-      console.log('[Webhook] Pago sin external_reference');
+      console.log('[Webhook] ⚠️ Pago sin external_reference');
       return;
     }
 
     // ───────────────────────────────────────────────────────────
     // Buscar la transacción por external_reference
     // ───────────────────────────────────────────────────────────
+    console.log('[Webhook] Buscando transacción con external_reference:', payment.external_reference);
+    
     const { data: transaction, error: transError } = await supabase
       .from('payment_transactions')
       .select('*')
@@ -117,11 +133,15 @@ async function processWebhookAsync(body, supabase) {
       .single();
 
     if (transError || !transaction) {
-      console.error(`[Webhook] Transacción no encontrada: ${payment.external_reference}`);
+      console.error(`[Webhook] ❌ Transacción no encontrada para: ${payment.external_reference}`);
+      console.error('[Webhook] Error:', transError);
       return;
     }
 
-    console.log(`[Webhook] Transacción encontrada: id=${transaction.id}, user_id=${transaction.user_id}, plan=${transaction.plan_type}`);
+    console.log(`[Webhook] ✅ Transacción encontrada`);
+    console.log(`  - id: ${transaction.id}`);
+    console.log(`  - user_id: ${transaction.user_id}`);
+    console.log(`  - plan: ${transaction.plan_type}`);
 
     // ───────────────────────────────────────────────────────────
     // Procesar según estado del pago
@@ -146,7 +166,14 @@ async function processWebhookAsync(body, supabase) {
         return;
       }
 
+      console.log('[Webhook] Transacción actualizada a "approved"');
+
       // Aplicar upgrade de plan
+      console.log('[Webhook] Llamando apply_plan_upgrade con:');
+      console.log(`  - p_user_id: ${transaction.user_id}`);
+      console.log(`  - p_plan_type: ${transaction.plan_type}`);
+      console.log(`  - p_duration_days: 30`);
+
       const { error: funcError } = await supabase.rpc('apply_plan_upgrade', {
         p_user_id: transaction.user_id,
         p_plan_type: transaction.plan_type,
@@ -154,11 +181,11 @@ async function processWebhookAsync(body, supabase) {
       });
 
       if (funcError) {
-        console.error(`[Webhook] Error aplicando plan upgrade:`, funcError);
+        console.error(`[Webhook] ❌ Error aplicando plan upgrade:`, funcError);
         return;
       }
 
-      console.log(`✅ ÉXITO: Usuario ${transaction.user_id} → Plan ${transaction.plan_type}`);
+      console.log(`[Webhook] ✅ ÉXITO: Usuario ${transaction.user_id} → Plan ${transaction.plan_type}`);
     } else if (payment.status === 'rejected') {
       console.log(`[Webhook] ❌ Pago RECHAZADO para transacción ${transaction.id}`);
 
@@ -183,6 +210,7 @@ async function processWebhookAsync(body, supabase) {
         .eq('id', transaction.id);
     }
   } catch (e) {
-    console.error('[Webhook] Excepción:', e.message);
+    console.error('[Webhook] ❌ Excepción:', e.message);
+    console.error('[Webhook] Stack:', e.stack);
   }
 }

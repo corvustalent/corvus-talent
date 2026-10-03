@@ -81,7 +81,7 @@ export default async function handler(req, res) {
           failure: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/dashboard/candidato?payment=failed`,
           pending: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/dashboard/candidato?payment=pending`
         },
-        notification_url: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/api/webhook`,
+        notification_url: `${process.env.VERCEL_URL || 'https://corvustalent.com.ar'}/api/mercado`,
         external_reference: `${profile.id}-${plan}-${Date.now()}`,
         auto_return: 'approved',
         metadata: {

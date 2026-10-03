@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, MERCADOPAGO_ACCESS_TOKEN } = process.env;
   
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !MERCADOPAGO_ACCESS_TOKEN) {
@@ -169,4 +169,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(400).json({ error: 'Invalid request' });
-}
+};

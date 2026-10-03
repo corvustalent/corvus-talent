@@ -27,6 +27,18 @@ module.exports = async function handler(req, res) {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // PARSEAR QUERY STRING (para Vercel)
+  // ─────────────────────────────────────────────────────────────
+  let query = {};
+  if (req.url && req.url.includes('?')) {
+    const queryString = req.url.split('?')[1];
+    queryString.split('&').forEach(param => {
+      const [key, value] = param.split('=');
+      query[decodeURIComponent(key)] = decodeURIComponent(value || '');
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // AUTH
   // ─────────────────────────────────────────────────────────────
   const auth = req.headers.authorization?.split('Bearer ')[1];
@@ -159,7 +171,10 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  if (req.method === 'GET' && req.query.action === 'list_plans') {
+  // ─────────────────────────────────────────────────────────────
+  // GET: LIST PLANS
+  // ─────────────────────────────────────────────────────────────
+  if (req.method === 'GET' && query.action === 'list_plans') {
     const plans = {
       free: { name: 'Plan Esencial ATS', price: 0, currency: 'ARS', description: '1 análisis CV/mes', analyses_per_month: 1 },
       pro: { name: 'Plan Pro Estratégico', price: 3999, currency: 'ARS', description: '5 análisis CV/mes', analyses_per_month: 5 },

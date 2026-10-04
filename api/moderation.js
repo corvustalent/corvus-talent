@@ -6,6 +6,29 @@ export default async function handler(req, res) {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // PARSE QUERY STRING (Vercel no lo hace automáticamente)
+  // ─────────────────────────────────────────────────────────────
+  let query = {};
+  if (req.url && req.url.includes('?')) {
+    const queryString = req.url.split('?')[1];
+    queryString.split('&').forEach(param => {
+      const [key, value] = param.split('=');
+      query[decodeURIComponent(key)] = decodeURIComponent(value || '');
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PARSE BODY (puede venir como string o JSON)
+  // ─────────────────────────────────────────────────────────────
+  if (typeof req.body === 'string') {
+    try {
+      req.body = JSON.parse(req.body);
+    } catch (e) {
+      req.body = {};
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // IMPORT SUPABASE & RESEND
   // ─────────────────────────────────────────────────────────────
   const { createClient } = await import('@supabase/supabase-js');
@@ -38,7 +61,7 @@ export default async function handler(req, res) {
   // ─────────────────────────────────────────────────────────────
   // GET: CONTACT REQUESTS (candidato/recruiter)
   // ─────────────────────────────────────────────────────────────
-  if (req.method === 'GET' && req.query.type === 'received') {
+  if (req.method === 'GET' && query.type === 'received') {
     try {
       let query = supabase.from('contact_requests').select('*');
       
@@ -61,7 +84,7 @@ export default async function handler(req, res) {
   // ─────────────────────────────────────────────────────────────
   // GET: CONTACT REQUESTS SENT (recruiter)
   // ─────────────────────────────────────────────────────────────
-  if (req.method === 'GET' && req.query.type === 'sent') {
+  if (req.method === 'GET' && query.type === 'sent') {
     try {
       const { data, error } = await supabase
         .from('contact_requests')
@@ -79,7 +102,7 @@ export default async function handler(req, res) {
   // ─────────────────────────────────────────────────────────────
   // GET: LIST REPORTS (admin only)
   // ─────────────────────────────────────────────────────────────
-  if (req.method === 'GET' && req.query.action === 'list_reports') {
+  if (req.method === 'GET' && query.action === 'list_reports') {
     try {
       // Verificar que es admin
       if (profile.email !== 'corvus.talent@gmail.com') {

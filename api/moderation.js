@@ -6,26 +6,38 @@ export default async function handler(req, res) {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PARSE QUERY STRING (Vercel no lo hace automáticamente)
+  // PARSE QUERY STRING MANUALMENTE
   // ─────────────────────────────────────────────────────────────
   let query = {};
-  if (req.url && req.url.includes('?')) {
-    const queryString = req.url.split('?')[1];
-    queryString.split('&').forEach(param => {
-      const [key, value] = param.split('=');
-      query[decodeURIComponent(key)] = decodeURIComponent(value || '');
-    });
+  try {
+    if (req.url && req.url.includes('?')) {
+      const queryString = req.url.split('?')[1];
+      if (queryString) {
+        queryString.split('&').forEach(param => {
+          const [key, value] = param.split('=');
+          if (key) {
+            query[decodeURIComponent(key)] = decodeURIComponent(value || '');
+          }
+        });
+      }
+    }
+  } catch (e) {
+    console.error('Error parsing query:', e);
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PARSE BODY (puede venir como string o JSON)
+  // PARSE BODY (puede venir como string o ya parseado)
   // ─────────────────────────────────────────────────────────────
-  if (typeof req.body === 'string') {
-    try {
+  try {
+    if (typeof req.body === 'string') {
       req.body = JSON.parse(req.body);
-    } catch (e) {
+    }
+    if (!req.body) {
       req.body = {};
     }
+  } catch (e) {
+    console.error('Error parsing body:', e);
+    req.body = {};
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -34,11 +46,14 @@ export default async function handler(req, res) {
   const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-  // Resend client
   let resend = null;
   if (RESEND_API_KEY) {
-    const ResendModule = await import('resend');
-    resend = new ResendModule.Resend(RESEND_API_KEY);
+    try {
+      const ResendModule = await import('resend');
+      resend = new ResendModule.Resend(RESEND_API_KEY);
+    } catch (e) {
+      console.error('Resend init error:', e);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -52,7 +67,7 @@ export default async function handler(req, res) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, email, role')
+    .select('id, email, role, nombre, apellido, company')
     .eq('email', user.email)
     .single();
 
@@ -63,20 +78,20 @@ export default async function handler(req, res) {
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'GET' && query.type === 'received') {
     try {
-      let query = supabase.from('contact_requests').select('*');
+      let queryBuilder = supabase.from('contact_requests').select('*');
       
       if (profile.role === 'candidato') {
-        query = query.eq('candidate_id', profile.id);
+        queryBuilder = queryBuilder.eq('candidate_id', profile.id);
       } else {
-        query = query.eq('recruiter_id', profile.id);
+        queryBuilder = queryBuilder.eq('recruiter_id', profile.id);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await queryBuilder;
       if (error) throw error;
 
       return res.status(200).json({ requests: data || [] });
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching received requests:', e);
       return res.status(500).json({ error: e.message });
     }
   }
@@ -94,7 +109,7 @@ export default async function handler(req, res) {
       if (error) throw error;
       return res.status(200).json({ requests: data || [] });
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching sent requests:', e);
       return res.status(500).json({ error: e.message });
     }
   }
@@ -104,7 +119,6 @@ export default async function handler(req, res) {
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'GET' && query.action === 'list_reports') {
     try {
-      // Verificar que es admin
       if (profile.email !== 'corvus.talent@gmail.com') {
         return res.status(403).json({ error: 'Forbidden' });
       }
@@ -121,7 +135,7 @@ export default async function handler(req, res) {
       if (error) throw error;
       return res.status(200).json({ reports: data || [] });
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching reports:', e);
       return res.status(500).json({ error: e.message });
     }
   }
@@ -137,15 +151,19 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Solo recruiters pueden enviar solicitudes' });
       }
 
+      if (!candidate_id || !message) {
+        return res.status(400).json({ error: 'candidate_id y message requeridos' });
+      }
+
       // Verificar que la solicitud no exista ya
-      const { data: existing } = await supabase
+      const { data: existing, error: existError } = await supabase
         .from('contact_requests')
         .select('id')
         .eq('recruiter_id', profile.id)
         .eq('candidate_id', candidate_id)
         .single();
 
-      if (existing) {
+      if (existing && !existError) {
         return res.status(400).json({ error: 'Ya enviaste una solicitud a este candidato' });
       }
 
@@ -164,84 +182,69 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      // ───── ENVIAR EMAIL AL CANDIDATO ─────
-      // Obtener datos del candidato
-      const { data: candidate, error: candidateError } = await supabase
-        .from('profiles')
-        .select('id, email, nombre, apellido')
-        .eq('id', candidate_id)
-        .single();
+      // ───── ENVIAR EMAIL AL CANDIDATO (async, no bloquea) ─────
+      (async () => {
+        try {
+          const { data: candidate } = await supabase
+            .from('profiles')
+            .select('id, email, nombre, apellido')
+            .eq('id', candidate_id)
+            .single();
 
-      if (candidateError) {
-        console.error('Error fetching candidate:', candidateError);
-      } else if (candidate && candidate.email && resend) {
-        // Obtener datos del recruiter
-        const { data: recruiter, error: recruiterError } = await supabase
-          .from('profiles')
-          .select('id, email, nombre, apellido, company')
-          .eq('id', profile.id)
-          .single();
+          if (candidate && candidate.email && resend) {
+            const candidateName = candidate.nombre ? `${candidate.nombre} ${candidate.apellido || ''}`.trim() : 'Candidato';
+            const recruiterName = profile.nombre ? `${profile.nombre} ${profile.apellido || ''}`.trim() : 'Recruiter';
+            const recruiterCompany = profile.company || 'Una empresa';
 
-        if (!recruiterError && recruiter) {
-          const candidateName = candidate.nombre ? `${candidate.nombre} ${candidate.apellido || ''}`.trim() : 'Candidato';
-          const recruiterName = recruiter.nombre ? `${recruiter.nombre} ${recruiter.apellido || ''}`.trim() : 'Recruiter';
-          const recruiterCompany = recruiter.company || 'Una empresa';
-
-          // Enviar email con Resend
-          try {
-            await resend.emails.send({
-              from: 'Corvus Talent <info@corvustalent.com.ar>',
-              to: candidate.email,
-              subject: `📩 ${recruiterName} te envió una solicitud de contacto — Corvus Talent`,
-              html: `
-                <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #0A1628;">
-                  <div style="background: linear-gradient(135deg, #0A1628 0%, #142038 100%); color: #FFFFFF; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
-                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">¡Nueva oportunidad! 🎯</h1>
-                    <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">Un recruiter está interesado en tu perfil</p>
-                  </div>
-
-                  <div style="background: #FFFFFF; padding: 32px; border-radius: 0 0 16px 16px; border: 1px solid rgba(143, 168, 200, 0.2);">
-                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">Hola ${candidateName},</p>
-
-                    <div style="background: #F5F7FA; border-left: 4px solid #8FA8C8; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                      <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">📍 De:</p>
-                      <p style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${recruiterName}</p>
-                      <p style="margin: 0; font-size: 14px; color: #9CA3AF;">${recruiterCompany}</p>
+            try {
+              await resend.emails.send({
+                from: 'Corvus Talent <info@corvustalent.com.ar>',
+                to: candidate.email,
+                subject: `📩 ${recruiterName} te envió una solicitud de contacto — Corvus Talent`,
+                html: `
+                  <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #0A1628;">
+                    <div style="background: linear-gradient(135deg, #0A1628 0%, #142038 100%); color: #FFFFFF; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
+                      <h1 style="margin: 0; font-size: 24px; font-weight: 700;">¡Nueva oportunidad! 🎯</h1>
+                      <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">Un recruiter está interesado en tu perfil</p>
                     </div>
-
-                    <div style="background: #F5F7FA; border: 1px solid rgba(143, 168, 200, 0.2); padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                      <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">💬 Mensaje:</p>
-                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #1E3050;">${message.split('\n').join('<br>')}</p>
+                    <div style="background: #FFFFFF; padding: 32px; border-radius: 0 0 16px 16px; border: 1px solid rgba(143, 168, 200, 0.2);">
+                      <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">Hola ${candidateName},</p>
+                      <div style="background: #F5F7FA; border-left: 4px solid #8FA8C8; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">📍 De:</p>
+                        <p style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${recruiterName}</p>
+                        <p style="margin: 0; font-size: 14px; color: #9CA3AF;">${recruiterCompany}</p>
+                      </div>
+                      <div style="background: #F5F7FA; border: 1px solid rgba(143, 168, 200, 0.2); padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">💬 Mensaje:</p>
+                        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #1E3050;">${message.split('\n').join('<br>')}</p>
+                      </div>
+                      <div style="text-align: center; margin-bottom: 32px;">
+                        <a href="https://corvustalent.com.ar/dashboard/candidato" style="display: inline-block; background: #0A1628; color: #FFFFFF; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                          Ver solicitud en tu panel
+                        </a>
+                      </div>
+                      <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #9CA3AF;">Desde Corvus Talent facilitamos conexiones auténticas entre talento y oportunidades.</p>
+                      <p style="margin: 0; font-size: 12px; color: #9CA3AF;">¿Preguntas? Escríbenos a <strong>corvus.talent@gmail.com</strong></p>
                     </div>
-
-                    <div style="text-align: center; margin-bottom: 32px;">
-                      <a href="https://corvustalent.com.ar/dashboard/candidato" style="display: inline-block; background: #0A1628; color: #FFFFFF; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;">
-                        Ver solicitud en tu panel
-                      </a>
+                    <div style="text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px;">
+                      <p style="margin: 0;">© 2026 Corvus Talent — Talento certero.</p>
                     </div>
-
-                    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #9CA3AF;">Desde Corvus Talent facilitamos conexiones auténticas entre talento y oportunidades. Respond con confianza — esta solicitud proviene de un recruiter verificado en nuestra plataforma.</p>
-
-                    <p style="margin: 0; font-size: 12px; color: #9CA3AF;">¿Preguntas? Escríbenos a <strong>corvus.talent@gmail.com</strong></p>
                   </div>
-
-                  <div style="text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px;">
-                    <p style="margin: 0;">© 2026 Corvus Talent — Talento certero.</p>
-                  </div>
-                </div>
-              `
-            });
-
-            console.log(`Email enviado a ${candidate.email} sobre solicitud de ${recruiterName}`);
-          } catch (emailError) {
-            console.error('Error sending email with Resend:', emailError);
+                `
+              });
+              console.log(`✅ Email enviado a ${candidate.email}`);
+            } catch (emailError) {
+              console.error('❌ Error sending email:', emailError.message);
+            }
           }
+        } catch (e) {
+          console.error('Error fetching candidate for email:', e);
         }
-      }
+      })();
 
       return res.status(200).json({ success: true, request: data });
     } catch (e) {
-      console.error(e);
+      console.error('Error in send_contact_request:', e);
       return res.status(500).json({ error: e.message });
     }
   }
@@ -268,7 +271,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Solicitud no encontrada' });
       }
 
-      // Verificar que es el candidato que recibió la solicitud
       if (request.candidate_id !== profile.id) {
         return res.status(403).json({ error: 'Forbidden' });
       }
@@ -283,7 +285,7 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      // Si es aceptado, crear conversación automáticamente + ENVIAR EMAIL AL RECRUITER
+      // Si es aceptado, crear conversación + ENVIAR EMAIL AL RECRUITER
       if (status === 'accepted') {
         const { data: conv, error: convError } = await supabase
           .from('conversations')
@@ -296,69 +298,56 @@ export default async function handler(req, res) {
           .select()
           .single();
 
-        if (convError) console.error('Error creando conversación:', convError);
+        if (convError) console.error('Error creating conversation:', convError);
 
-        // ───── ENVIAR EMAIL AL RECRUITER ─────
-        if (request.recruiter && request.recruiter.email && resend) {
+        // ───── ENVIAR EMAIL AL RECRUITER (async, no bloquea) ─────
+        (async () => {
           try {
-            const recruiterName = request.recruiter.nombre ? `${request.recruiter.nombre} ${request.recruiter.apellido || ''}`.trim() : 'Recruiter';
-            const candidateName = profile.nombre ? `${profile.nombre} ${profile.apellido || ''}`.trim() : 'Candidato';
+            if (request.recruiter && request.recruiter.email && resend) {
+              const recruiterName = request.recruiter.nombre ? `${request.recruiter.nombre} ${request.recruiter.apellido || ''}`.trim() : 'Recruiter';
+              const candidateName = profile.nombre ? `${profile.nombre} ${profile.apellido || ''}`.trim() : 'Candidato';
 
-            await resend.emails.send({
-              from: 'Corvus Talent <info@corvustalent.com.ar>',
-              to: request.recruiter.email,
-              subject: `✅ ${candidateName} aceptó tu solicitud de contacto — Corvus Talent`,
-              html: `
-                <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #0A1628;">
-                  <div style="background: linear-gradient(135deg, #0A1628 0%, #142038 100%); color: #FFFFFF; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
-                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">¡Conexión confirmada! ✅</h1>
-                    <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">El candidato respondió tu solicitud</p>
-                  </div>
-
-                  <div style="background: #FFFFFF; padding: 32px; border-radius: 0 0 16px 16px; border: 1px solid rgba(143, 168, 200, 0.2);">
-                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">Hola ${recruiterName},</p>
-
-                    <div style="background: #F5F7FA; border-left: 4px solid #4ADE80; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                      <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">✨ Actualización:</p>
-                      <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">✅ ${candidateName} aceptó tu solicitud</p>
-                      <p style="margin: 0; font-size: 14px; color: #9CA3AF;">Ahora puedes comenzar una conversación directa</p>
+              await resend.emails.send({
+                from: 'Corvus Talent <info@corvustalent.com.ar>',
+                to: request.recruiter.email,
+                subject: `✅ ${candidateName} aceptó tu solicitud de contacto — Corvus Talent`,
+                html: `
+                  <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #0A1628;">
+                    <div style="background: linear-gradient(135deg, #0A1628 0%, #142038 100%); color: #FFFFFF; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
+                      <h1 style="margin: 0; font-size: 24px; font-weight: 700;">¡Conexión confirmada! ✅</h1>
+                      <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">El candidato respondió tu solicitud</p>
                     </div>
-
-                    <div style="text-align: center; margin-bottom: 32px;">
-                      <a href="https://corvustalent.com.ar/dashboard/recruiter?tab=mensajes" style="display: inline-block; background: #0A1628; color: #FFFFFF; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;">
-                        Ir a tu chat
-                      </a>
+                    <div style="background: #FFFFFF; padding: 32px; border-radius: 0 0 16px 16px; border: 1px solid rgba(143, 168, 200, 0.2);">
+                      <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">Hola ${recruiterName},</p>
+                      <div style="background: #F5F7FA; border-left: 4px solid #4ADE80; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                        <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">✨ Actualización:</p>
+                        <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">✅ ${candidateName} aceptó tu solicitud</p>
+                        <p style="margin: 0; font-size: 14px; color: #9CA3AF;">Ahora puedes comenzar una conversación directa</p>
+                      </div>
+                      <div style="text-align: center; margin-bottom: 32px;">
+                        <a href="https://corvustalent.com.ar/dashboard/recruiter?tab=mensajes" style="display: inline-block; background: #0A1628; color: #FFFFFF; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                          Ir a tu chat
+                        </a>
+                      </div>
+                      <p style="margin: 0; font-size: 12px; color: #9CA3AF;">¿Preguntas? Escríbenos a <strong>corvus.talent@gmail.com</strong></p>
                     </div>
-
-                    <div style="background: #F5F7FA; border: 1px solid rgba(143, 168, 200, 0.2); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                      <p style="margin: 0 0 8px 0; font-size: 12px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">📋 Próximos pasos:</p>
-                      <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #1E3050;">
-                        <li>Envía un mensaje presentándote</li>
-                        <li>Agenda una llamada si lo considera pertinente</li>
-                        <li>Mantén profesionalismo y respeto</li>
-                      </ul>
+                    <div style="text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px;">
+                      <p style="margin: 0;">© 2026 Corvus Talent — Talento certero.</p>
                     </div>
-
-                    <p style="margin: 0; font-size: 12px; color: #9CA3AF;">¿Preguntas? Escríbenos a <strong>corvus.talent@gmail.com</strong></p>
                   </div>
-
-                  <div style="text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px;">
-                    <p style="margin: 0;">© 2026 Corvus Talent — Talento certero.</p>
-                  </div>
-                </div>
-              `
-            });
-
-            console.log(`Email enviado a ${request.recruiter.email} — ${candidateName} aceptó solicitud`);
-          } catch (emailError) {
-            console.error('Error sending acceptance email to recruiter:', emailError);
+                `
+              });
+              console.log(`✅ Email enviado a recruiter: ${candidateName} aceptó`);
+            }
+          } catch (e) {
+            console.error('Error sending acceptance email:', e);
           }
-        }
+        })();
       }
 
       return res.status(200).json({ success: true, request: data });
     } catch (e) {
-      console.error(e);
+      console.error('Error in respond_contact_request:', e);
       return res.status(500).json({ error: e.message });
     }
   }
@@ -370,7 +359,6 @@ export default async function handler(req, res) {
     try {
       const { reported_user_id, report_type, description, evidence_url, conversation_id } = req.body;
 
-      // Validaciones
       if (!reported_user_id || !report_type || !description) {
         return res.status(400).json({ error: 'Campos requeridos faltando' });
       }
@@ -383,12 +371,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Tipo de reporte inválido' });
       }
 
-      // No permitir auto-reportes
       if (reported_user_id === profile.id) {
         return res.status(400).json({ error: 'No puedes reportarte a ti mismo' });
       }
 
-      // Crear reporte
       const { data, error } = await supabase
         .from('reports')
         .insert([{
@@ -404,20 +390,18 @@ export default async function handler(req, res) {
         .single();
 
       if (error) throw error;
-
       return res.status(200).json({ success: true, report: data });
     } catch (e) {
-      console.error(e);
+      console.error('Error in create_report:', e);
       return res.status(500).json({ error: e.message });
     }
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PATCH: UPDATE REPORT (mark reviewed, dismiss, or suspend user)
+  // PATCH: UPDATE REPORT
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'PATCH' && req.body.action === 'update_report') {
     try {
-      // Solo admin
       if (profile.email !== 'corvus.talent@gmail.com') {
         return res.status(403).json({ error: 'Solo admin puede actualizar reportes' });
       }
@@ -428,7 +412,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Status inválido' });
       }
 
-      // Obtener el reporte
       const { data: report, error: fetchError } = await supabase
         .from('reports')
         .select('*')
@@ -439,7 +422,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Reporte no encontrado' });
       }
 
-      // Construir update
       const updateData = {
         status,
         updated_at: new Date().toISOString(),
@@ -448,19 +430,15 @@ export default async function handler(req, res) {
         admin_reason: admin_reason || null
       };
 
-      // Si es suspend_user, marcar usuario como suspendido
       if (admin_action === 'suspend_user') {
         const { error: suspendError } = await supabase
           .from('profiles')
           .update({ suspended: true, suspended_at: new Date().toISOString(), suspend_reason: admin_reason })
           .eq('id', report.reported_user_id);
 
-        if (suspendError) {
-          console.error('Error suspendiendo usuario:', suspendError);
-        }
+        if (suspendError) console.error('Error suspending user:', suspendError);
       }
 
-      // Actualizar reporte
       const { data, error } = await supabase
         .from('reports')
         .update(updateData)
@@ -469,16 +447,12 @@ export default async function handler(req, res) {
         .single();
 
       if (error) throw error;
-
       return res.status(200).json({ success: true, report: data });
     } catch (e) {
-      console.error(e);
+      console.error('Error in update_report:', e);
       return res.status(500).json({ error: e.message });
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // 404
-  // ─────────────────────────────────────────────────────────────
   return res.status(400).json({ error: 'Invalid request' });
 }

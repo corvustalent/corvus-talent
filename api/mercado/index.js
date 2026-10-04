@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = process.env;
   
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     console.error('[Webhook] Missing env');
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     res.status(200).json({ received: true });
 
     // Procesar de forma asincrónica
-    processWebhookAsync(req.body, supabase).catch(err => {
+    processWebhookAsync(req.body, supabase, RESEND_API_KEY).catch(err => {
       console.error('[Webhook] Error async:', err);
     });
 
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 // ─────────────────────────────────────────────────────────────
 // Procesar webhook de forma asincrónica
 // ─────────────────────────────────────────────────────────────
-async function processWebhookAsync(body, supabase) {
+async function processWebhookAsync(body, supabase, resendKey) {
   try {
     if (!body) {
       console.log('[Webhook] Body vacío');
@@ -200,7 +200,88 @@ async function processWebhookAsync(body, supabase) {
         return;
       }
 
-      console.log(`[Webhook] ✅ ÉXITO: Usuario ${transaction.user_id} → Plan ${transaction.plan_type}`);
+      console.log(`[Webhook] ✅ Plan upgrade completado`);
+
+      // ───────────────────────────────────────────────────────────
+      // ENVIAR EMAIL DE CONFIRMACIÓN
+      // ───────────────────────────────────────────────────────────
+      if (resendKey) {
+        console.log('[Webhook] Preparando email de confirmación...');
+
+        // Obtener datos del usuario
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email, nombre, apellido')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (!profile) {
+          console.error('[Webhook] ❌ No se encontró perfil del usuario');
+          return;
+        }
+
+        // Mapear nombre del plan
+        const planNames = {
+          pro: 'Plan Pro Estratégico',
+          premium: 'Plan Premium Pitch'
+        };
+        const planName = planNames[transaction.plan_type] || transaction.plan_type;
+
+        // Enviar email con Resend
+        console.log(`[Webhook] Enviando email a: ${profile.email}`);
+
+        const emailRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: 'Corvus Talent <info@corvustalent.com.ar>',
+            to: profile.email,
+            subject: `✅ Pago confirmado — ${planName}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #0A1628;">¡Hola ${profile.nombre}! 🎉</h2>
+                <p>Confirmamos que tu pago fue aprobado correctamente.</p>
+                
+                <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h3 style="color: #8FA8C8; margin-top: 0;">Resumen del pago</h3>
+                  <p><strong>Plan:</strong> ${planName}</p>
+                  <p><strong>Monto:</strong> $${transaction.amount.toLocaleString('es-AR')} ARS</p>
+                  <p><strong>Fecha:</strong> ${new Date(transaction.paid_at).toLocaleDateString('es-AR')}</p>
+                  <p><strong>Referencia:</strong> ${transaction.external_reference}</p>
+                </div>
+
+                <p>Ya podés acceder a todas las funcionalidades de tu nuevo plan en:</p>
+                <a href="https://corvustalent.com.ar/dashboard/candidato" style="display: inline-block; background: #8FA8C8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+                  Ir al Dashboard
+                </a>
+
+                <p style="color: #656D78; font-size: 14px; margin-top: 30px;">
+                  Si tenés dudas, escribinos a <strong>corvus.talent@gmail.com</strong>
+                </p>
+
+                <p style="color: #656D78; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px;">
+                  Corvus Talent — Talento certero
+                </p>
+              </div>
+            `
+          })
+        });
+
+        if (!emailRes.ok) {
+          const emailError = await emailRes.json();
+          console.error('[Webhook] ❌ Error enviando email:', emailError);
+        } else {
+          const emailData = await emailRes.json();
+          console.log(`[Webhook] ✅ Email enviado - ID: ${emailData.id}`);
+        }
+      } else {
+        console.warn('[Webhook] ⚠️ RESEND_API_KEY no configurada, no se envía email');
+      }
+
+      console.log(`[Webhook] ✅ ÉXITO TOTAL: Usuario ${transaction.user_id} → Plan ${transaction.plan_type} + Email enviado`);
     } else if (payment.status === 'rejected') {
       console.log(`[Webhook] ❌ Pago RECHAZADO para transacción ${transaction.id}`);
 

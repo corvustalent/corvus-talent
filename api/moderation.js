@@ -1,15 +1,22 @@
 export default async function handler(req, res) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY, RESEND_API_KEY } = process.env;
   
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return res.status(500).json({ error: 'Missing env' });
   }
 
   // ─────────────────────────────────────────────────────────────
-  // IMPORT SUPABASE
+  // IMPORT SUPABASE & RESEND
   // ─────────────────────────────────────────────────────────────
   const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  // Resend client
+  let resend = null;
+  if (RESEND_API_KEY) {
+    const ResendModule = await import('resend');
+    resend = new ResendModule.Resend(RESEND_API_KEY);
+  }
 
   // ─────────────────────────────────────────────────────────────
   // AUTH
@@ -97,7 +104,7 @@ export default async function handler(req, res) {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // POST: CREATE CONTACT REQUEST
+  // POST: CREATE CONTACT REQUEST + EMAIL AL CANDIDATO
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'POST' && req.body.action === 'send_contact_request') {
     try {
@@ -119,6 +126,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Ya enviaste una solicitud a este candidato' });
       }
 
+      // Insertar solicitud
       const { data, error } = await supabase
         .from('contact_requests')
         .insert([{
@@ -132,6 +140,82 @@ export default async function handler(req, res) {
         .single();
 
       if (error) throw error;
+
+      // ───── ENVIAR EMAIL AL CANDIDATO ─────
+      // Obtener datos del candidato
+      const { data: candidate, error: candidateError } = await supabase
+        .from('profiles')
+        .select('id, email, nombre, apellido')
+        .eq('id', candidate_id)
+        .single();
+
+      if (candidateError) {
+        console.error('Error fetching candidate:', candidateError);
+      } else if (candidate && candidate.email && resend) {
+        // Obtener datos del recruiter
+        const { data: recruiter, error: recruiterError } = await supabase
+          .from('profiles')
+          .select('id, email, nombre, apellido, company')
+          .eq('id', profile.id)
+          .single();
+
+        if (!recruiterError && recruiter) {
+          const candidateName = candidate.nombre ? `${candidate.nombre} ${candidate.apellido || ''}`.trim() : 'Candidato';
+          const recruiterName = recruiter.nombre ? `${recruiter.nombre} ${recruiter.apellido || ''}`.trim() : 'Recruiter';
+          const recruiterCompany = recruiter.company || 'Una empresa';
+
+          // Enviar email con Resend
+          try {
+            await resend.emails.send({
+              from: 'Corvus Talent <info@corvustalent.com.ar>',
+              to: candidate.email,
+              subject: `📩 ${recruiterName} te envió una solicitud de contacto — Corvus Talent`,
+              html: `
+                <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #0A1628;">
+                  <div style="background: linear-gradient(135deg, #0A1628 0%, #142038 100%); color: #FFFFFF; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">¡Nueva oportunidad! 🎯</h1>
+                    <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">Un recruiter está interesado en tu perfil</p>
+                  </div>
+
+                  <div style="background: #FFFFFF; padding: 32px; border-radius: 0 0 16px 16px; border: 1px solid rgba(143, 168, 200, 0.2);">
+                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">Hola ${candidateName},</p>
+
+                    <div style="background: #F5F7FA; border-left: 4px solid #8FA8C8; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">📍 De:</p>
+                      <p style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">${recruiterName}</p>
+                      <p style="margin: 0; font-size: 14px; color: #9CA3AF;">${recruiterCompany}</p>
+                    </div>
+
+                    <div style="background: #F5F7FA; border: 1px solid rgba(143, 168, 200, 0.2); padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">💬 Mensaje:</p>
+                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #1E3050;">${message.split('\n').join('<br>')}</p>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 32px;">
+                      <a href="https://corvustalent.com.ar/dashboard/candidato" style="display: inline-block; background: #0A1628; color: #FFFFFF; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;">
+                        Ver solicitud en tu panel
+                      </a>
+                    </div>
+
+                    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #9CA3AF;">Desde Corvus Talent facilitamos conexiones auténticas entre talento y oportunidades. Respond con confianza — esta solicitud proviene de un recruiter verificado en nuestra plataforma.</p>
+
+                    <p style="margin: 0; font-size: 12px; color: #9CA3AF;">¿Preguntas? Escríbenos a <strong>corvus.talent@gmail.com</strong></p>
+                  </div>
+
+                  <div style="text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px;">
+                    <p style="margin: 0;">© 2026 Corvus Talent — Talento certero.</p>
+                  </div>
+                </div>
+              `
+            });
+
+            console.log(`Email enviado a ${candidate.email} sobre solicitud de ${recruiterName}`);
+          } catch (emailError) {
+            console.error('Error sending email with Resend:', emailError);
+          }
+        }
+      }
+
       return res.status(200).json({ success: true, request: data });
     } catch (e) {
       console.error(e);
@@ -140,7 +224,7 @@ export default async function handler(req, res) {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PATCH: RESPOND TO CONTACT REQUEST (accept/reject)
+  // PATCH: RESPOND TO CONTACT REQUEST (accept/reject) + EMAIL AL RECRUITER SI ACEPTA
   // ─────────────────────────────────────────────────────────────
   if (req.method === 'PATCH' && req.body.action === 'respond_contact_request') {
     try {
@@ -176,7 +260,7 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      // Si es aceptado, crear conversación automáticamente
+      // Si es aceptado, crear conversación automáticamente + ENVIAR EMAIL AL RECRUITER
       if (status === 'accepted') {
         const { data: conv, error: convError } = await supabase
           .from('conversations')
@@ -190,6 +274,63 @@ export default async function handler(req, res) {
           .single();
 
         if (convError) console.error('Error creando conversación:', convError);
+
+        // ───── ENVIAR EMAIL AL RECRUITER ─────
+        if (request.recruiter && request.recruiter.email && resend) {
+          try {
+            const recruiterName = request.recruiter.nombre ? `${request.recruiter.nombre} ${request.recruiter.apellido || ''}`.trim() : 'Recruiter';
+            const candidateName = profile.nombre ? `${profile.nombre} ${profile.apellido || ''}`.trim() : 'Candidato';
+
+            await resend.emails.send({
+              from: 'Corvus Talent <info@corvustalent.com.ar>',
+              to: request.recruiter.email,
+              subject: `✅ ${candidateName} aceptó tu solicitud de contacto — Corvus Talent`,
+              html: `
+                <div style="font-family: Inter, system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #0A1628;">
+                  <div style="background: linear-gradient(135deg, #0A1628 0%, #142038 100%); color: #FFFFFF; padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">¡Conexión confirmada! ✅</h1>
+                    <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">El candidato respondió tu solicitud</p>
+                  </div>
+
+                  <div style="background: #FFFFFF; padding: 32px; border-radius: 0 0 16px 16px; border: 1px solid rgba(143, 168, 200, 0.2);">
+                    <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.6;">Hola ${recruiterName},</p>
+
+                    <div style="background: #F5F7FA; border-left: 4px solid #4ADE80; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 12px 0; font-size: 13px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">✨ Actualización:</p>
+                      <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">✅ ${candidateName} aceptó tu solicitud</p>
+                      <p style="margin: 0; font-size: 14px; color: #9CA3AF;">Ahora puedes comenzar una conversación directa</p>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 32px;">
+                      <a href="https://corvustalent.com.ar/dashboard/recruiter?tab=mensajes" style="display: inline-block; background: #0A1628; color: #FFFFFF; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;">
+                        Ir a tu chat
+                      </a>
+                    </div>
+
+                    <div style="background: #F5F7FA; border: 1px solid rgba(143, 168, 200, 0.2); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 8px 0; font-size: 12px; color: #656D78; text-transform: uppercase; letter-spacing: 1px;">📋 Próximos pasos:</p>
+                      <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #1E3050;">
+                        <li>Envía un mensaje presentándote</li>
+                        <li>Agenda una llamada si lo considera pertinente</li>
+                        <li>Mantén profesionalismo y respeto</li>
+                      </ul>
+                    </div>
+
+                    <p style="margin: 0; font-size: 12px; color: #9CA3AF;">¿Preguntas? Escríbenos a <strong>corvus.talent@gmail.com</strong></p>
+                  </div>
+
+                  <div style="text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px;">
+                    <p style="margin: 0;">© 2026 Corvus Talent — Talento certero.</p>
+                  </div>
+                </div>
+              `
+            });
+
+            console.log(`Email enviado a ${request.recruiter.email} — ${candidateName} aceptó solicitud`);
+          } catch (emailError) {
+            console.error('Error sending acceptance email to recruiter:', emailError);
+          }
+        }
       }
 
       return res.status(200).json({ success: true, request: data });
@@ -293,10 +434,7 @@ export default async function handler(req, res) {
 
         if (suspendError) {
           console.error('Error suspendiendo usuario:', suspendError);
-          // No fallar si no puede suspender, pero logear el error
         }
-
-        // Opcional: aquí irían notificaciones por email al usuario suspendido
       }
 
       // Actualizar reporte

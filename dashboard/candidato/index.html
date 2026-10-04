@@ -1,1732 +1,403 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi perfil — Corvus Talent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
-    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
-    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
-    --green:#4ADE80;--yellow:#FBBF24;--red:#F87171;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-
-  /* NAV */
-  nav{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--navy);z-index:100}
-  .nav-brand{font-size:15px;font-weight:700;letter-spacing:1px;color:var(--white);text-decoration:none}
-  .nav-brand span{color:var(--slate)}
-  .nav-right{display:flex;align-items:center;gap:16px}
-  .nav-user{font-size:13px;color:var(--gray)}
-  .btn-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--gray);font-size:12px;font-family:inherit;cursor:pointer;transition:all 0.15s}
-  .btn-logout:hover{border-color:var(--red);color:var(--red)}
-
-  main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:32px 24px}
-
-  /* HEADER */
-  .dashboard-header{margin-bottom:32px}
-  .welcome{font-size:clamp(22px,4vw,30px);font-weight:700;margin-bottom:6px}
-  .welcome span{color:var(--slate)}
-  .header-sub{font-size:13px;color:var(--gray)}
-
-  /* VISIBILITY TOGGLE */
-  .visibility-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-  .visibility-text strong{font-size:14px;color:var(--white);display:block;margin-bottom:3px}
-  .visibility-text p{font-size:12px;color:var(--gray);line-height:1.5}
-  .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
-  .toggle input{opacity:0;width:0;height:0}
-  .toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(143,168,200,0.2);border-radius:24px;transition:0.3s}
-  .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:var(--white);border-radius:50%;transition:0.3s}
-  input:checked+.toggle-slider{background:var(--green)}
-  input:checked+.toggle-slider::before{transform:translateX(20px)}
-
-  /* TABS */
-  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:28px}
-  .tab{padding:10px 20px;border:none;background:none;color:var(--gray);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border-bottom:2px solid transparent;margin-bottom:-1px}
-  .tab:hover{color:var(--white)}
-  .tab.active{color:var(--white);border-bottom-color:var(--slate)}
-
-  /* SECTION */
-  .section{display:none}
-  .section.active{display:block}
-  .section-title{font-size:14px;font-weight:600;color:var(--slate);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
-
-  /* FORM */
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-  .field{display:flex;flex-direction:column;gap:6px}
-  .field.full{grid-column:1/-1}
-  label{font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;font-weight:500}
-  input[type=text],input[type=email],input[type=tel],select,textarea{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-family:inherit;font-size:13px;outline:none;transition:border-color 0.2s;width:100%}
-  input:focus,select:focus,textarea:focus{border-color:var(--slate)}
-  select option{background:var(--navy-mid)}
-  textarea{resize:vertical;min-height:80px;line-height:1.5}
-  ::placeholder{color:var(--gray)}
-
-  /* PRIVACY TOGGLES */
-  .privacy-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--navy);border:1px solid var(--border);border-radius:8px;margin-top:6px}
-  .privacy-label{font-size:12px;color:var(--gray)}
-  .privacy-label span{color:var(--slate)}
-
-  /* CHIPS */
-  .chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-  .chip{background:rgba(143,168,200,0.08);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--gray);cursor:pointer;transition:all 0.15s;user-select:none}
-  .chip:hover{border-color:var(--slate);color:var(--white)}
-  .chip.selected{border-color:var(--slate);background:rgba(143,168,200,0.15);color:var(--white)}
-
-  /* ANALYSES */
-  .analysis-item{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  .analysis-score{font-size:24px;font-weight:700;min-width:52px;text-align:center}
-  .analysis-info{flex:1}
-  .analysis-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px}
-  .analysis-date{font-size:12px;color:var(--gray)}
-  .empty-state{text-align:center;padding:48px 20px;color:var(--gray)}
-  .empty-state p{font-size:14px;margin-bottom:16px}
-
-  /* BUTTONS */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 24px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s}
-  .btn-primary{background:var(--white);color:var(--navy)}
-  .btn-primary:hover{background:var(--off-white);transform:translateY(-1px)}
-  .btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
-  .btn-ghost{background:transparent;color:var(--slate);border:1px solid var(--border)}
-  .btn-ghost:hover{border-color:var(--slate);color:var(--white)}
-
-  /* MSG */
-  .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
-  .msg.success{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);display:block}
-  .msg.error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);display:block}
-
-  /* QUICK ACCESS */
-  .quick-access{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
-  .quick-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:all 0.15s;display:flex;align-items:center;gap:12px}
-  .quick-card:hover{border-color:var(--slate);transform:translateY(-1px)}
-  .quick-icon{font-size:22px}
-  .quick-name{font-size:13px;font-weight:600;color:var(--white)}
-  .quick-desc{font-size:11px;color:var(--gray);margin-top:2px}
-
-  .solicitud-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:10px}
-  .solicitud-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
-  .solicitud-company{font-size:14px;font-weight:600;color:var(--white)}
-  .solicitud-date{font-size:11px;color:var(--gray)}
-  .solicitud-msg{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:14px}
-  .solicitud-actions{display:flex;gap:8px;flex-wrap:wrap}
-  .btn-accept{background:var(--green);color:#0A1628;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity 0.15s}
-  .btn-accept:hover{opacity:0.85}
-  .btn-reject{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 16px;font-size:12px;color:var(--gray);cursor:pointer;font-family:inherit;transition:all 0.15s}
-  .btn-reject:hover{border-color:var(--red);color:var(--red)}
-  .status-badge{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
-  .status-pending{background:rgba(251,191,36,0.15);color:var(--yellow)}
-  .status-accepted{background:rgba(74,222,128,0.15);color:var(--green)}
-  .status-rejected{background:rgba(248,113,113,0.1);color:var(--red)}
-  @media(max-width:600px){
-    main{padding:20px 16px}
-    .quick-access{grid-template-columns:1fr}
-    .form-grid{grid-template-columns:1fr}
-    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0}
-    .tab{white-space:nowrap;padding:10px 12px;font-size:12px}
-    nav{padding:12px 16px}
-    .nav-right{gap:8px}
-    .nav-user{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .visibility-card{flex-direction:column;align-items:flex-start}
-    #p-pais,#p-provincia,#p-ciudad{font-size:16px}
-    .solicitud-actions{flex-direction:column}
-    .btn-accept,.btn-reject{width:100%;text-align:center;padding:10px}
-    .dashboard-header h1{font-size:22px}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Dashboard — Corvus Talent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        nav {
+            background: #0a1628;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        nav a { color: white; text-decoration: none; margin-right: 2rem; }
+        nav a:hover { color: #8fa8c8; }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .logo { font-weight: bold; font-size: 1.2rem; }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            color: #0a1628;
+            border-bottom-color: #8fa8c8;
+        }
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .solicitud-item {
+            background: #f9f9f9;
+            border-left: 4px solid #8fa8c8;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+        .solicitud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .solicitud-from {
+            font-weight: bold;
+            color: #0a1628;
+        }
+        .solicitud-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-accepted { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .solicitud-message {
+            color: #666;
+            margin: 0.75rem 0;
+            line-height: 1.5;
+        }
+        .solicitud-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .btn-accept {
+            background: #10b981;
+            color: white;
+        }
+        .btn-accept:hover { background: #059669; }
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-reject:hover { background: #dc2626; }
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+        }
+        .btn-logout:hover { background: #dc2626; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #999;
+        }
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
-
-<nav>
-  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
-  <div class="nav-right">
-    <span class="nav-user" id="nav-email"></span>
-    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
-  </div>
-</nav>
-
-<main>
-  <div class="dashboard-header">
-    <h1 class="welcome">Hola, <span id="user-name">—</span></h1>
-    <p class="header-sub">Este es tu espacio en el ecosistema Corvus.</p>
-    
-    <!-- BADGES -->
-    <div id="badges-container" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;min-height:28px">
-      <!-- Se llena dinámicamente con loadBadges() -->
-    </div>
-  </div>
-
-  <!-- ONBOARDING -->
-  <div id="onboarding-banner" style="background:linear-gradient(135deg,rgba(143,168,200,0.1),rgba(143,168,200,0.05));border:1px solid rgba(143,168,200,0.3);border-radius:12px;padding:20px 24px;margin-bottom:24px">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:12px">
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px">🚀 Casi listo para empezar</div>
-        <div style="font-size:12px;color:var(--gray);margin-bottom:8px">Completá estos 3 pasos para tener el máximo alcance.</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="flex:1;max-width:200px;height:6px;background:rgba(143,168,200,0.1);border-radius:10px;overflow:hidden">
-            <div id="ob-progress-bar" style="height:100%;background:var(--green);width:0%;transition:width 0.3s ease"></div>
-          </div>
-          <span id="ob-progress-text" style="font-size:12px;font-weight:600;color:var(--slate);min-width:35px">0%</span>
+    <nav>
+        <div class="logo">🦅 Corvus Talent</div>
+        <div class="nav-right">
+            <span id="user-name">Cargando...</span>
+            <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
         </div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px">
-      <div id="ob-step-1" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer">
-        <div id="ob-check-1" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--slate);margin-bottom:8px">1</div>
-        <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px">Completá tu perfil</div>
-        <div style="font-size:11px;color:var(--gray)">Nombre, rubro y ubicación</div>
-      </div>
-      <div id="ob-step-2" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer" onclick="window.location.href='/corvus-fit'; localStorage.setItem('corvus_ob_analysis_done','true');">
-        <div id="ob-check-2" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--slate);margin-bottom:8px">2</div>
-        <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px">Tu primer análisis</div>
-        <div style="font-size:11px;color:var(--gray)">Usa Corvus Fit</div>
-      </div>
-      <div id="ob-step-3" style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer">
-        <div id="ob-check-3" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--slate);margin-bottom:8px">3</div>
-        <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px">Activa visibilidad</div>
-        <div style="font-size:11px;color:var(--gray)">Para que recruiters te encuentren</div>
-      </div>
-    </div>
-  </div>
+    </nav>
 
-  <!-- ACCESOS RÁPIDOS -->
-  <div class="quick-access">
-    <a href="/corvit" class="quick-card">
-      <span class="quick-icon">🏆</span>
-      <div>
-        <div class="quick-name">Corvit</div>
-        <div class="quick-desc">Practicá para tu entrevista</div>
-      </div>
-    </a>
-    <a href="/corvus-fit" class="quick-card">
-      <span class="quick-icon">🧩</span>
-      <div>
-        <div class="quick-name">Corvus Fit</div>
-        <div class="quick-desc">Analizá tu compatibilidad</div>
-      </div>
-    </a>
-  </div>
-
-  <!-- VISIBILIDAD -->
-  <div class="visibility-card">
-    <div class="visibility-text">
-    <a href="/corvus-fit" class="quick-card">
-      <span class="quick-icon">🧩</span>
-      <div>
-        <div class="quick-name">Corvus Fit</div>
-        <div class="quick-desc">Analizá tu compatibilidad</div>
-      </div>
-    </a>
-    <button onclick="openPlansModal()" class="quick-card" style="background:none;border:none;cursor:pointer;text-decoration:none">
-      <span class="quick-icon">💎</span>
-      <div>
-        <div class="quick-name">Ver planes</div>
-        <div class="quick-desc">Upgradea tu cuenta</div>
-      </div>
-    </button>
-  </div>
-      <strong>Perfil visible para recruiters</strong>
-      <p>Cuando está activado, los recruiters pueden ver tu perfil y tus análisis de compatibilidad.</p>
-    </div>
-    <label class="toggle">
-      <input type="checkbox" id="visibility-toggle" onchange="updateVisibility()">
-      <span class="toggle-slider"></span>
-    </label>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('perfil')">Mi perfil</button>
-    <button class="tab" onclick="switchTab('deseos')">Qué busco</button>
-    <button class="tab" onclick="switchTab('analisis')">Mis análisis</button>
-    <button class="tab" onclick="switchTab('solicitudes')">Solicitudes <span id="solicitudes-badge" style="display:none;background:var(--slate);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px">0</span></button>
-    <button class="tab" onclick="switchTab('mensajes')">Mensajes <span id="mensajes-badge" style="display:none;background:var(--green);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px">0</span></button>
-  </div>
-
-  <!-- MSG -->
-  <div class="msg" id="msg"></div>
-
-  <!-- TAB: PERFIL -->
-  <div class="section active" id="section-perfil">
-    <div class="section-title">Datos personales</div>
-    <div class="form-grid">
-      <div class="field">
-        <label>Nombre</label>
-        <input type="text" id="p-nombre" placeholder="Tu nombre">
-      </div>
-      <div class="field">
-        <label>Apellido</label>
-        <input type="text" id="p-apellido" placeholder="Tu apellido">
-      </div>
-      <div class="field">
-        <label>Rubro principal</label>
-        <select id="p-rubro">
-          <option value="">Seleccioná...</option>
-          <option>Tecnología IT</option>
-          <option>Recursos Humanos</option>
-          <option>Ventas</option>
-          <option>Marketing</option>
-          <option>Administración</option>
-          <option>Finanzas</option>
-          <option>Legal / Derecho</option>
-          <option>Salud</option>
-          <option>Ingeniería</option>
-          <option>Logística</option>
-          <option>Turismo y Hotelería</option>
-          <option>Atención al Cliente</option>
-          <option>Diseño Gráfico</option>
-          <option>Docencia</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Seniority</label>
-        <select id="p-seniority">
-          <option value="">Seleccioná...</option>
-          <option>Junior</option>
-          <option>Semi Senior</option>
-          <option>Senior</option>
-          <option>Lead / Tech Lead</option>
-          <option>Manager</option>
-        </select>
-      </div>
-      <div class="field full">
-        <label>Ubicación</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <select id="p-pais" onchange="updateProvincias()">
-            <option value="">País...</option>
-            <option value="AR">Argentina</option>
-            <option value="BR">Brasil</option>
-            <option value="otro">Otro</option>
-          </select>
-          <select id="p-provincia" onchange="updateCiudades()" disabled>
-            <option value="">Provincia/Estado...</option>
-          </select>
-          <select id="p-ciudad" disabled>
-            <option value="">Ciudad...</option>
-          </select>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('solicitudes')">Solicitudes (Recibidas)</button>
+            <button class="tab-button" onclick="switchTab('enviadas')">Solicitudes (Enviadas)</button>
+            <button class="tab-button" onclick="switchTab('perfil')">Mi Perfil</button>
         </div>
-        <input type="text" id="p-ubicacion-otro" placeholder="Ingresá tu ciudad y país" style="display:none;margin-top:8px">
-      </div>
+
+        <!-- TAB: SOLICITUDES RECIBIDAS -->
+        <div id="solicitudes" class="tab-content active">
+            <h2>Solicitudes de Contacto Recibidas</h2>
+            <div id="solicitudes-container"></div>
+        </div>
+
+        <!-- TAB: SOLICITUDES ENVIADAS -->
+        <div id="enviadas" class="tab-content">
+            <h2>Solicitudes que Envié (Recruiters)</h2>
+            <div id="enviadas-container"></div>
+        </div>
+
+        <!-- TAB: PERFIL -->
+        <div id="perfil" class="tab-content">
+            <h2>Mi Perfil</h2>
+            <div id="perfil-container"></div>
+        </div>
     </div>
 
-    <div class="section-title" style="margin-top:8px">Datos de contacto <span style="font-size:11px;font-weight:400;color:var(--gray);text-transform:none;letter-spacing:0">— elegí cuáles mostrar a recruiters</span></div>
-    <div class="form-grid">
-      <div class="field">
-        <label>Email de contacto</label>
-        <input type="email" id="p-email" placeholder="tu@email.com">
-        <div class="privacy-row">
-          <span class="privacy-label">Mostrar a recruiters <span>Email</span></span>
-          <label class="toggle" style="width:36px;height:20px">
-            <input type="checkbox" id="priv-email">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>Teléfono / WhatsApp</label>
-        <input type="tel" id="p-telefono" placeholder="+54 9 341 000 0000">
-        <div class="privacy-row">
-          <span class="privacy-label">Mostrar a recruiters <span>Teléfono</span></span>
-          <label class="toggle" style="width:36px;height:20px">
-            <input type="checkbox" id="priv-telefono">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>LinkedIn</label>
-        <input type="text" id="p-linkedin" placeholder="linkedin.com/in/tuperfil">
-        <div class="privacy-row">
-          <span class="privacy-label">Mostrar a recruiters <span>LinkedIn</span></span>
-          <label class="toggle" style="width:36px;height:20px">
-            <input type="checkbox" id="priv-linkedin">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label>Género <span style="color:var(--gray);font-size:10px;text-transform:none;letter-spacing:0">(opcional)</span></label>
-        <select id="p-genero">
-          <option value="">Prefiero no decir</option>
-          <option>Masculino</option>
-          <option>Femenino</option>
-          <option>No binario</option>
-          <option>Otro</option>
-        </select>
-        <div class="privacy-row">
-          <span class="privacy-label">Mostrar a recruiters <span>Género</span></span>
-          <label class="toggle" style="width:36px;height:20px">
-            <input type="checkbox" id="priv-genero">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="saveProfile()">Guardar perfil</button>
-  </div>
-
-  <!-- TAB: DESEOS -->
-  <div class="section" id="section-deseos">
-    <div class="section-title">¿Qué estás buscando?</div>
-    <div class="form-grid">
-      <div class="field">
-        <label>Tipo de puesto</label>
-        <select id="d-tipo">
-          <option value="">Seleccioná...</option>
-          <option>Full time</option>
-          <option>Part time</option>
-          <option>Freelance / Por proyecto</option>
-          <option>Cualquiera</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Modalidad</label>
-        <select id="d-modalidad">
-          <option value="">Seleccioná...</option>
-          <option>Remoto</option>
-          <option>Híbrido</option>
-          <option>Presencial</option>
-          <option>Cualquiera</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Seniority al que aspiro</label>
-        <select id="d-seniority">
-          <option value="">Seleccioná...</option>
-          <option>Junior</option>
-          <option>Semi Senior</option>
-          <option>Senior</option>
-          <option>Lead / Manager</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Disponibilidad</label>
-        <select id="d-disponibilidad">
-          <option value="">Seleccioná...</option>
-          <option>Inmediata</option>
-          <option>2 semanas</option>
-          <option>1 mes</option>
-          <option>Solo escucho propuestas</option>
-        </select>
-      </div>
-      <div class="field full">
-        <label>Rubros de interés</label>
-        <div class="chips-wrap" id="rubros-chips">
-          <div class="chip" onclick="toggleChip(this)">💻 IT</div>
-          <div class="chip" onclick="toggleChip(this)">👥 RRHH</div>
-          <div class="chip" onclick="toggleChip(this)">📈 Ventas</div>
-          <div class="chip" onclick="toggleChip(this)">📣 Marketing</div>
-          <div class="chip" onclick="toggleChip(this)">📋 Administración</div>
-          <div class="chip" onclick="toggleChip(this)">💰 Finanzas</div>
-          <div class="chip" onclick="toggleChip(this)">⚖️ Legal</div>
-          <div class="chip" onclick="toggleChip(this)">🏥 Salud</div>
-          <div class="chip" onclick="toggleChip(this)">⚙️ Ingeniería</div>
-          <div class="chip" onclick="toggleChip(this)">📦 Logística</div>
-          <div class="chip" onclick="toggleChip(this)">🏨 Turismo</div>
-          <div class="chip" onclick="toggleChip(this)">🤝 Atención al Cliente</div>
-          <div class="chip" onclick="toggleChip(this)">🎨 Diseño</div>
-          <div class="chip" onclick="toggleChip(this)">📚 Docencia</div>
-        </div>
-      </div>
-      <div class="field">
-        <label>Pretensión salarial en ARS <span style="color:var(--gray);font-size:10px;text-transform:none;letter-spacing:0">(opcional)</span></label>
-        <input type="text" id="d-salario-ars" placeholder="ej. $800.000 - $1.200.000">
-      </div>
-      <div class="field">
-        <label>Pretensión salarial en USD <span style="color:var(--gray);font-size:10px;text-transform:none;letter-spacing:0">(opcional)</span></label>
-        <input type="text" id="d-salario-usd" placeholder="ej. $1.500 - $2.500">
-      </div>
-      <div class="field full">
-        <label>Algo más que quieras contar</label>
-        <textarea id="d-notas" placeholder="ej. Busco proyectos de impacto social, open to relocation, experiencia liderando equipos..."></textarea>
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="saveDeseos()">Guardar preferencias</button>
-  </div>
-
-  <!-- TAB: ANÁLISIS -->
-  <div class="section" id="section-analisis">
-    <div class="section-title">Historial de Corvus Fit</div>
-    
-    <!-- CONTADOR DE ANÁLISIS -->
-    <div id="analyses-counter-banner" style="background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:12px;padding:16px;margin-bottom:20px;display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px" id="counter-text">Usados: 0/2 esta semana</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="flex:1;max-width:150px;height:6px;background:rgba(143,168,200,0.1);border-radius:10px;overflow:hidden">
-              <div id="counter-progress" style="height:100%;background:var(--green);width:0%;transition:width 0.3s ease"></div>
-            </div>
-            <span id="counter-pct" style="font-size:12px;font-weight:600;color:var(--gray);min-width:30px">0%</span>
-          </div>
-        </div>
-        <div id="counter-cta" style="display:none">
-          <a href="/corvus-fit" class="btn btn-sm" style="background:var(--slate);color:var(--navy);text-decoration:none;padding:8px 16px;border-radius:6px;font-weight:600;font-size:12px">Ir a Corvus Fit 🧩</a>
-        </div>
-      </div>
-      <div id="counter-limit-msg" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(143,168,200,0.2);font-size:12px;color:var(--gray);display:none"></div>
-    </div>
-    
-    <div id="analyses-list">
-      <div class="empty-state">
-        <p>Todavía no hiciste ningún análisis de compatibilidad.</p>
-        <a href="/corvus-fit" class="btn btn-ghost" style="text-decoration:none">Ir a Corvus Fit 🧩</a>
-      </div>
-    </div>
-  </div>
-  <!-- TAB: SOLICITUDES -->
-  <div class="section" id="section-solicitudes">
-    <div class="section-title">Solicitudes de contacto</div>
-    <div id="solicitudes-list">
-      <div class="empty-state">
-        <p>Todavía no recibiste solicitudes de contacto.</p>
-        <span style="font-size:12px;color:var(--gray)">Activá tu visibilidad para que los recruiters puedan encontrarte.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: MENSAJES -->
-  <div class="section" id="section-mensajes">
-    <div class="section-title">Mensajes</div>
-    <div id="mensajes-list">
-      <div class="empty-state">
-        <p>No tenés conversaciones activas.</p>
-        <span style="font-size:12px;color:var(--gray)">Cuando aceptes una solicitud de contacto, podrás chatear con el recruiter.</span>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ═══════════════════════════════════════════════════════════════
-       MODAL: VER DETALLES DE ANÁLISIS PREVIOS
-       ═══════════════════════════════════════════════════════════════ -->
-  <div id="analysisModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,22,40,0.8);z-index:1000;overflow-y:auto;padding:20px">
-    <div style="max-width:900px;margin:0 auto">
-      <div style="background:var(--navy);border:1px solid rgba(143,168,200,0.3);border-radius:16px;padding:32px;max-height:90vh;overflow-y:auto">
-        
-        <!-- HEADER -->
-        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:24px;gap:16px">
-          <div style="flex:1">
-            <div style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:8px" id="modal-job-title">Cargo</div>
-            <div style="font-size:13px;color:var(--gray)" id="modal-date">Fecha</div>
-          </div>
-          <button onclick="closeAnalysisModal()" style="background:none;border:none;color:var(--slate);font-size:24px;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center">✕</button>
-        </div>
-
-        <!-- SCORE GRANDE -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:32px">
-          <div style="background:rgba(143,168,200,0.1);border:1px solid rgba(143,168,200,0.2);border-radius:12px;padding:20px;text-align:center">
-            <div style="font-size:48px;font-weight:700;color:var(--slate);margin-bottom:8px" id="modal-score-display">0%</div>
-            <div style="font-size:12px;color:var(--gray);font-weight:600">COMPATIBILIDAD</div>
-          </div>
-        </div>
-
-        <!-- MATCHES -->
-        <div style="margin-bottom:28px">
-          <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            ✓ PUNTOS A FAVOR
-          </div>
-          <div id="modal-matches" style="display:grid;gap:8px">
-            <div style="background:rgba(74,222,128,0.1);border-left:3px solid var(--green);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">Cargando...</div>
-          </div>
-        </div>
-
-        <!-- GAPS -->
-        <div style="margin-bottom:28px">
-          <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            ⚠ BRECHAS A RESOLVER
-          </div>
-          <div id="modal-gaps" style="display:grid;gap:8px">
-            <div style="background:rgba(248,113,113,0.1);border-left:3px solid var(--red);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">Cargando...</div>
-          </div>
-        </div>
-
-        <!-- MEJORAS RECOMENDADAS -->
-        <div style="margin-bottom:28px">
-          <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            💡 MEJORAS RECOMENDADAS
-          </div>
-          <div id="modal-mejoras" style="display:grid;gap:8px">
-            <div style="background:rgba(251,191,36,0.1);border-left:3px solid var(--yellow);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">Cargando...</div>
-          </div>
-        </div>
-
-        <!-- TIPS PARA ENTREVISTA -->
-        <div style="margin-bottom:28px">
-          <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            🎯 TIPS PARA LA ENTREVISTA
-          </div>
-          <div id="modal-entrevista" style="display:grid;gap:8px">
-            <div style="background:rgba(143,168,200,0.1);border-left:3px solid var(--slate);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">Cargando...</div>
-          </div>
-        </div>
-
-        <!-- JOB DESCRIPTION -->
-        <div style="margin-bottom:28px;padding:16px;background:var(--navy-mid);border-radius:12px">
-          <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:12px">📋 DESCRIPCIÓN DEL PUESTO ANALIZADO</div>
-          <div id="modal-jd" style="font-size:13px;color:var(--gray);line-height:1.6;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word">Cargando...</div>
-        </div>
-
-        <!-- FOOTER -->
-        <div style="border-top:1px solid rgba(143,168,200,0.2);padding-top:16px;display:flex;gap:12px;justify-content:flex-end">
-          <button onclick="closeAnalysisModal()" class="btn btn-ghost" style="text-decoration:none;cursor:pointer;padding:8px 16px">Cerrar</button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-  <!-- ═══════════════════════════════════════════════════════════════ -->
-
-</main>
-
-  <!-- ═══════════════════════════════════════════════════════════════
-       MODAL: PLANES DE PAGO (Sesión 7)
-       ═══════════════════════════════════════════════════════════════ -->
-
-<div id="plansModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,22,40,0.8);z-index:1000;overflow-y:auto;padding:40px 20px">
-  <div style="max-width:1200px;margin:0 auto">
-    
-    <!-- CLOSE BUTTON -->
-    <button onclick="closePlansModal()" style="position:absolute;top:24px;right:24px;background:none;border:none;color:var(--slate);font-size:32px;cursor:pointer;z-index:1001">✕</button>
-
-    <!-- HEADER -->
-    <div style="text-align:center;margin-bottom:48px;margin-top:32px">
-      <h1 style="font-size:36px;font-weight:700;color:var(--white);margin-bottom:12px">Planes de Corvus Fit</h1>
-      <p style="color:var(--gray);font-size:16px">Elige el plan que mejor se adapte a tus necesidades</p>
-    </div>
-
-    <!-- PLANS GRID -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-bottom:40px" id="plansContainer">
-      <!-- Se llena con JavaScript -->
-    </div>
-
-    <!-- PAYMENT MODAL (dentro del plans modal) -->
-    <div id="paymentModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,22,40,0.9);z-index:1002;align-items:center;justify-content:center">
-      <div style="background:var(--navy);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">
-        <button onclick="closePaymentModal()" style="background:none;border:none;color:var(--slate);font-size:24px;cursor:pointer;padding:0;float:right">✕</button>
-        
-        <h2 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:24px;clear:both">Confirmar pago</h2>
-
-        <div id="paymentDetails"></div>
-
-        <div style="background:rgba(143,168,200,0.1);border-left:3px solid var(--slate);padding:16px;border-radius:6px;margin:24px 0;font-size:13px;color:var(--gray)">
-          <p>🔒 Los pagos se procesan a través de <strong>MercadoPago</strong> de forma segura.</p>
-        </div>
-
-        <button id="paymentBtn" onclick="initiatePayment()" style="width:100%;padding:12px;background:var(--slate);color:var(--navy);border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:12px">
-          Ir a pagar
-        </button>
-
-        <button onclick="closePaymentModal()" style="width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--white);font-weight:600;cursor:pointer;font-size:14px">
-          Cancelar
-        </button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     ESTILOS PARA CARDS DE PLANES
-     ═══════════════════════════════════════════════════════════════ -->
-
-<style>
-.plan-card {
-  background: var(--navy-mid);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s;
-  position: relative;
-}
-
-.plan-card:hover {
-  border-color: var(--slate);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(143, 168, 200, 0.15);
-}
-
-.plan-card.current {
-  border-color: var(--slate);
-  background: rgba(143, 168, 200, 0.05);
-}
-
-.plan-badge {
-  position: absolute;
-  top: -12px;
-  right: 16px;
-  background: var(--slate);
-  color: var(--navy);
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.plan-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--white);
-  margin-bottom: 8px;
-}
-
-.plan-price {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--slate);
-  margin-bottom: 4px;
-}
-
-.plan-price-small {
-  font-size: 13px;
-  color: var(--gray);
-  margin-bottom: 20px;
-}
-
-.plan-description {
-  color: var(--gray);
-  font-size: 13px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 20px;
-}
-
-.plan-features {
-  flex: 1;
-  margin-bottom: 20px;
-}
-
-.plan-feature {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--gray);
-  margin-bottom: 12px;
-}
-
-.plan-feature::before {
-  content: '✓';
-  color: var(--green);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.plan-button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.plan-button.primary {
-  background: var(--slate);
-  color: var(--navy);
-}
-
-.plan-button.primary:hover {
-  background: var(--white);
-}
-
-.plan-button.secondary {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--white);
-}
-
-.plan-button.secondary:hover {
-  border-color: var(--slate);
-  color: var(--slate);
-}
-
-.plan-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-  .plan-card {
-    padding: 24px;
-  }
-  
-  .plan-name {
-    font-size: 18px;
-  }
-  
-  .plan-price {
-    font-size: 28px;
-  }
-}
-</style>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     JAVASCRIPT PARA MODAL DE PLANES
-     ═══════════════════════════════════════════════════════════════ -->
-
-<script>
-let selectedPlan = null;
-
-async function openPlansModal() {
-  document.getElementById('plansModal').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  
-  // Cargar planes
-  await loadPlans();
-}
-
-function closePlansModal() {
-  document.getElementById('plansModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
-}
-
-function closePaymentModal() {
-  document.getElementById('paymentModal').style.display = 'none';
-}
-
-async function loadPlans() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  const container = document.getElementById('plansContainer');
-  container.innerHTML = '<div style="text-align:center;color:var(--gray)">Cargando planes...</div>';
-
-  try {
-    const res = await fetch('/api/upgrade-plan?action=list_plans', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.plans) {
-      container.innerHTML = '<div style="color:var(--red)">Error cargando planes</div>';
-      return;
-    }
-
-    const plans = data.plans;
-    const currentPlan = data.current_plan || 'free';
-
-    container.innerHTML = Object.entries(plans).map(([key, plan]) => {
-      const isCurrent = currentPlan === key;
-      const isUpgrade = key === 'pro' || key === 'premium';
-
-      return `
-        <div class="plan-card ${isCurrent ? 'current' : ''}">
-          ${isCurrent ? '<div class="plan-badge">Plan actual</div>' : ''}
-          
-          <div class="plan-name">${plan.name}</div>
-          <div class="plan-price">
-            ${plan.price === 0 ? 'Gratis' : '$' + plan.price.toLocaleString('es-AR')}
-          </div>
-          <div class="plan-price-small">
-            ${plan.price === 0 ? 'ARS' : 'ARS/mes'}
-          </div>
-
-          <div class="plan-description">
-            ${plan.description}
-          </div>
-
-          <div class="plan-features">
-            ${plan.features.map(f => `<div class="plan-feature">${f}</div>`).join('')}
-          </div>
-
-          ${isCurrent ? 
-            '<button class="plan-button secondary" disabled>Ya tienes este plan</button>' :
-            `<button class="plan-button primary" data-plan-key="${key}" data-plan-name="${plan.name}" data-plan-price="${plan.price}" onclick="const btn=this;selectPlan(btn.dataset.planKey, btn.dataset.planName, parseInt(btn.dataset.planPrice))">Contratar</button>`
-          }
-        </div>
-      `;
-    }).join('');
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = '<div style="color:var(--red)">Error cargando planes</div>';
-  }
-}
-
-function selectPlan(plan, name, price) {
-  selectedPlan = { plan, name, price };
-
-  // Mostrar modal de pago
-  const paymentModal = document.getElementById('paymentModal');
-  const paymentDetails = document.getElementById('paymentDetails');
-
-  paymentDetails.innerHTML = `
-    <div style="margin-bottom:24px">
-      <p style="color:var(--muted);font-size:12px;margin-bottom:4px">Plan seleccionado</p>
-      <p style="color:var(--white);font-size:18px;font-weight:600">${name}</p>
-    </div>
-
-    <div style="background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="color:var(--gray)">Monto a pagar</span>
-        <span style="color:var(--white);font-weight:600;font-size:20px">$${price.toLocaleString('es-AR')} ARS</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)">
-        <span>Vigencia</span>
-        <span>30 días</span>
-      </div>
-    </div>
-  `;
-
-  paymentModal.style.display = 'flex';
-}
-
-async function initiatePayment() {
-  if (!selectedPlan) return;
-
-  const btn = document.getElementById('paymentBtn');
-  btn.disabled = true;
-  btn.textContent = 'Procesando...';
-
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-
-  try {
-    const res = await fetch('/api/upgrade-plan', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        action: 'create_preference',
-        plan: selectedPlan.plan
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert('Error: ' + (data.error || 'No se pudo procesar'));
-      btn.disabled = false;
-      btn.textContent = 'Ir a pagar';
-      return;
-    }
-
-    // Redirigir a MercadoPago
-    const checkoutUrl = data.sandbox_init_point || data.init_point;
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl;
-    } else {
-      alert('Error: No se pudo obtener URL de pago');
-      btn.disabled = false;
-      btn.textContent = 'Ir a pagar';
-    }
-  } catch (e) {
-    console.error(e);
-    alert('Error de conexión');
-    btn.disabled = false;
-    btn.textContent = 'Ir a pagar';
-  }
-}
-
-// Cerrar modales con ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    closePaymentModal();
-    closePlansModal();
-  }
-});
-
-// Cerrar modales al hacer click afuera
-document.getElementById('plansModal')?.addEventListener('click', function(e) {
-  if (e.target === this) closePlansModal();
-});
-
-document.getElementById('paymentModal')?.addEventListener('click', function(e) {
-  if (e.target === this) closePaymentModal();
-});
-</script>
-
-<script>
-// ── AUTH CHECK ─────────────────────────────────────────────
-const userRaw = localStorage.getItem('corvus_user');
-const token = localStorage.getItem('corvus_token');
-
-if (!userRaw || !token) {
-  window.location.href = '/auth';
-}
-
-const user = JSON.parse(userRaw || '{}');
-if (user.role === 'recruiter') {
-  window.location.href = '/dashboard/recruiter';
-}
-
-// Set user info
-document.getElementById('nav-email').textContent = user.email || '';
-document.getElementById('user-name').textContent = user.nombre || user.email?.split('@')[0] || 'candidato';
-
-// ── DATOS DE UBICACIÓN ─────────────────────────────────────
-const LOCATION_DATA = {
-  AR: {
-    name: 'Argentina',
-    provincias: {
-      'Buenos Aires': ['Buenos Aires (CABA)', 'La Plata', 'Mar del Plata', 'Quilmes', 'Lanús', 'Lomas de Zamora', 'Morón', 'San Isidro', 'Tigre', 'Bahía Blanca', 'Tandil', 'Otra'],
-      'Córdoba': ['Córdoba', 'Villa María', 'Río Cuarto', 'San Francisco', 'Alta Gracia', 'Otra'],
-      'Santa Fe': ['Rosario', 'Santa Fe', 'Rafaela', 'Venado Tuerto', 'Villa Gobernador Gálvez', 'Otra'],
-      'Mendoza': ['Mendoza', 'San Rafael', 'Godoy Cruz', 'Luján de Cuyo', 'Otra'],
-      'Tucumán': ['San Miguel de Tucumán', 'Tafí Viejo', 'Otra'],
-      'Entre Ríos': ['Paraná', 'Concordia', 'Gualeguaychú', 'Otra'],
-      'Salta': ['Salta', 'San Ramón de la Nueva Orán', 'Otra'],
-      'Misiones': ['Posadas', 'Oberá', 'Eldorado', 'Otra'],
-      'Chaco': ['Resistencia', 'Presidencia Roque Sáenz Peña', 'Otra'],
-      'Corrientes': ['Corrientes', 'Goya', 'Otra'],
-      'Santiago del Estero': ['Santiago del Estero', 'La Banda', 'Otra'],
-      'San Juan': ['San Juan', 'Rawson', 'Otra'],
-      'Jujuy': ['San Salvador de Jujuy', 'Palpalá', 'Otra'],
-      'Río Negro': ['Viedma', 'Bariloche', 'Cipolletti', 'Otra'],
-      'Neuquén': ['Neuquén', 'Zapala', 'Otra'],
-      'Formosa': ['Formosa', 'Otra'],
-      'Chubut': ['Rawson', 'Comodoro Rivadavia', 'Trelew', 'Otra'],
-      'San Luis': ['San Luis', 'Villa Mercedes', 'Otra'],
-      'Catamarca': ['San Fernando del Valle de Catamarca', 'Otra'],
-      'La Rioja': ['La Rioja', 'Otra'],
-      'La Pampa': ['Santa Rosa', 'General Pico', 'Otra'],
-      'Santa Cruz': ['Río Gallegos', 'Caleta Olivia', 'Otra'],
-      'Tierra del Fuego': ['Ushuaia', 'Río Grande', 'Otra'],
-    }
-  },
-  BR: {
-    name: 'Brasil',
-    provincias: {
-      'São Paulo': ['São Paulo', 'Campinas', 'Santos', 'São Bernardo do Campo', 'Guarulhos', 'Outra'],
-      'Rio de Janeiro': ['Rio de Janeiro', 'Niterói', 'Nova Iguaçu', 'Outra'],
-      'Minas Gerais': ['Belo Horizonte', 'Uberlândia', 'Contagem', 'Outra'],
-      'Bahia': ['Salvador', 'Feira de Santana', 'Outra'],
-      'Rio Grande do Sul': ['Porto Alegre', 'Caxias do Sul', 'Pelotas', 'Outra'],
-      'Paraná': ['Curitiba', 'Londrina', 'Maringá', 'Outra'],
-      'Pernambuco': ['Recife', 'Caruaru', 'Outra'],
-      'Ceará': ['Fortaleza', 'Caucaia', 'Outra'],
-      'Pará': ['Belém', 'Ananindeua', 'Outra'],
-      'Goiás': ['Goiânia', 'Aparecida de Goiânia', 'Outra'],
-      'Amazonas': ['Manaus', 'Parintins', 'Outra'],
-      'Santa Catarina': ['Florianópolis', 'Joinville', 'Blumenau', 'Outra'],
-      'Distrito Federal': ['Brasília'],
-      'Espírito Santo': ['Vitória', 'Vila Velha', 'Outra'],
-      'Mato Grosso do Sul': ['Campo Grande', 'Dourados', 'Outra'],
-    }
-  }
-};
-
-function updateProvincias() {
-  const pais = document.getElementById('p-pais').value;
-  const provSelect = document.getElementById('p-provincia');
-  const ciudadSelect = document.getElementById('p-ciudad');
-  const otroInput = document.getElementById('p-ubicacion-otro');
-
-  provSelect.innerHTML = '<option value="">Provincia/Estado...</option>';
-  ciudadSelect.innerHTML = '<option value="">Ciudad...</option>';
-  provSelect.disabled = true;
-  ciudadSelect.disabled = true;
-  otroInput.style.display = 'none';
-
-  if (pais === 'otro') {
-    otroInput.style.display = 'block';
-    return;
-  }
-
-  if (pais && LOCATION_DATA[pais]) {
-    const provincias = Object.keys(LOCATION_DATA[pais].provincias);
-    provincias.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p; opt.textContent = p;
-      provSelect.appendChild(opt);
-    });
-    provSelect.disabled = false;
-  }
-}
-
-function updateCiudades() {
-  const pais = document.getElementById('p-pais').value;
-  const provincia = document.getElementById('p-provincia').value;
-  const ciudadSelect = document.getElementById('p-ciudad');
-
-  ciudadSelect.innerHTML = '<option value="">Ciudad...</option>';
-  ciudadSelect.disabled = true;
-
-  if (pais && provincia && LOCATION_DATA[pais]?.provincias[provincia]) {
-    const ciudades = LOCATION_DATA[pais].provincias[provincia];
-    ciudades.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      ciudadSelect.appendChild(opt);
-    });
-    ciudadSelect.disabled = false;
-  }
-}
-
-function getUbicacion() {
-  const pais = document.getElementById('p-pais').value;
-  if (pais === 'otro') return document.getElementById('p-ubicacion-otro').value.trim();
-  if (!pais) return '';
-  const provincia = document.getElementById('p-provincia').value;
-  const ciudad = document.getElementById('p-ciudad').value;
-  const paisName = LOCATION_DATA[pais]?.name || pais;
-  return [ciudad, provincia, paisName].filter(Boolean).join(', ');
-}
-
-function setUbicacion(ubicacion) {
-  if (!ubicacion) return;
-  // Intentar parsear "Ciudad, Provincia, País"
-  const parts = ubicacion.split(',').map(s => s.trim());
-  if (parts.length >= 3) {
-    const paisName = parts[parts.length - 1];
-    const paisCode = Object.entries(LOCATION_DATA).find(([k, v]) => v.name === paisName)?.[0];
-    if (paisCode) {
-      document.getElementById('p-pais').value = paisCode;
-      updateProvincias();
-      const provincia = parts[parts.length - 2];
-      if (LOCATION_DATA[paisCode]?.provincias[provincia]) {
-        document.getElementById('p-provincia').value = provincia;
-        document.getElementById('p-provincia').disabled = false;
-        updateCiudades();
-        const ciudad = parts[0];
-        document.getElementById('p-ciudad').value = ciudad;
-        document.getElementById('p-ciudad').disabled = false;
-        return;
-      }
-    }
-  }
-  // Fallback: campo libre
-  document.getElementById('p-pais').value = 'otro';
-  updateProvincias();
-  document.getElementById('p-ubicacion-otro').value = ubicacion;
-}
-
-// ── TABS ───────────────────────────────────────────────────
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    const tabs = ['perfil', 'deseos', 'analisis', 'solicitudes', 'mensajes'];
-    t.classList.toggle('active', tabs[i] === tab);
-  });
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + tab).classList.add('active');
-  hideMsg();
-  if (tab === 'mensajes') loadMensajes();
-}
-
-// ── CHIPS ──────────────────────────────────────────────────
-function toggleChip(chip) {
-  chip.classList.toggle('selected');
-}
-
-// ── MSG ────────────────────────────────────────────────────
-function showMsg(text, type='success') {
-  const el = document.getElementById('msg');
-  el.textContent = text;
-  el.className = 'msg ' + type;
-}
-function hideMsg() {
-  document.getElementById('msg').className = 'msg';
-}
-
-// ── VISIBILITY ─────────────────────────────────────────────
-async function updateVisibility() {
-  const visible = document.getElementById('visibility-toggle').checked;
-  try {
-    await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'update_visibility', visible })
-    });
-    showMsg(visible ? 'Tu perfil ahora es visible para recruiters.' : 'Tu perfil está oculto.');
-    loadBadges(); // Actualizar badges
-  } catch(e) {
-    showMsg('Error al actualizar la visibilidad.', 'error');
-  }
-}
-
-function updateOnboarding(profile, analyses) {
-  const dismissed = localStorage.getItem('corvus_onboarding_dismissed');
-  if (dismissed) return;
-
-  const step1Done = !!(profile?.nombre && profile?.rubro && profile?.ubicacion);
-  const step2Done = analyses && analyses.length > 0;
-  const step3Done = !!profile?.visible;
-
-  if (step1Done && step2Done && step3Done) {
-    localStorage.setItem('corvus_onboarding_dismissed', '1');
-    return;
-  }
-
-  document.getElementById('onboarding-banner').style.display = 'block';
-
-  const checkStyle = 'background:rgba(74,222,128,0.15);border-color:#4ADE80;color:#4ADE80;font-size:13px';
-  if (step1Done) document.getElementById('ob-check-1').style.cssText = checkStyle, document.getElementById('ob-check-1').textContent = '✓', document.getElementById('ob-step-1').style.opacity = '0.6';
-  if (step2Done) document.getElementById('ob-check-2').style.cssText = checkStyle, document.getElementById('ob-check-2').textContent = '✓', document.getElementById('ob-step-2').style.opacity = '0.6';
-  if (step3Done) document.getElementById('ob-check-3').style.cssText = checkStyle, document.getElementById('ob-check-3').textContent = '✓', document.getElementById('ob-step-3').style.opacity = '0.6';
-}
-
-function dismissOnboarding() {
-  localStorage.setItem('corvus_onboarding_dismissed', '1');
-  document.getElementById('onboarding-banner').style.display = 'none';
-}
-
-// ── LOAD PROFILE ───────────────────────────────────────────
-async function loadProfile() {
-  try {
-    const res = await fetch('/api/profile', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-    if (!data.profile) return;
-    const p = data.profile;
-
-    // Visibilidad
-    document.getElementById('visibility-toggle').checked = p.visible || false;
-
-    // Perfil
-    if (p.nombre) document.getElementById('p-nombre').value = p.nombre;
-    if (p.apellido) document.getElementById('p-apellido').value = p.apellido;
-    if (p.rubro) document.getElementById('p-rubro').value = p.rubro;
-    if (p.seniority) document.getElementById('p-seniority').value = p.seniority;
-    if (p.ubicacion) setUbicacion(p.ubicacion);
-    if (p.email_contacto) document.getElementById('p-email').value = p.email_contacto;
-    if (p.telefono) document.getElementById('p-telefono').value = p.telefono;
-    if (p.linkedin) document.getElementById('p-linkedin').value = p.linkedin;
-    if (p.genero) document.getElementById('p-genero').value = p.genero;
-
-    // Privacy toggles
-    if (p.mostrar_email) document.getElementById('priv-email').checked = true;
-    if (p.mostrar_telefono) document.getElementById('priv-telefono').checked = true;
-    if (p.mostrar_linkedin) document.getElementById('priv-linkedin').checked = true;
-    if (p.mostrar_genero) document.getElementById('priv-genero').checked = true;
-
-    // Deseos
-    if (p.tipo_puesto) document.getElementById('d-tipo').value = p.tipo_puesto;
-    if (p.modalidad) document.getElementById('d-modalidad').value = p.modalidad;
-    if (p.seniority_deseado) document.getElementById('d-seniority').value = p.seniority_deseado;
-    if (p.disponibilidad) document.getElementById('d-disponibilidad').value = p.disponibilidad;
-    if (p.salario_ars) document.getElementById('d-salario-ars').value = p.salario_ars;
-    if (p.salario_usd) document.getElementById('d-salario-usd').value = p.salario_usd;
-    if (p.notas) document.getElementById('d-notas').value = p.notas;
-
-    // Rubros chips
-    if (p.rubros_interes && Array.isArray(p.rubros_interes)) {
-      document.querySelectorAll('#rubros-chips .chip').forEach(chip => {
-        const text = chip.textContent.trim().replace(/^\S+\s/, '');
-        if (p.rubros_interes.some(r => chip.textContent.includes(r))) {
-          chip.classList.add('selected');
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm';
+
+        const SUPABASE_URL = 'https://fciquzvndvbbqecboumg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjaXF1enZuZHZiYnFlY2JvdW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQyOTc4NjUsImV4cCI6MjA0MDExMzg2NX0.s_U5p_DF5j7HPJvzDNNS7PfFzMmMd2K6zTnc-8Egh9A';
+
+        // Hacer global para que onclick= lo encuentre
+        window.logout = logout;
+        window.switchTab = switchTab;
+        window.respondSolicitud = respondSolicitud;
+
+        function getToken() {
+            const token = localStorage.getItem('corvus_token');
+            console.log('[getToken] Token obtenido:', token);
+            return token;
         }
-      });
-    }
 
-    // Actualizar nombre en header
-    if (p.nombre) {
-      document.getElementById('user-name').textContent = p.nombre;
-    }
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
 
-    // Análisis
-    if (data.analyses && data.analyses.length > 0) {
-      renderAnalyses(data.analyses);
-    }
+            if (tabName === 'solicitudes') loadSolicitudes();
+            if (tabName === 'enviadas') loadEnviadas();
+            if (tabName === 'perfil') loadPerfil();
+        }
 
-    // Onboarding
-    updateOnboarding(data.profile, data.analyses);
+        async function loadSolicitudes() {
+            const token = getToken();
+            if (!token) {
+                showError('solicitudes', 'No hay sesión activa. Por favor, inicia sesión.');
+                return;
+            }
 
-  } catch(e) {
-    console.error('Error loading profile:', e);
-  }
-}
+            try {
+                const response = await fetch('/api/moderation', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-function renderAnalyses(analyses) {
-  const list = document.getElementById('analyses-list');
-  if (!analyses || analyses.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <p>Todavía no hiciste ningún análisis de compatibilidad.</p>
-        <a href="/corvus-fit" class="btn btn-ghost" style="text-decoration:none">Ir a Corvus Fit 🧩</a>
-      </div>
-    `;
-    return;
-  }
+                console.log('[loadSolicitudes] Response status:', response.status);
 
-  list.innerHTML = analyses.map(a => {
-    const color = a.score >= 70 ? '#4ADE80' : a.score >= 40 ? '#FBBF24' : '#F87171';
-    const date = new Date(a.created_at).toLocaleDateString('es-AR', {
-      month: 'short',
-      day: 'numeric'
-    });
-    return `
-      <div class="analysis-item" style="cursor:pointer;display:grid;grid-template-columns:60px 1fr;gap:16px;align-items:center;padding:16px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.2);border-radius:12px;transition:all 0.2s ease;margin-bottom:8px" onclick="openAnalysisModal(${JSON.stringify(a).replace(/"/g, '&quot;')})">
-        <div style="text-align:center">
-          <div class="analysis-score" style="color:${color};font-size:28px;font-weight:700">${a.score}%</div>
-          <div style="font-size:11px;color:var(--gray);margin-top:4px">${date}</div>
-        </div>
-        <div class="analysis-info">
-          <div class="analysis-title" style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px">${a.job_title || 'Análisis de compatibilidad'}</div>
-          <div class="analysis-meta" style="font-size:12px;color:var(--gray)">
-            ${a.matches?.length || 0} puntos a favor • ${a.gaps?.length || 0} brechas • Click para ver detalles →
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
 
-// ── SAVE PROFILE ───────────────────────────────────────────
-async function saveProfile() {
-  const btn = document.querySelector('#section-perfil .btn-primary');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  const payload = {
-    action: 'update_profile',
-    nombre: document.getElementById('p-nombre').value.trim(),
-    apellido: document.getElementById('p-apellido').value.trim(),
-    rubro: document.getElementById('p-rubro').value,
-    seniority: document.getElementById('p-seniority').value,
-    ubicacion: getUbicacion(),
-    email_contacto: document.getElementById('p-email').value.trim(),
-    telefono: document.getElementById('p-telefono').value.trim(),
-    linkedin: document.getElementById('p-linkedin').value.trim(),
-    genero: document.getElementById('p-genero').value,
-    mostrar_email: document.getElementById('priv-email').checked,
-    mostrar_telefono: document.getElementById('priv-telefono').checked,
-    mostrar_linkedin: document.getElementById('priv-linkedin').checked,
-    mostrar_genero: document.getElementById('priv-genero').checked,
-  };
+                const data = await response.json();
+                console.log('[loadSolicitudes] Data:', data);
 
-  try {
-    const res = await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      showMsg('Perfil guardado correctamente.');
-      loadBadges(); // Actualizar badges
-      // Update local user name
-      if (payload.nombre) {
-        document.getElementById('user-name').textContent = payload.nombre;
-        const u = JSON.parse(localStorage.getItem('corvus_user') || '{}');
-        u.nombre = payload.nombre;
-        localStorage.setItem('corvus_user', JSON.stringify(u));
-      }
-    } else {
-      showMsg(data.error || 'Error al guardar.', 'error');
-    }
-  } catch(e) {
-    showMsg('Error de conexión.', 'error');
-  } finally {
-    const btn = document.querySelector('#section-perfil .btn-primary');
-    btn.disabled = false; btn.textContent = 'Guardar perfil';
-  }
-}
+                const solicitudes = Array.isArray(data) ? data : [];
+                const container = document.getElementById('solicitudes-container');
 
-// ── SAVE DESEOS ────────────────────────────────────────────
-async function saveDeseos() {
-  const btn = document.querySelector('#section-deseos .btn-primary');
-  btn.disabled = true; btn.textContent = 'Guardando...';
-  const selectedRubros = [...document.querySelectorAll('#rubros-chips .chip.selected')]
-    .map(c => c.textContent.trim().replace(/^\S+\s/, ''));
+                if (solicitudes.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No hay solicitudes recibidas.</div>';
+                    return;
+                }
 
-  const payload = {
-    action: 'update_deseos',
-    tipo_puesto: document.getElementById('d-tipo').value,
-    modalidad: document.getElementById('d-modalidad').value,
-    seniority_deseado: document.getElementById('d-seniority').value,
-    disponibilidad: document.getElementById('d-disponibilidad').value,
-    rubros_interes: selectedRubros,
-    salario_ars: document.getElementById('d-salario-ars').value.trim(),
-    salario_usd: document.getElementById('d-salario-usd').value.trim(),
-    notas: document.getElementById('d-notas').value.trim(),
-  };
+                container.innerHTML = solicitudes.map(s => `
+                    <div class="solicitud-item">
+                        <div class="solicitud-header">
+                            <div>
+                                <div class="solicitud-from">${s.recruiter_name || s.recruiter_email || 'Recruiter'}</div>
+                                <div style="font-size: 0.9rem; color: #999;">${s.company || 'Empresa no especificada'}</div>
+                            </div>
+                            <span class="solicitud-status status-${s.status}">${s.status.toUpperCase()}</span>
+                        </div>
+                        <div class="solicitud-message">${s.message || '(Sin mensaje)'}</div>
+                        ${s.status === 'pending' ? `
+                            <div class="solicitud-actions">
+                                <button class="btn btn-accept" onclick="respondSolicitud(${s.id}, 'accepted')">Aceptar</button>
+                                <button class="btn btn-reject" onclick="respondSolicitud(${s.id}, 'rejected')">Rechazar</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('[loadSolicitudes] Error:', error);
+                showError('solicitudes', `Error cargando solicitudes: ${error.message}`);
+            }
+        }
 
-  try {
-    const res = await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (res.ok) showMsg('Preferencias guardadas correctamente.');
-    else showMsg(data.error || 'Error al guardar.', 'error');
-  } catch(e) {
-    showMsg('Error de conexión.', 'error');
-  } finally {
-    const btn = document.querySelector('#section-deseos .btn-primary');
-    btn.disabled = false; btn.textContent = 'Guardar preferencias';
-  }
-}
+        async function respondSolicitud(requestId, status) {
+            const token = getToken();
+            if (!token) {
+                showError('solicitudes', 'No hay sesión activa.');
+                return;
+            }
 
-// ── SOLICITUDES ────────────────────────────────────────────
-async function loadSolicitudes() {
-  try {
-    const res = await fetch('/api/moderation?type=received', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      console.error('Error loading solicitudes:', data.error);
-      return;
-    }
+            try {
+                const response = await fetch('/api/moderation', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        action: 'respond_contact_request',
+                        request_id: requestId,
+                        status: status,
+                        token: token
+                    })
+                });
 
-    // El backend devuelve un array directo, no { solicitudes: [...] }
-    const solicitudes = Array.isArray(data) ? data : [];
-    const pending = solicitudes.filter(s => s.status === 'pending').length;
+                console.log('[respondSolicitud] Response status:', response.status);
 
-    // Mostrar badge
-    const badge = document.getElementById('solicitudes-badge');
-    if (pending > 0) {
-      badge.style.display = 'inline';
-      badge.textContent = pending;
-    }
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
 
-    renderSolicitudes(solicitudes);
-  } catch(e) {
-    console.error('Error loading solicitudes:', e);
-  }
-}
+                showSuccess('solicitudes', `Solicitud ${status === 'accepted' ? 'aceptada' : 'rechazada'}.`);
+                setTimeout(() => loadSolicitudes(), 1000);
+            } catch (error) {
+                console.error('[respondSolicitud] Error:', error);
+                showError('solicitudes', `Error respondiendo solicitud: ${error.message}`);
+            }
+        }
 
-function renderSolicitudes(solicitudes) {
-  const list = document.getElementById('solicitudes-list');
-  if (!solicitudes.length) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <p>Todavía no recibiste solicitudes de contacto.</p>
-        <span style="font-size:12px;color:var(--gray)">Activá tu visibilidad para que los recruiters puedan encontrarte.</span>
-      </div>
-    `;
-    return;
-  }
+        async function loadEnviadas() {
+            const token = getToken();
+            if (!token) return;
 
-  list.innerHTML = solicitudes.map(s => {
-    const date = new Date(s.created_at).toLocaleDateString('es-AR');
-    const statusLabel = s.status === 'pending' ? 'Pendiente' : s.status === 'accepted' ? 'Aceptada' : 'Rechazada';
-    const statusClass = `status-${s.status}`;
+            try {
+                const response = await fetch('/api/moderation?type=sent', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-    const actions = s.status === 'pending' ? `
-      <button class="btn-accept" onclick="respondSolicitud('${s.id}', 'accepted')">Aceptar contacto</button>
-      <button class="btn-reject" onclick="respondSolicitud('${s.id}', 'rejected')">Rechazar</button>
-    ` : `<span class="status-badge ${statusClass}">${statusLabel}</span>`;
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-    return `
-      <div class="solicitud-card" id="sol-${s.id}">
-        <div class="solicitud-header">
-          <div>
-            <div class="solicitud-company">💼 ${s.company || 'Empresa'}</div>
-            <div class="solicitud-date">${date}</div>
-          </div>
-          ${s.status !== 'pending' ? `<span class="status-badge ${statusClass}">${statusLabel}</span>` : ''}
-        </div>
-        <div class="solicitud-msg">${s.message}</div>
-        <div class="solicitud-actions">${actions}</div>
-      </div>
-    `;
-  }).join('');
-}
+                const data = await response.json();
+                const solicitudes = Array.isArray(data) ? data : [];
+                const container = document.getElementById('enviadas-container');
 
-async function respondSolicitud(id, status) {
-  if (status === 'rejected') {
-    if (!confirm('¿Estás seguro que querés rechazar esta solicitud?')) return;
-  }
-  try {
-    const res = await fetch('/api/moderation', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'respond_contact_request',
-        request_id: id,
-        status: status,
-        token: token
-      })
-    });
-    const responseData = await res.json();
-    
-    if (res.ok) {
-      if (status === 'accepted') {
-        showMsg('Contacto aceptado. Ya podés chatear con el recruiter.', 'success');
-      } else {
-        showMsg('Solicitud rechazada.', 'success');
-      }
-      loadSolicitudes();
-    } else {
-      console.error('Error responding to solicitud:', responseData.error);
-      showMsg('Error al responder: ' + responseData.error, 'error');
-    }
-  } catch(e) {
-    console.error('Error:', e);
-    showMsg('Error al responder.', 'error');
-  }
-}
+                if (solicitudes.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No has enviado solicitudes.</div>';
+                    return;
+                }
 
-// ── MENSAJES ───────────────────────────────────────────────
-async function loadMensajes() {
-  try {
-    const res = await fetch('/api/chat', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-    const convs = data.conversations || [];
+                container.innerHTML = solicitudes.map(s => `
+                    <div class="solicitud-item">
+                        <div class="solicitud-header">
+                            <div>
+                                <div class="solicitud-from">${s.candidate_name || s.candidate_email || 'Candidato'}</div>
+                            </div>
+                            <span class="solicitud-status status-${s.status}">${s.status.toUpperCase()}</span>
+                        </div>
+                        <div class="solicitud-message">${s.message || '(Sin mensaje)'}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('[loadEnviadas] Error:', error);
+                showError('enviadas', `Error cargando solicitudes: ${error.message}`);
+            }
+        }
 
-    // Badge
-    const totalUnread = convs.reduce((sum, c) => sum + (c.unread || 0), 0);
-    const badge = document.getElementById('mensajes-badge');
-    if (totalUnread > 0) { badge.style.display = 'inline'; badge.textContent = totalUnread; }
+        async function loadPerfil() {
+            const token = getToken();
+            if (!token) return;
 
-    const list = document.getElementById('mensajes-list');
-    if (!convs.length) return;
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-    list.innerHTML = convs.map(c => {
-      const other = c.recruiter;
-      const name = other?.nombre ? `${other.nombre} ${other.apellido || ''}`.trim() : (c.recruiter_company || 'Recruiter');
-      const initial = name[0]?.toUpperCase() || '?';
-      const unread = c.unread > 0 ? `<span style="background:var(--green);color:var(--navy);border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700">${c.unread} nuevo${c.unread > 1 ? 's' : ''}</span>` : '';
-      return `
-        <div style="background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color 0.15s" onclick="window.location.href='/chat?conv=${c.id}'" onmouseover="this.style.borderColor='var(--slate)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="width:42px;height:42px;border-radius:50%;background:rgba(143,168,200,0.15);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--slate);flex-shrink:0">${initial}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:600;color:var(--white);margin-bottom:3px">${name}</div>
-            <div style="font-size:12px;color:var(--gray)">${c.recruiter_company || ''}</div>
-          </div>
-          ${unread}
-          <div style="color:var(--slate);font-size:18px">→</div>
-        </div>
-      `;
-    }).join('');
-  } catch(e) {
-    console.error('Error loading mensajes:', e);
-  }
-}
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-// ── LOGOUT ─────────────────────────────────────────────────
-function logout() {
-  localStorage.removeItem('corvus_token');
-  localStorage.removeItem('corvus_user');
-  window.location.href = '/';
-}
+                const data = await response.json();
+                const container = document.getElementById('perfil-container');
+                container.innerHTML = `
+                    <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px;">
+                        <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
+                        <p><strong>Nombre:</strong> ${data.nombre || 'N/A'}</p>
+                        <p><strong>Empresa:</strong> ${data.company || 'N/A'}</p>
+                        <p><strong>Rubro:</strong> ${data.rubro || 'N/A'}</p>
+                        <p><strong>Seniority:</strong> ${data.seniority || 'N/A'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('[loadPerfil] Error:', error);
+                showError('perfil', `Error cargando perfil: ${error.message}`);
+            }
+        }
 
-// ── ONBOARDING ────────────────────────────────────────────
-function updateOnboardingProgress() {
-  const step1 = localStorage.getItem('corvus_ob_profile') === 'true';
-  const step2 = localStorage.getItem('corvus_ob_analysis') === 'true';
-  const step3 = document.getElementById('visibility-toggle')?.checked || false;
+        function showError(tab, message) {
+            const container = document.getElementById(tab + '-container');
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+        }
 
-  const progress = (step1 ? 1 : 0) + (step2 ? 1 : 0) + (step3 ? 1 : 0);
-  const pct = Math.round((progress / 3) * 100);
+        function showSuccess(tab, message) {
+            const container = document.getElementById(tab + '-container');
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.textContent = message;
+            container.insertBefore(msg, container.firstChild);
+        }
 
-  const bar = document.getElementById('ob-progress-bar');
-  const txt = document.getElementById('ob-progress-text');
-  if (bar) bar.style.width = pct + '%';
-  if (txt) txt.textContent = pct + '%';
+        function logout() {
+            localStorage.removeItem('corvus_token');
+            localStorage.removeItem('corvus_user');
+            window.location.href = '/auth';
+        }
 
-  updateStepUI('1', step1);
-  updateStepUI('2', step2);
-  updateStepUI('3', step3);
-}
-
-function updateStepUI(step, isDone) {
-  const el = document.getElementById(`ob-step-${step}`);
-  const check = document.getElementById(`ob-check-${step}`);
-  if (!el) return;
-
-  if (isDone) {
-    el.style.borderColor = 'rgba(74,222,128,0.4)';
-    el.style.background = 'rgba(74,222,128,0.05)';
-    if (check) {
-      check.textContent = '✓';
-      check.style.color = 'var(--green)';
-      check.style.borderColor = 'var(--green)';
-    }
-  } else {
-    el.style.borderColor = 'var(--border)';
-    el.style.background = 'var(--navy)';
-    if (check) {
-      check.textContent = step;
-      check.style.color = 'var(--slate)';
-      check.style.borderColor = 'var(--border)';
-    }
-  }
-}
-
-// Actualizar onboarding cuando se guarda perfil (en saveProfile)
-const originalSaveProfile = window.saveProfile;
-window.saveProfile = async function() {
-  await originalSaveProfile();
-  localStorage.setItem('corvus_ob_profile', 'true');
-  updateOnboardingProgress();
-};
-
-// Actualizar cuando se cambia visibilidad
-const visToggle = document.getElementById('visibility-toggle');
-if (visToggle) {
-  const originalOnChange = visToggle.onchange;
-  visToggle.onchange = function() {
-    if (originalOnChange) originalOnChange.call(this);
-    setTimeout(updateOnboardingProgress, 100);
-  };
-}
-
-// ── INIT ───────────────────────────────────────────────────
-// ── BADGES ────────────────────────────────────────────────
-async function loadBadges() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  if (!token) return;
-
-  try {
-    const res = await fetch('/api/profile', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    const badges = data.badges || [];
-
-    const container = document.getElementById('badges-container');
-    if (!container) return;
-
-    container.innerHTML = badges.map(badge => `
-      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(${hexToRgb(badge.color)},0.1);border:1px solid ${badge.color};border-radius:20px;font-size:12px;font-weight:600;color:${badge.color}">
-        <span style="font-size:14px">${badge.icon}</span>
-        <span>${badge.name}</span>
-      </div>
-    `).join('');
-  } catch (err) {
-    console.error('Error loading badges:', err);
-  }
-}
-
-function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
-}
-
-// ── ANÁLISIS COUNTER ──────────────────────────────────────
-async function loadAnalysesCounter() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  if (!token) return;
-
-  try {
-    const res = await fetch('/api/profile', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) return;
-    
-    const profile = data.profile;
-    if (!profile) return;
-
-    const banner = document.getElementById('analyses-counter-banner');
-    const counterText = document.getElementById('counter-text');
-    const counterProgress = document.getElementById('counter-progress');
-    const counterPct = document.getElementById('counter-pct');
-    const counterMsg = document.getElementById('counter-limit-msg');
-    const counterCta = document.getElementById('counter-cta');
-
-    if (!banner) return;
-
-    // Mostrar banner
-    banner.style.display = 'block';
-
-    // Límites por plan
-    const limits = { 'free': 2, 'pro': 15, 'premium': 999 };
-    const limit = limits[profile.plan] || 2;
-    const used = profile.fit_analyses_week_count || 0;
-    const pct = Math.round((used / limit) * 100);
-
-    // Actualizar texto y barra
-    counterText.textContent = `Usados: ${used}/${limit} esta semana (plan ${profile.plan})`;
-    counterProgress.style.width = pct + '%';
-    counterPct.textContent = pct + '%';
-
-    // Si llegó al límite
-    if (used >= limit) {
-      counterProgress.style.background = '#F87171'; // rojo
-      counterMsg.style.display = 'block';
-      if (profile.plan === 'free') {
-        counterMsg.innerHTML = '⚠️ Límite alcanzado. <strong>Upgrade a Pro</strong> para 15 análisis/semana.';
-        counterCta.style.display = 'block';
-      } else if (profile.plan === 'pro') {
-        counterMsg.innerHTML = '⚠️ Límite alcanzado. <strong>Upgrade a Premium</strong> para análisis ilimitados.';
-        counterCta.style.display = 'block';
-      }
-    } else {
-      counterProgress.style.background = '#4ADE80'; // verde
-      counterMsg.style.display = 'none';
-      counterCta.style.display = 'block';
-    }
-  } catch(err) {
-    console.error('Error loading analyses counter:', err);
-  }
-}
-
-loadProfile();
-loadBadges();
-loadAnalysesCounter();
-loadSolicitudes();
-loadMensajes();
-setTimeout(updateOnboardingProgress, 300);
-
-// ── MODAL: VER DETALLES DE ANÁLISIS ─────────────────────────
-function openAnalysisModal(analysis) {
-  const modal = document.getElementById('analysisModal');
-  
-  // Header
-  document.getElementById('modal-job-title').textContent = analysis.job_title || 'Análisis de compatibilidad';
-  const date = new Date(analysis.created_at).toLocaleDateString('es-AR', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-  document.getElementById('modal-date').textContent = date;
-
-  // Score
-  const scoreColor = analysis.score >= 70 ? 'var(--green)' : 
-                     analysis.score >= 40 ? 'var(--yellow)' : 'var(--red)';
-  const scoreDisplay = document.getElementById('modal-score-display');
-  scoreDisplay.textContent = `${analysis.score}%`;
-  scoreDisplay.style.color = scoreColor;
-
-  // Matches
-  document.getElementById('modal-matches').innerHTML = (analysis.matches || []).map(m => 
-    `<div style="background:rgba(74,222,128,0.1);border-left:3px solid var(--green);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">✓ ${m}</div>`
-  ).join('') || '<div style="color:var(--gray);font-size:13px">Sin puntos clave identificados</div>';
-
-  // Gaps
-  document.getElementById('modal-gaps').innerHTML = (analysis.gaps || []).map(g => 
-    `<div style="background:rgba(248,113,113,0.1);border-left:3px solid var(--red);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">⚠ ${g}</div>`
-  ).join('') || '<div style="color:var(--gray);font-size:13px">Sin brechas identificadas</div>';
-
-  // Mejoras
-  document.getElementById('modal-mejoras').innerHTML = (analysis.mejoras || []).map(m => 
-    `<div style="background:rgba(251,191,36,0.1);border-left:3px solid var(--yellow);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">💡 ${m}</div>`
-  ).join('') || '<div style="color:var(--gray);font-size:13px">Sin mejoras sugeridas</div>';
-
-  // Tips entrevista
-  document.getElementById('modal-entrevista').innerHTML = (analysis.entrevista || []).map(t => 
-    `<div style="background:rgba(143,168,200,0.1);border-left:3px solid var(--slate);padding:12px;border-radius:6px;font-size:13px;color:var(--white)">🎯 ${t}</div>`
-  ).join('') || '<div style="color:var(--gray);font-size:13px">Sin tips generados</div>';
-
-  // Job Description
-  document.getElementById('modal-jd').textContent = analysis.job_description || 'Descripción no disponible';
-
-  // Mostrar modal
-  modal.style.display = 'flex';
-  modal.style.justifyContent = 'center';
-  modal.style.alignItems = 'flex-start';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeAnalysisModal() {
-  document.getElementById('analysisModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
-}
-
-// Cerrar modal al hacer click afuera
-document.getElementById('analysisModal')?.addEventListener('click', function(e) {
-  if (e.target === this) closeAnalysisModal();
-});
-
-// Cerrar modal con ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeAnalysisModal();
-});
-
-</script>
+        // Init
+        window.addEventListener('load', () => {
+            const user = JSON.parse(localStorage.getItem('corvus_user') || '{}');
+            document.getElementById('user-name').textContent = user.nombre || 'Usuario';
+            loadSolicitudes();
+        });
+    </script>
 </body>
 </html>

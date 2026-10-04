@@ -8,21 +8,18 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const resend = new Resend(resendApiKey);
 
-// Parse query string manually (Vercel Hobby limitation)
+// Parse query string manually
 function parseQuery(url) {
   const query = {};
   if (!url || !url.includes('?')) return query;
-  
   const queryString = url.split('?')[1];
   if (!queryString) return query;
-  
   queryString.split('&').forEach(param => {
     const [key, value] = param.split('=');
     if (key) {
       query[decodeURIComponent(key)] = decodeURIComponent(value || '');
     }
   });
-  
   return query;
 }
 
@@ -41,40 +38,73 @@ function parseBody(body) {
 function extractToken(req, body) {
   // 1. Check body
   if (body?.token) {
+    console.log('✅ Token found in body:', body.token.substring(0, 50) + '...');
     return body.token;
   }
   
   // 2. Check Authorization header
   const authHeader = req.headers?.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7);
+    const token = authHeader.substring(7);
+    console.log('✅ Token found in Authorization header:', token.substring(0, 50) + '...');
+    return token;
   }
   
   // 3. Check cookies
   if (req.headers?.cookie) {
     const match = req.headers.cookie.match(/corvus_token=([^;]+)/);
     if (match && match[1]) {
+      console.log('✅ Token found in cookie:', match[1].substring(0, 50) + '...');
       return match[1];
     }
   }
   
+  console.log('❌ No token found in any source');
   return null;
 }
 
 // Get recruiter profile from token
 async function getRecruiterFromToken(token) {
-  if (!token) return null;
+  if (!token) {
+    console.log('❌ Token is null or empty');
+    return null;
+  }
   
   try {
-    const recruiterEmail = decodeURIComponent(token.split('|')[0]);
-    const { data: recruiter } = await supabase
+    // Token format: "email|something" or just email
+    let recruiterEmail;
+    
+    if (token.includes('|')) {
+      recruiterEmail = decodeURIComponent(token.split('|')[0]);
+      console.log('📧 Email extracted from pipe format:', recruiterEmail);
+    } else {
+      // Token might be just the email
+      recruiterEmail = decodeURIComponent(token);
+      console.log('📧 Token treated as email directly:', recruiterEmail);
+    }
+    
+    console.log('🔍 Searching for recruiter with email:', recruiterEmail);
+    
+    const { data: recruiter, error } = await supabase
       .from('profiles')
       .select('id, nombre, apellido, company')
       .eq('email', recruiterEmail)
       .single();
     
+    if (error) {
+      console.log('❌ Database error:', error.message);
+      return null;
+    }
+    
+    if (!recruiter) {
+      console.log('❌ Recruiter not found in database for email:', recruiterEmail);
+      return null;
+    }
+    
+    console.log('✅ Recruiter found:', recruiter.nombre, recruiter.apellido);
     return recruiter;
-  } catch {
+  } catch (err) {
+    console.error('❌ Error in getRecruiterFromToken:', err);
     return null;
   }
 }
@@ -88,10 +118,11 @@ export default async function handler(req, res) {
     const action = body.action || query.action;
     const type = query.type;
     
+    console.log('📝 Request:', method, req.url);
+    
     // GET endpoints
     if (method === 'GET') {
       if (type === 'received') {
-        // Solicitudes recibidas por este usuario (candidato)
         const token = extractToken(req, body);
         if (!token) return res.status(401).json({ error: 'No token' });
         
@@ -113,7 +144,6 @@ export default async function handler(req, res) {
       }
       
       if (type === 'sent') {
-        // Solicitudes enviadas por este recruiter
         const token = extractToken(req, body);
         if (!token) return res.status(401).json({ error: 'No token' });
         
@@ -140,6 +170,8 @@ export default async function handler(req, res) {
     // POST endpoints
     if (method === 'POST') {
       if (action === 'send_contact_request') {
+        console.log('📤 send_contact_request action');
+        
         const { candidate_id, message } = body;
         
         if (!candidate_id || !message) {
@@ -148,10 +180,18 @@ export default async function handler(req, res) {
         
         // Get recruiter info from token
         const token = extractToken(req, body);
-        if (!token) return res.status(401).json({ error: 'No token' });
+        if (!token) {
+          console.log('❌ No token provided');
+          return res.status(401).json({ error: 'No token' });
+        }
         
         const recruiter = await getRecruiterFromToken(token);
-        if (!recruiter) return res.status(404).json({ error: 'Recruiter not found' });
+        if (!recruiter) {
+          console.log('❌ Recruiter not found');
+          return res.status(404).json({ error: 'Recruiter not found' });
+        }
+        
+        console.log('✅ Recruiter authenticated:', recruiter.id);
         
         // Get candidate info
         const { data: candidate } = await supabase
@@ -160,7 +200,12 @@ export default async function handler(req, res) {
           .eq('id', candidate_id)
           .single();
         
-        if (!candidate) return res.status(404).json({ error: 'Candidate not found' });
+        if (!candidate) {
+          console.log('❌ Candidate not found');
+          return res.status(404).json({ error: 'Candidate not found' });
+        }
+        
+        console.log('✅ Candidate found:', candidate.nombre);
         
         // Insert contact request
         const { data: request, error: insertError } = await supabase
@@ -177,12 +222,16 @@ export default async function handler(req, res) {
           .single();
         
         if (insertError) {
+          console.log('❌ Insert error:', insertError.message);
           return res.status(400).json({ error: insertError.message });
         }
+        
+        console.log('✅ Contact request created:', request.id);
         
         // Send email to candidate in background (non-blocking)
         (async () => {
           try {
+            console.log('📧 Sending email to candidate:', candidate.email);
             await resend.emails.send({
               from: 'Corvus Talent <info@corvustalent.com.ar>',
               to: candidate.email,
@@ -208,9 +257,9 @@ export default async function handler(req, res) {
                 </div>
               `,
             });
-            console.log('✅ Email sent to candidate:', candidate.email);
+            console.log('✅ Email sent successfully');
           } catch (emailError) {
-            console.error('❌ Error sending email to candidate:', emailError);
+            console.error('❌ Error sending email:', emailError);
           }
         })();
         
@@ -229,7 +278,6 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Missing request_id or status' });
         }
         
-        // Update request
         const { data: updatedRequest, error: updateError } = await supabase
           .from('contact_requests')
           .update({ status })
@@ -241,7 +289,6 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: updateError.message });
         }
         
-        // If accepted, create conversation and send email
         if (status === 'accepted') {
           await supabase
             .from('conversations')
@@ -254,21 +301,18 @@ export default async function handler(req, res) {
               },
             ]);
           
-          // Get recruiter email and info
           const { data: recruiter } = await supabase
             .from('profiles')
             .select('email, nombre, apellido')
             .eq('id', updatedRequest.recruiter_id)
             .single();
           
-          // Get candidate info
           const { data: candidate } = await supabase
             .from('profiles')
             .select('nombre, apellido')
             .eq('id', updatedRequest.candidate_id)
             .single();
           
-          // Send email to recruiter in background (non-blocking)
           (async () => {
             try {
               await resend.emails.send({
@@ -286,7 +330,7 @@ export default async function handler(req, res) {
                         <p style="color: #0A1628; margin: 0; font-size: 14px;">✅ <strong>${candidate.nombre || 'El candidato'} aceptó tu solicitud</strong></p>
                       </div>
                       <p style="color: #0A1628; font-size: 16px; line-height: 1.6;">
-                        Ya podés comenzar a chatear. Esto abre nuevas oportunidades de diálogo directo.
+                        Ya podés comenzar a chatear.
                       </p>
                       <div style="margin: 24px 0;">
                         <a href="https://corvustalent.com.ar/chat" style="background: #0A1628; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Ir a tu chat</a>
@@ -296,7 +340,6 @@ export default async function handler(req, res) {
                   </div>
                 `,
               });
-              console.log('✅ Email sent to recruiter:', recruiter.email);
             } catch (emailError) {
               console.error('❌ Error sending email to recruiter:', emailError);
             }
@@ -311,7 +354,7 @@ export default async function handler(req, res) {
     
     res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('Moderation handler error:', error);
+    console.error('❌ Handler error:', error);
     res.status(500).json({ error: error.message });
   }
 }

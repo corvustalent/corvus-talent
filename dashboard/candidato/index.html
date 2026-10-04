@@ -160,40 +160,30 @@
             <button class="tab-button" onclick="switchTab('perfil')">Mi Perfil</button>
         </div>
 
-        <!-- TAB: SOLICITUDES RECIBIDAS -->
         <div id="solicitudes" class="tab-content active">
             <h2>Solicitudes de Contacto Recibidas</h2>
             <div id="solicitudes-container"></div>
         </div>
 
-        <!-- TAB: SOLICITUDES ENVIADAS -->
         <div id="enviadas" class="tab-content">
-            <h2>Solicitudes que Envié (Recruiters)</h2>
+            <h2>Solicitudes que Envié</h2>
             <div id="enviadas-container"></div>
         </div>
 
-        <!-- TAB: PERFIL -->
         <div id="perfil" class="tab-content">
             <h2>Mi Perfil</h2>
             <div id="perfil-container"></div>
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm';
-
-        const SUPABASE_URL = 'https://fciquzvndvbbqecboumg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjaXF1enZuZHZiYnFlY2JvdW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQyOTc4NjUsImV4cCI6MjA0MDExMzg2NX0.s_U5p_DF5j7HPJvzDNNS7PfFzMmMd2K6zTnc-8Egh9A';
-
-        // Hacer global para que onclick= lo encuentre
+    <script>
+        // Funciones globales
         window.logout = logout;
         window.switchTab = switchTab;
         window.respondSolicitud = respondSolicitud;
 
         function getToken() {
-            const token = localStorage.getItem('corvus_token');
-            console.log('[getToken] Token obtenido:', token);
-            return token;
+            return localStorage.getItem('corvus_token');
         }
 
         function switchTab(tabName) {
@@ -209,8 +199,10 @@
 
         async function loadSolicitudes() {
             const token = getToken();
+            const container = document.getElementById('solicitudes-container');
+
             if (!token) {
-                showError('solicitudes', 'No hay sesión activa. Por favor, inicia sesión.');
+                showError('solicitudes', 'No hay sesión. Por favor inicia sesión.');
                 return;
             }
 
@@ -223,19 +215,16 @@
                     }
                 });
 
-                console.log('[loadSolicitudes] Response status:', response.status);
+                console.log('[loadSolicitudes] Status:', response.status);
 
                 if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
+                    throw new Error(`Error ${response.status}`);
                 }
 
-                const data = await response.json();
-                console.log('[loadSolicitudes] Data:', data);
+                const solicitudes = await response.json();
+                console.log('[loadSolicitudes] Data:', solicitudes);
 
-                const solicitudes = Array.isArray(data) ? data : [];
-                const container = document.getElementById('solicitudes-container');
-
-                if (solicitudes.length === 0) {
+                if (!Array.isArray(solicitudes) || solicitudes.length === 0) {
                     container.innerHTML = '<div class="empty-state">No hay solicitudes recibidas.</div>';
                     return;
                 }
@@ -244,7 +233,7 @@
                     <div class="solicitud-item">
                         <div class="solicitud-header">
                             <div>
-                                <div class="solicitud-from">${s.recruiter_name || s.recruiter_email || 'Recruiter'}</div>
+                                <div class="solicitud-from">${s.recruiter_email || 'Recruiter'}</div>
                                 <div style="font-size: 0.9rem; color: #999;">${s.company || 'Empresa no especificada'}</div>
                             </div>
                             <span class="solicitud-status status-${s.status}">${s.status.toUpperCase()}</span>
@@ -260,16 +249,13 @@
                 `).join('');
             } catch (error) {
                 console.error('[loadSolicitudes] Error:', error);
-                showError('solicitudes', `Error cargando solicitudes: ${error.message}`);
+                showError('solicitudes', `Error: ${error.message}`);
             }
         }
 
         async function respondSolicitud(requestId, status) {
             const token = getToken();
-            if (!token) {
-                showError('solicitudes', 'No hay sesión activa.');
-                return;
-            }
+            if (!token) return;
 
             try {
                 const response = await fetch('/api/moderation', {
@@ -286,22 +272,24 @@
                     })
                 });
 
-                console.log('[respondSolicitud] Response status:', response.status);
+                console.log('[respondSolicitud] Status:', response.status);
 
                 if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
+                    throw new Error(`Error ${response.status}`);
                 }
 
                 showSuccess('solicitudes', `Solicitud ${status === 'accepted' ? 'aceptada' : 'rechazada'}.`);
                 setTimeout(() => loadSolicitudes(), 1000);
             } catch (error) {
                 console.error('[respondSolicitud] Error:', error);
-                showError('solicitudes', `Error respondiendo solicitud: ${error.message}`);
+                showError('solicitudes', `Error: ${error.message}`);
             }
         }
 
         async function loadEnviadas() {
             const token = getToken();
+            const container = document.getElementById('enviadas-container');
+
             if (!token) return;
 
             try {
@@ -313,13 +301,11 @@
                     }
                 });
 
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                if (!response.ok) throw new Error(`Error ${response.status}`);
 
-                const data = await response.json();
-                const solicitudes = Array.isArray(data) ? data : [];
-                const container = document.getElementById('enviadas-container');
+                const solicitudes = await response.json();
 
-                if (solicitudes.length === 0) {
+                if (!Array.isArray(solicitudes) || solicitudes.length === 0) {
                     container.innerHTML = '<div class="empty-state">No has enviado solicitudes.</div>';
                     return;
                 }
@@ -328,7 +314,7 @@
                     <div class="solicitud-item">
                         <div class="solicitud-header">
                             <div>
-                                <div class="solicitud-from">${s.candidate_name || s.candidate_email || 'Candidato'}</div>
+                                <div class="solicitud-from">${s.candidate_email || 'Candidato'}</div>
                             </div>
                             <span class="solicitud-status status-${s.status}">${s.status.toUpperCase()}</span>
                         </div>
@@ -337,12 +323,14 @@
                 `).join('');
             } catch (error) {
                 console.error('[loadEnviadas] Error:', error);
-                showError('enviadas', `Error cargando solicitudes: ${error.message}`);
+                showError('enviadas', `Error: ${error.message}`);
             }
         }
 
         async function loadPerfil() {
             const token = getToken();
+            const container = document.getElementById('perfil-container');
+
             if (!token) return;
 
             try {
@@ -354,10 +342,10 @@
                     }
                 });
 
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                if (!response.ok) throw new Error(`Error ${response.status}`);
 
                 const data = await response.json();
-                const container = document.getElementById('perfil-container');
+
                 container.innerHTML = `
                     <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px;">
                         <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
@@ -369,7 +357,7 @@
                 `;
             } catch (error) {
                 console.error('[loadPerfil] Error:', error);
-                showError('perfil', `Error cargando perfil: ${error.message}`);
+                showError('perfil', `Error: ${error.message}`);
             }
         }
 

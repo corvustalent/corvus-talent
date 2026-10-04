@@ -37,6 +37,48 @@ function parseBody(body) {
   }
 }
 
+// Extract token from multiple sources
+function extractToken(req, body) {
+  // 1. Check body
+  if (body?.token) {
+    return body.token;
+  }
+  
+  // 2. Check Authorization header
+  const authHeader = req.headers?.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  
+  // 3. Check cookies
+  if (req.headers?.cookie) {
+    const match = req.headers.cookie.match(/corvus_token=([^;]+)/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
+}
+
+// Get recruiter profile from token
+async function getRecruiterFromToken(token) {
+  if (!token) return null;
+  
+  try {
+    const recruiterEmail = decodeURIComponent(token.split('|')[0]);
+    const { data: recruiter } = await supabase
+      .from('profiles')
+      .select('id, nombre, apellido, company')
+      .eq('email', recruiterEmail)
+      .single();
+    
+    return recruiter;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   try {
     const query = parseQuery(req.url);
@@ -50,7 +92,7 @@ export default async function handler(req, res) {
     if (method === 'GET') {
       if (type === 'received') {
         // Solicitudes recibidas por este usuario (candidato)
-        const token = req.headers.cookie?.split('corvus_token=')[1]?.split(';')[0];
+        const token = extractToken(req, body);
         if (!token) return res.status(401).json({ error: 'No token' });
         
         const { data: profile } = await supabase
@@ -72,7 +114,7 @@ export default async function handler(req, res) {
       
       if (type === 'sent') {
         // Solicitudes enviadas por este recruiter
-        const token = req.headers.cookie?.split('corvus_token=')[1]?.split(';')[0];
+        const token = extractToken(req, body);
         if (!token) return res.status(401).json({ error: 'No token' });
         
         const { data: profile } = await supabase
@@ -104,18 +146,11 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'Missing candidate_id or message' });
         }
         
-        // Get recruiter info
-        const token = req.headers.cookie?.split('corvus_token=')[1]?.split(';')[0];
+        // Get recruiter info from token
+        const token = extractToken(req, body);
         if (!token) return res.status(401).json({ error: 'No token' });
         
-        const recruiterEmail = decodeURIComponent(token.split('|')[0]);
-        
-        const { data: recruiter } = await supabase
-          .from('profiles')
-          .select('id, nombre, apellido, company')
-          .eq('email', recruiterEmail)
-          .single();
-        
+        const recruiter = await getRecruiterFromToken(token);
         if (!recruiter) return res.status(404).json({ error: 'Recruiter not found' });
         
         // Get candidate info
@@ -145,7 +180,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: insertError.message });
         }
         
-        // Send email to candidate in background
+        // Send email to candidate in background (non-blocking)
         (async () => {
           try {
             await resend.emails.send({
@@ -173,6 +208,7 @@ export default async function handler(req, res) {
                 </div>
               `,
             });
+            console.log('✅ Email sent to candidate:', candidate.email);
           } catch (emailError) {
             console.error('❌ Error sending email to candidate:', emailError);
           }
@@ -205,9 +241,9 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: updateError.message });
         }
         
-        // If accepted, create conversation
+        // If accepted, create conversation and send email
         if (status === 'accepted') {
-          const { data: conversation } = await supabase
+          await supabase
             .from('conversations')
             .insert([
               {
@@ -216,9 +252,7 @@ export default async function handler(req, res) {
                 contact_request_id: request_id,
                 status: 'active',
               },
-            ])
-            .select()
-            .single();
+            ]);
           
           // Get recruiter email and info
           const { data: recruiter } = await supabase
@@ -234,7 +268,7 @@ export default async function handler(req, res) {
             .eq('id', updatedRequest.candidate_id)
             .single();
           
-          // Send email to recruiter in background
+          // Send email to recruiter in background (non-blocking)
           (async () => {
             try {
               await resend.emails.send({
@@ -262,6 +296,7 @@ export default async function handler(req, res) {
                   </div>
                 `,
               });
+              console.log('✅ Email sent to recruiter:', recruiter.email);
             } catch (emailError) {
               console.error('❌ Error sending email to recruiter:', emailError);
             }

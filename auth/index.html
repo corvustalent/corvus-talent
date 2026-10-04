@@ -1,331 +1,261 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Corvus Talent — Ingresá a tu cuenta</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
-    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
-    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
-    --green:#4ADE80;--red:#F87171;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-
-  nav{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
-  .nav-brand{font-size:16px;font-weight:700;letter-spacing:1px;color:var(--white);text-decoration:none}
-  .nav-brand span{color:var(--slate)}
-
-  main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
-  .card{background:var(--navy-mid);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:420px}
-
-  .card-header{text-align:center;margin-bottom:32px}
-  .card-title{font-size:24px;font-weight:700;margin-bottom:8px}
-  .card-sub{font-size:13px;color:var(--gray);line-height:1.5}
-
-  /* TABS */
-  .tabs{display:flex;background:var(--navy);border-radius:8px;padding:4px;margin-bottom:28px;gap:4px}
-  .tab{flex:1;padding:9px;border-radius:6px;border:none;background:none;color:var(--gray);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s}
-  .tab.active{background:var(--navy-light);color:var(--white)}
-
-  /* ROLE SELECTOR */
-  .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-  .role-card{background:var(--navy);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s;text-align:center}
-  .role-card:hover{border-color:var(--slate)}
-  .role-card.selected{border-color:var(--slate);background:var(--navy-light)}
-  .role-icon{font-size:24px;margin-bottom:6px}
-  .role-name{font-size:13px;font-weight:600;color:var(--white)}
-  .role-desc{font-size:11px;color:var(--gray);margin-top:3px;line-height:1.4}
-
-  /* FIELDS */
-  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-  label{font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;font-weight:500}
-  input{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--white);font-family:inherit;font-size:14px;outline:none;transition:border-color 0.2s;width:100%}
-  input:focus{border-color:var(--slate)}
-  input::placeholder{color:var(--gray)}
-  input.error{border-color:var(--red)}
-
-  /* CHECKBOX */
-  .check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px}
-  .check-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--slate);flex-shrink:0;cursor:pointer}
-  .check-row label{font-size:12px;color:var(--gray);line-height:1.5;letter-spacing:0;text-transform:none;font-weight:400;cursor:pointer}
-  .check-row a{color:var(--slate);text-decoration:none}
-
-  /* BUTTON */
-  .btn{width:100%;padding:13px;border-radius:8px;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s}
-  .btn-primary{background:var(--white);color:var(--navy)}
-  .btn-primary:hover{background:var(--off-white);transform:translateY(-1px)}
-  .btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
-
-  /* MESSAGES */
-  .msg{padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.5;margin-bottom:16px;display:none}
-  .msg.error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)}
-  .msg.success{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green)}
-  .msg.visible{display:block}
-
-  /* DIVIDER */
-  .divider{text-align:center;font-size:12px;color:var(--gray);margin:20px 0;position:relative}
-  .divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border)}
-  .divider::before{left:0}
-  .divider::after{right:0}
-
-  .footer-link{text-align:center;font-size:13px;color:var(--gray);margin-top:24px}
-  .footer-link a{color:var(--slate);text-decoration:none}
-
-  footer{padding:20px 24px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--gray)}
-  footer span{color:var(--slate)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar — Corvus Talent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #152132 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 { color: #0a1628; margin-bottom: 1.5rem; font-size: 1.5rem; }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #8fa8c8;
+            box-shadow: 0 0 0 3px rgba(143, 168, 200, 0.1);
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+        .form-check input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        .form-check label {
+            margin: 0;
+            font-weight: 400;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0a1628;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 0.5rem;
+        }
+        button:hover {
+            background: #152132;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .loading {
+            display: none;
+        }
+        a {
+            color: #8fa8c8;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .link-section {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-
-<nav>
-  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
-</nav>
-
-<main>
-<div class="card">
-  <div class="card-header">
-    <h1 class="card-title">Tu espacio en Corvus</h1>
-    <p class="card-sub">Accedé a todas las herramientas del ecosistema con una sola cuenta.</p>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('login')">Iniciar sesión</button>
-    <button class="tab" onclick="switchTab('register')">Crear cuenta</button>
-  </div>
-
-  <!-- MESSAGES -->
-  <div class="msg error" id="msg-error"></div>
-  <div class="msg success" id="msg-success"></div>
-
-  <!-- LOGIN FORM -->
-  <div id="form-login">
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="tu@email.com">
-    </div>
-    <div class="field">
-      <label>Contraseña</label>
-      <input type="password" id="login-password" placeholder="••••••••">
-    </div>
-    <div class="check-row" style="margin-bottom:16px">
-      <input type="checkbox" id="remember-me" checked>
-      <label for="remember-me" style="font-size:12px;color:var(--gray);cursor:pointer;letter-spacing:0;text-transform:none;font-weight:400">Recordarme en este dispositivo</label>
-    </div>
-    <button class="btn btn-primary" id="btn-login" onclick="handleLogin()">Ingresar</button>
-    <div class="footer-link" style="margin-top:12px">
-      <a href="/forgot-password">¿Olvidaste tu contraseña?</a>
-    </div>
-    <div class="footer-link" style="margin-top:8px">
-      <a href="#" onclick="switchTab('register')">¿No tenés cuenta? Creá una gratis</a>
-    </div>
-  </div>
-
-  <!-- REGISTER FORM -->
-  <div id="form-register" style="display:none">
-
-    <div style="margin-bottom:20px">
-      <label style="font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;font-weight:500;display:block;margin-bottom:10px">¿Quién sos?</label>
-      <div class="role-grid">
-        <div class="role-card selected" id="role-candidato" onclick="selectRole('candidato')">
-          <div class="role-icon">🏆</div>
-          <div class="role-name">Candidato</div>
-          <div class="role-desc">Buscás trabajo y querés prepararte</div>
+    <div class="form-container">
+        <h1>🦅 Corvus Talent</h1>
+        
+        <div class="error" id="error-msg"></div>
+        <div class="success" id="success-msg"></div>
+        
+        <form id="auth-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-check">
+                <input type="checkbox" id="remember-me" name="remember-me">
+                <label for="remember-me">Recordarme</label>
+            </div>
+            
+            <button type="submit" id="submit-btn">Ingresar</button>
+            <button type="button" id="signup-btn">Crear cuenta</button>
+        </form>
+        
+        <div class="link-section">
+            <a href="/forgot-password">¿Olvidaste la contraseña?</a>
         </div>
-        <div class="role-card" id="role-recruiter" onclick="selectRole('recruiter')">
-          <div class="role-icon">💼</div>
-          <div class="role-name">Recruiter</div>
-          <div class="role-desc">Buscás talento para tu empresa</div>
-        </div>
-      </div>
     </div>
 
-    <div class="field" id="field-company" style="display:none">
-      <label>Empresa</label>
-      <input type="text" id="register-company" placeholder="Nombre de tu empresa">
-    </div>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm';
 
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="register-email" placeholder="tu@email.com">
-    </div>
-    <div class="field">
-      <label>Contraseña</label>
-      <input type="password" id="register-password" placeholder="Mín. 8 caracteres, 1 mayúscula y 1 número">
-    </div>
-    <div class="field">
-      <label>Confirmá tu contraseña</label>
-      <input type="password" id="register-password2" placeholder="Repetí tu contraseña">
-    </div>
+        const SUPABASE_URL = 'https://fciquzvndvbbqecboumg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjaXF1enZuZHZiYnFlY2JvdW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQyOTc4NjUsImV4cCI6MjA0MDExMzg2NX0.s_U5p_DF5j7HPJvzDNNS7PfFzMmMd2K6zTnc-8Egh9A';
 
-    <div class="check-row">
-      <input type="checkbox" id="terms-check">
-      <label for="terms-check">Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a> de Corvus Talent.</label>
-    </div>
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <button class="btn btn-primary" id="btn-register" onclick="handleRegister()">Crear cuenta</button>
-    <div class="footer-link" style="margin-top:16px">
-      <a href="#" onclick="switchTab('login')">¿Ya tenés cuenta? Iniciá sesión</a>
-    </div>
-  </div>
+        const form = document.getElementById('auth-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const rememberMe = document.getElementById('remember-me');
+        const submitBtn = document.getElementById('submit-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const errorDiv = document.getElementById('error-msg');
+        const successDiv = document.getElementById('success-msg');
 
-</div>
-</main>
+        function showError(msg) {
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+        }
 
-<footer>CORVUS <span>TALENT</span> · Talento certero.</footer>
+        function showSuccess(msg) {
+            successDiv.textContent = msg;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script>
-const supabaseClient = supabase.createClient(
-  'https://fciquzvndvbbqecboumg.supabase.co',
-  'sb_publishable_lQMdRp8Cs0QqX2DG7K3Jzw_zIkW-sHB'
-);
-// Mostrar mensaje si viene de verificación exitosa
-if (new URLSearchParams(window.location.search).get('verified') === '1') {
-  showSuccess('¡Email confirmado! Ya podés iniciar sesión.');
-  switchTab('login');
-}
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            signupBtn.disabled = loading;
+            submitBtn.textContent = loading ? 'Cargando...' : 'Ingresar';
+        }
 
-let selectedRole = 'candidato';
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setLoading(true);
 
-function switchTab(tab) {
-  const isLogin = tab === 'login';
-  document.getElementById('form-login').style.display = isLogin ? 'block' : 'none';
-  document.getElementById('form-register').style.display = isLogin ? 'none' : 'block';
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', (i === 0) === isLogin);
-  });
-  hideMessages();
-}
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
 
-function selectRole(role) {
-  selectedRole = role;
-  document.getElementById('role-candidato').classList.toggle('selected', role === 'candidato');
-  document.getElementById('role-recruiter').classList.toggle('selected', role === 'recruiter');
-  document.getElementById('field-company').style.display = role === 'recruiter' ? 'flex' : 'none';
-}
+            try {
+                console.log('[LOGIN] Intentando login:', email);
 
-function showError(msg) {
-  const el = document.getElementById('msg-error');
-  el.textContent = msg; el.classList.add('visible');
-  document.getElementById('msg-success').classList.remove('visible');
-}
-function showSuccess(msg) {
-  const el = document.getElementById('msg-success');
-  el.textContent = msg; el.classList.add('visible');
-  document.getElementById('msg-error').classList.remove('visible');
-}
-function hideMessages() {
-  document.getElementById('msg-error').classList.remove('visible');
-  document.getElementById('msg-success').classList.remove('visible');
-}
+                // Intenta login
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
 
-async function handleLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  if (!email || !password) { showError('Completá todos los campos.'); return; }
+                if (error) {
+                    console.error('[LOGIN] Error:', error);
+                    showError(`Error: ${error.message}`);
+                    setLoading(false);
+                    return;
+                }
 
-  const btn = document.getElementById('btn-login');
-  btn.disabled = true; btn.textContent = 'Ingresando...';
+                console.log('[LOGIN] ✅ Login exitoso', data);
 
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) { showError('Email o contraseña incorrectos.'); return; }
+                // Obtener perfil del usuario
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
 
-    if (!data.user.email_confirmed_at) {
-      showError('Confirmá tu email antes de ingresar. Revisá tu casilla.');
-      return;
-    }
+                if (profileError) {
+                    console.error('[LOGIN] Profile error:', profileError);
+                }
 
-    // Obtener perfil
-    const { data: profile } = await supabaseClient
-      .from('profiles').select('role, company, visible, nombre').eq('id', data.user.id).single();
+                // GUARDAR TOKEN como solo el email
+                localStorage.setItem('corvus_token', email);
+                console.log('[LOGIN] Token guardado:', email);
 
-    const user = {
-      id: data.user.id,
-      email: data.user.email,
-      role: profile?.role,
-      company: profile?.company,
-      visible: profile?.visible,
-      nombre: profile?.nombre,
-    };
+                // Guardar usuario
+                if (profile) {
+                    localStorage.setItem('corvus_user', JSON.stringify(profile));
+                    console.log('[LOGIN] Perfil guardado:', profile);
+                } else {
+                    localStorage.setItem('corvus_user', JSON.stringify({ email, nombre: email.split('@')[0] }));
+                }
 
-    const remember = document.getElementById('remember-me').checked;
-    localStorage.setItem('corvus_token', email);
-    localStorage.setItem('corvus_user', JSON.stringify(user));
-    if (!remember) {
-      localStorage.setItem('corvus_session_temp', '1');
-    } else {
-      localStorage.removeItem('corvus_session_temp');
-    }
+                // Opcionalmente guardar en sessionStorage si no marcó "Recordarme"
+                if (!rememberMe.checked) {
+                    sessionStorage.setItem('corvus_token_session', email);
+                }
 
-    const redirect = localStorage.getItem('corvus_redirect');
-    localStorage.removeItem('corvus_redirect');
-    if (redirect && redirect !== '/auth') {
-      window.location.href = redirect;
-    } else if (user.role === 'recruiter') {
-      window.location.href = '/dashboard/recruiter';
-    } else {
-      window.location.href = '/dashboard/candidato';
-    }
+                showSuccess('✅ Inicio de sesión exitoso. Redirigiendo...');
+                setTimeout(() => {
+                    // Redirigir según rol
+                    if (profile && profile.role === 'recruiter') {
+                        window.location.href = '/dashboard/recruiter';
+                    } else {
+                        window.location.href = '/dashboard/candidato';
+                    }
+                }, 1000);
+            } catch (error) {
+                console.error('[LOGIN] Unexpected error:', error);
+                showError('Error inesperado: ' + error.message);
+                setLoading(false);
+            }
+        });
 
-  } catch(e) {
-    showError('Error de conexión. Intentá de nuevo.');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Ingresar';
-  }
-}
+        signupBtn.addEventListener('click', () => {
+            window.location.href = '/auth/signup';
+        });
 
-async function handleRegister() {
-  const email = document.getElementById('register-email').value.trim();
-  const password = document.getElementById('register-password').value;
-  const password2 = document.getElementById('register-password2').value;
-  const company = document.getElementById('register-company').value.trim();
-  const terms = document.getElementById('terms-check').checked;
-
-  if (!email || !password || !password2) { showError('Completá todos los campos.'); return; }
-  if (password !== password2) { showError('Las contraseñas no coinciden.'); return; }
-  if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres.'); return; }
-  if (!/[A-Z]/.test(password)) { showError('La contraseña debe tener al menos una mayúscula.'); return; }
-  if (!/[0-9]/.test(password)) { showError('La contraseña debe tener al menos un número.'); return; }
-  if (selectedRole === 'recruiter' && !company) { showError('Ingresá el nombre de tu empresa.'); return; }
-  if (!terms) { showError('Aceptá los términos y condiciones para continuar.'); return; }
-
-  const btn = document.getElementById('btn-register');
-  btn.disabled = true; btn.textContent = 'Creando cuenta...';
-
-  try {
-    const res = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'register', email, password, role: selectedRole, company })
-    });
-    const data = await res.json();
-
-    if (!res.ok) { showError(data.error || 'Error al crear la cuenta.'); return; }
-
-    showSuccess('¡Cuenta creada! Revisá tu email para confirmar tu cuenta antes de ingresar.');
-    document.getElementById('form-register').querySelectorAll('input[type=text],input[type=email],input[type=password],input[type=tel]').forEach(i => i.value = '');
-    document.getElementById('terms-check').checked = false;
-
-  } catch(e) {
-    showError('Error de conexión. Intentá de nuevo.');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Crear cuenta';
-  }
-}
-
-// Enter key support
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if (document.getElementById('form-login').style.display !== 'none') handleLogin();
-  else handleRegister();
-});
-</script>
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('corvus_token');
+            if (token) {
+                console.log('[LOAD] Usuario ya logueado:', token);
+                window.location.href = '/dashboard/candidato';
+            }
+        });
+    </script>
 </body>
 </html>

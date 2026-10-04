@@ -1362,9 +1362,13 @@ async function loadSolicitudes() {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const data = await res.json();
-    if (!res.ok) return;
+    if (!res.ok) {
+      console.error('Error loading solicitudes:', data.error);
+      return;
+    }
 
-    const solicitudes = data.solicitudes || [];
+    // El backend devuelve un array directo, no { solicitudes: [...] }
+    const solicitudes = Array.isArray(data) ? data : [];
     const pending = solicitudes.filter(s => s.status === 'pending').length;
 
     // Mostrar badge
@@ -1382,7 +1386,15 @@ async function loadSolicitudes() {
 
 function renderSolicitudes(solicitudes) {
   const list = document.getElementById('solicitudes-list');
-  if (!solicitudes.length) return;
+  if (!solicitudes.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <p>Todavía no recibiste solicitudes de contacto.</p>
+        <span style="font-size:12px;color:var(--gray)">Activá tu visibilidad para que los recruiters puedan encontrarte.</span>
+      </div>
+    `;
+    return;
+  }
 
   list.innerHTML = solicitudes.map(s => {
     const date = new Date(s.created_at).toLocaleDateString('es-AR');
@@ -1416,25 +1428,30 @@ async function respondSolicitud(id, status) {
   }
   try {
     const res = await fetch('/api/moderation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'respond', solicitud_id: id, status })
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'respond_contact_request',
+        request_id: id,
+        status: status,
+        token: token
+      })
     });
+    const responseData = await res.json();
+    
     if (res.ok) {
       if (status === 'accepted') {
-        // Crear conversación de chat automáticamente
-        await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ action: 'start', contact_request_id: id })
-        });
         showMsg('Contacto aceptado. Ya podés chatear con el recruiter.', 'success');
       } else {
         showMsg('Solicitud rechazada.', 'success');
       }
       loadSolicitudes();
+    } else {
+      console.error('Error responding to solicitud:', responseData.error);
+      showMsg('Error al responder: ' + responseData.error, 'error');
     }
   } catch(e) {
+    console.error('Error:', e);
     showMsg('Error al responder.', 'error');
   }
 }

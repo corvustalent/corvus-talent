@@ -398,9 +398,6 @@
                             </div>
                         </div>
 
-                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Rubros de Interés</h3>
-                        <div class="checkbox-group" id="rubros-container"></div>
-
                         <button type="submit" style="margin-top: 1.5rem;">💾 Guardar Preferencias</button>
                     </form>
                 </div>
@@ -443,36 +440,36 @@
     </div>
 
     <script>
-        // 24 PROVINCIAS DE ARGENTINA + CIUDADES
+        // 24 PROVINCIAS DE ARGENTINA + TODAS LAS CIUDADES
         const ubicaciones = {
             Argentina: {
-                "Buenos Aires": ["La Plata", "Lomas de Zamora", "La Matanza", "Almirante Brown"],
-                "Catamarca": ["San Fernando del Valle", "Belén", "Tinogasta"],
-                "Chaco": ["Resistencia", "Corrientes", "Charata"],
-                "Chubut": ["Comodoro Rivadavia", "Puerto Madryn", "Trelew"],
-                "CABA": ["San Isidro", "Belgrano", "San Telmo"],
-                "Córdoba": ["Córdoba", "Río Cuarto", "Jesús María"],
-                "Corrientes": ["Corrientes", "Paso de la Cruz", "Goya"],
-                "Entre Ríos": ["Paraná", "Concepción del Uruguay", "Gualeguaychú"],
-                "Formosa": ["Formosa", "Clorinda", "Ingeniero Juárez"],
-                "Jujuy": ["San Salvador de Jujuy", "Palpalá", "Purmamarca"],
-                "La Pampa": ["Santa Rosa", "General Pico", "Victorica"],
-                "La Rioja": ["La Rioja", "Chamical", "Aimogasta"],
-                "Mendoza": ["Mendoza", "Godoy Cruz", "Las Heras"],
-                "Misiones": ["Posadas", "Oberá", "Puerto Iguazú"],
-                "Neuquén": ["Neuquén", "Zapala", "San Martín de los Andes"],
-                "Río Negro": ["Viedma", "San Carlos de Bariloche", "El Bolsón"],
-                "Salta": ["Salta", "Orán", "Tartagal"],
-                "San Juan": ["San Juan", "Chimbas", "Ullum"],
-                "San Luis": ["San Luis", "Merlo", "La Toma"],
-                "Santa Cruz": ["Río Gallegos", "El Calafate", "El Chaltén"],
-                "Santa Fe": ["Rosario", "Santa Fe", "Rafaela"],
-                "Santiago del Estero": ["Santiago del Estero", "La Banda", "Frías"],
-                "Tierra del Fuego": ["Ushuaia", "Río Grande", "Tolhuin"],
-                "Tucumán": ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo"]
+                "Buenos Aires": ["La Plata", "Lomas de Zamora", "La Matanza", "Almirante Brown", "Avellaneda", "Florencio Varela", "Berazategui", "Quilmes", "Lanús", "Presidente Perón", "Hurlingham", "Tres de Febrero", "San Martín", "San Isidro", "San Miguel", "Moreno", "Morón", "Ituzaingó", "José C. Paz", "Malvinas Argentinas"],
+                "Catamarca": ["San Fernando del Valle", "Belén", "Tinogasta", "Andalgalá", "Santa María", "Capayán"],
+                "Chaco": ["Resistencia", "Corrientes", "Charata", "Barranqueras", "Sáenz Peña", "Villa Ángela"],
+                "Chubut": ["Comodoro Rivadavia", "Puerto Madryn", "Trelew", "Esquel", "Punta Loyola", "Rawson"],
+                "CABA": ["San Isidro", "Belgrano", "San Telmo", "La Boca", "Recoleta", "Palermo", "Caballito", "Flores", "Microcentro", "Devoto"],
+                "Córdoba": ["Córdoba", "Río Cuarto", "Jesús María", "La Falda", "Villa Carlos Paz", "Cruz del Eje", "Oncativo", "Morteros"],
+                "Corrientes": ["Corrientes", "Paso de la Cruz", "Goya", "Oberá", "Ituzaingó", "Santo Tomé", "Mercedes"],
+                "Entre Ríos": ["Paraná", "Concepción del Uruguay", "Gualeguaychú", "Concordia", "Victoria", "Nogoyá"],
+                "Formosa": ["Formosa", "Clorinda", "Ingeniero Juárez", "Pirané", "Iguazú", "El Colorado"],
+                "Jujuy": ["San Salvador de Jujuy", "Palpalá", "Purmamarca", "Mina Pirquitas", "Tilcara", "Humahuaca"],
+                "La Pampa": ["Santa Rosa", "General Pico", "Victorica", "Anguil", "Quemú Quemú", "Intendente Alvear"],
+                "La Rioja": ["La Rioja", "Chamical", "Aimogasta", "Arauco", "Chilecito", "Nonogasta"],
+                "Mendoza": ["Mendoza", "Godoy Cruz", "Las Heras", "Guaymallén", "Maipú", "Luján de Cuyo", "San Martín", "Tunuyán"],
+                "Misiones": ["Posadas", "Oberá", "Puerto Iguazú", "Eldorado", "Montecarlo", "Iguazú"],
+                "Neuquén": ["Neuquén", "Zapala", "San Martín de los Andes", "Junín de los Andes", "Villa La Angostura", "Plottier"],
+                "Río Negro": ["Viedma", "San Carlos de Bariloche", "El Bolsón", "Cipolletti", "General Roca", "Dina Huapi"],
+                "Salta": ["Salta", "Orán", "Tartagal", "Rosario de Lerma", "Cafayate", "Metán"],
+                "San Juan": ["San Juan", "Chimbas", "Ullum", "Rawson", "Rivadavia", "Caucete"],
+                "San Luis": ["San Luis", "Merlo", "La Toma", "Fortuna", "Justo Daract", "Coronel Pringles"],
+                "Santa Cruz": ["Río Gallegos", "El Calafate", "El Chaltén", "Pico Truncado", "Bajo Caracoles", "Perito Moreno"],
+                "Santa Fe": ["Rosario", "Santa Fe", "Rafaela", "Venado Tuerto", "Reconquista", "Esperanza", "Gálvez"],
+                "Santiago del Estero": ["Santiago del Estero", "La Banda", "Frías", "Loreto", "Termas de Río Hondo", "Banderetas"],
+                "Tierra del Fuego": ["Ushuaia", "Río Grande", "Tolhuin", "Punta Arenas", "Antártida Argentina"],
+                "Tucumán": ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo", "Aguilares", "Lules", "Banda del Río Salí"]
             },
             Chile: {
-                "Metropolitana": ["Santiago", "Las Condes", "Providencia"],
+                "Metropolitana": ["Santiago", "Las Condes", "Providencia", "Ñuñoa", "Vitacura"],
                 "Valparaíso": ["Valparaíso", "Viña del Mar", "Quilpué"]
             },
             Colombia: {
@@ -485,12 +482,28 @@
             }
         };
 
-        // 31+ RUBROS VARIADOS
-        const RUBROS_TODOS = [
-            "Backend", "Frontend", "Full Stack", "DevOps", "QA / Testing", "Data Science", "Data Engineering", "Ciberseguridad", "Sistemas", "Infraestructura",
-            "Marketing Digital", "Community Manager", "Content Creator", "Ventas", "Comercial", "Recursos Humanos", "Administración", "Finanzas", "Contabilidad", "Operaciones", "Logística",
-            "UX/UI Design", "Diseño Gráfico", "Diseño Web", "Motion Graphics", "Producción de Contenidos",
-            "Consultoría", "Educación", "Legal", "Proyectos", "Product Manager", "Business Analyst", "Growth Hacking"
+        // RUBROS GENERALES (SIN ROLES ESPECÍFICOS)
+        const RUBROS_GENERALES = [
+            "Tecnología / IT",
+            "Medicina / Salud",
+            "Legal / Derecho",
+            "Educación",
+            "Finanzas / Contabilidad",
+            "Recursos Humanos",
+            "Marketing / Comunicación",
+            "Ventas",
+            "Operaciones / Logística",
+            "Diseño",
+            "Construcción",
+            "Agricultura",
+            "Manufactura",
+            "Consultoría",
+            "Administración Pública",
+            "Transporte",
+            "Hogar / Servicios",
+            "Medios / Publicidad",
+            "Ingeniería",
+            "Ciencia / Investigación"
         ];
 
         let userEmail = null;
@@ -503,19 +516,17 @@
             }
             userEmail = token;
             document.getElementById('user-name').textContent = userEmail.split('@')[0];
-            populateRubrosCheckboxes();
+            populateRubros();
             loadProfile();
             setupTabButtons();
             setupCountrySelect();
             setupVisibilityToggle();
         });
 
-        function populateRubrosCheckboxes() {
-            const container = document.getElementById('rubros-container');
-            container.innerHTML = RUBROS_TODOS.map(rubro => {
-                const id = `rubro-${rubro.toLowerCase().replace(/[\s/]/g, '-')}`;
-                return `<div class="checkbox-item"><input type="checkbox" id="${id}" value="${rubro}"><label for="${id}">${rubro}</label></div>`;
-            }).join('');
+        function populateRubros() {
+            const select = document.getElementById('perfil-rubro');
+            select.innerHTML = '<option value="">Selecciona un rubro</option>' + 
+                RUBROS_GENERALES.map(rubro => `<option value="${rubro}">${rubro}</option>`).join('');
         }
 
         function setupTabButtons() {
@@ -588,13 +599,7 @@
                             }
                         }, 100);
                     }
-                    if (profile.rubros_interes && Array.isArray(profile.rubros_interes)) {
-                        profile.rubros_interes.forEach(rubro => {
-                            const id = `rubro-${rubro.toLowerCase().replace(/[\s/]/g, '-')}`;
-                            const checkbox = document.getElementById(id);
-                            if (checkbox) checkbox.checked = true;
-                        });
-                    }
+                    document.getElementById('perfil-rubro').value = profile.rubro || '';
                     if (profile.visible) {
                         document.getElementById('visibility-toggle').classList.add('active');
                     }
@@ -637,14 +642,12 @@
 
         document.getElementById('busco-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const rubrosInteres = Array.from(document.querySelectorAll('#rubros-container input[type="checkbox"]:checked')).map(cb => cb.value);
             const data = {
                 modalidad: document.getElementById('busco-modalidad').value,
                 seniority_deseado: document.getElementById('busco-seniority').value,
                 disponibilidad: document.getElementById('busco-disponibilidad').value,
                 salario_ars: parseInt(document.getElementById('busco-salario-ars').value) || null,
-                salario_usd: parseInt(document.getElementById('busco-salario-usd').value) || null,
-                rubros_interes: rubrosInteres
+                salario_usd: parseInt(document.getElementById('busco-salario-usd').value) || null
             };
             try {
                 const response = await fetch('/api/profile', {

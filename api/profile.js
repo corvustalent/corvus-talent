@@ -1,4 +1,4 @@
-// /api/profile.js — GET/POST perfil + solicitudes de contacto
+// /api/profile.js — GET/POST perfil + solicitudes de contacto (enviadas y recibidas)
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -7,7 +7,6 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 function extractToken(req) {
-  // 1. Authorization header: "Bearer email@example.com"
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7).trim();
@@ -15,13 +14,11 @@ function extractToken(req) {
     return token;
   }
   
-  // 2. Body (para POST)
   if (req.body && req.body.token) {
     console.log('[extractToken] From body.token:', req.body.token);
     return req.body.token;
   }
   
-  // 3. Cookies
   const cookies = req.headers.cookie || '';
   const match = cookies.match(/corvus_token=([^;]+)/);
   if (match) {
@@ -65,9 +62,9 @@ async function handleGET(req, res) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // GET solicitudes de contacto enviadas por recruiter
+    // GET solicitudes de contacto ENVIADAS por recruiter
     if (req.query.type === 'contact_requests') {
-      console.log('[GET] Fetching contact_requests for:', email);
+      console.log('[GET] Fetching contact_requests sent by:', email);
       const { data, error } = await supabase
         .from('contact_requests')
         .select('*')
@@ -78,7 +75,24 @@ async function handleGET(req, res) {
         console.error('[GET] Supabase error:', error);
         return res.status(500).json({ error: error.message });
       }
-      console.log('[GET] Found', data?.length || 0, 'contact requests');
+      console.log('[GET] Found', data?.length || 0, 'contact requests sent');
+      return res.status(200).json(data || []);
+    }
+
+    // GET solicitudes de contacto RECIBIDAS por candidato
+    if (req.query.type === 'received_requests') {
+      console.log('[GET] Fetching contact_requests received by:', email);
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .select('*')
+        .eq('candidate_email', email)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('[GET] Supabase error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+      console.log('[GET] Found', data?.length || 0, 'contact requests received');
       return res.status(200).json(data || []);
     }
 

@@ -521,6 +521,7 @@
             setupTabButtons();
             setupCountrySelect();
             setupVisibilityToggle();
+            loadReceivedRequests();
         });
 
         function populateRubros() {
@@ -685,6 +686,53 @@
                     console.error('[VISIBILITY] Error:', error);
                 }
             });
+        }
+
+
+        async function loadReceivedRequests() {
+            try {
+                const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+                if (!token) return;
+
+                const response = await fetch('/api/profile?type=received_requests', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    console.error('[LOAD RECEIVED] Error:', response.status);
+                    document.getElementById('solicitudes-list').innerHTML = '<p style="color: red;">Error al cargar solicitudes</p>';
+                    return;
+                }
+                
+                const requests = await response.json();
+                console.log('[LOAD RECEIVED] Solicitudes recibidas:', requests.length);
+                
+                const container = document.getElementById('solicitudes-list');
+                if (!container) return;
+                
+                if (requests.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">No tienes solicitudes de contacto por el momento</p>';
+                    return;
+                }
+                
+                container.innerHTML = requests.map(req => `
+                    <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #0a1628; margin: 0 0 0.5rem 0;">${req.company || 'Empresa'}</h4>
+                                <p style="color: #666; font-size: 0.9rem; margin: 0 0 0.5rem 0;">De: <strong>${req.recruiter_email}</strong></p>
+                                <p style="color: #999; font-size: 0.85rem; margin: 0 0 1rem 0;">${new Date(req.created_at).toLocaleDateString('es-AR')}</p>
+                                ${req.message ? `<p style="color: #555; font-size: 0.95rem; margin: 0;">"${req.message}"</p>` : ''}
+                            </div>
+                            <span style="background: #8fa8c8; color: white; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; white-space: nowrap;">${req.status === 'pending' ? '📬 Pendiente' : '✅ Aceptada'}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('[LOAD RECEIVED] Error:', error);
+                document.getElementById('solicitudes-list').innerHTML = '<p style="color: red;">Error inesperado</p>';
+            }
         }
 
         function logout() {

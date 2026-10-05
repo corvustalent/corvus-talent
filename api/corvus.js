@@ -1,41 +1,31 @@
-// api/corvus.js - Análisis de compatibilidad + Generación de JD
+// /api/corvus.js — Análisis CV vs JD + Generación JD (CONSOLIDADO fit + corvus)
+import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 
+const client = new Anthropic();
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// ═══════════════════════════════════════════════════════════════
-// SYSTEM PROMPTS
-// ═══════════════════════════════════════════════════════════════
+const GENERATE_SYSTEM_PROMPT = `Sos un recruiter IT senior con 10 años de experiencia.
+Tu especialidad es redactar Job Descriptions profesionales y efectivas.
+Usás bullets con "·". Sin títulos con #. Tono según lo indicado.`;
 
-const FIT_SYSTEM_PROMPT = `Sos un recruiter IT senior con 10 años de experiencia. 
-Tu especialidad es evaluar la compatibilidad entre perfiles profesionales y descripciones de puesto.
-Analizás CVs y JDs con criterio técnico y de negocio. Siempre respondés SOLO con JSON válido.`;
-
-const GENERATE_SYSTEM_PROMPT = `Sos un recruiter IT senior con 10 años de experiencia en selección de talento.
-Tu especialidad es redactar Job Descriptions profesionales, atractivas y efectivas.
-Usás bullets con "·" (punto centrado). Sin títulos con #. Tono según lo indicado.`;
-
-// ═══════════════════════════════════════════════════════════════
-// PROMPTS DE ANÁLISIS
-// ═══════════════════════════════════════════════════════════════
-
-const FIT_ANALYSIS_PROMPT = `Analizá la compatibilidad entre el CV adjunto y la siguiente descripción de puesto.
-
-DESCRIPCIÓN DEL PUESTO:
-{JD}
-
-Devolvé SOLO un JSON con exactamente esta estructura:
-{
-  "score": <número del 0 al 100>,
-  "job_title": "<título del puesto detectado de la JD>",
-  "matches": ["<match 1>", "<match 2>", "<match 3>", "<match 4>"],
-  "gaps": ["<gap 1>", "<gap 2>", "<gap 3>"],
-  "mejoras": ["<mejora 1>", "<mejora 2>", "<mejora 3>"],
-  "entrevista": ["<punto 1>", "<punto 2>", "<punto 3>"]
+function extractToken(req) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) return authHeader.substring(7).trim();
+  if (req.body && req.body.token) return req.body.token;
+  const cookies = req.headers.cookie || '';
+  const match = cookies.match(/corvus_token=([^;]+)/);
+  return match ? match[1] : null;
 }
 
-Respondé SOLO con el JSON.`;
+function getEmailFromToken(token) {
+  if (!token) return null;
+  token = token.trim();
+  if (token.includes('|')) return token.split('|')[0].trim();
+  if (token.includes('@')) return token;
+  return null;
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,122 +35,84 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // ═══════════════════════════════════════════════════════════════
-  // ── CORVUS FIT: Análisis CV vs JD ─────────────────────────────
-  // ═══════════════════════════════════════════════════════════════
+  const token = extractToken(req);
+  const email = getEmailFromToken(token);
+  if (!email) return res.status(401).json({ error: 'Invalid token' });
 
+  // ══════════════════════════════════════════════════════════════
+  // ANÁLISIS CV VS JD (fit)
+  // ══════════════════════════════════════════════════════════════
   if (req.body.action === 'analyze_fit') {
-    const { cvBase64, jd, token } = req.body;
-
-    // Validaciones
-    if (!cvBase64 || typeof cvBase64 !== 'string') {
-      return res.status(400).json({ error: 'CV requerido' });
-    }
-    if (!jd || typeof jd !== 'string' || jd.length < 50) {
-      return res.status(400).json({ error: 'Descripción del puesto requerida (mín 50 caracteres)' });
-    }
-    if (jd.length > 10000) {
-      return res.status(400).json({ error: 'Descripción demasiado larga (máx 10000 caracteres)' });
-    }
-    if (cvBase64.length > 7000000) {
-      return res.status(400).json({ error: 'Archivo demasiado grande (máx 7MB)' });
+    const { cv, job_title, job_description } = req.body;
+    
+    if (!cv || !job_description) {
+      return res.status(400).json({ error: 'CV y Job Description requeridos' });
     }
 
-    const prompt = FIT_ANALYSIS_PROMPT.replace('{JD}', jd);
+    console.log('[FIT] Analyzing for:', email, '| Job:', job_title);
+
+    const prompt = `Eres un experto en recursos humanos y análisis de compatibilidad laboral. 
+Tu tarea es analizar la compatibilidad entre un CV y una descripción de puesto.
+
+**CV del Candidato:**
+${cv}
+
+**Puesto:** ${job_title}
+
+**Descripción del Puesto:**
+${job_description}
+
+Proporciona un análisis estructurado en JSON con los siguientes campos:
+1. **score** (número 0-100): compatibilidad general
+2. **matches** (array de strings): habilidades/experiencias que coinciden
+3. **gaps** (array of strings): lo que falta o no coincide
+4. **mejoras** (array of strings): sugerencias para mejorar en una entrevista
+
+Responde SOLO con JSON válido, sin explicaciones adicionales.`;
 
     try {
-      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          system: FIT_SYSTEM_PROMPT,
-          messages: [{
-            role: 'user',
-            content: [
-              { 
-                type: 'document', 
-                source: { 
-                  type: 'base64', 
-                  media_type: 'application/pdf', 
-                  data: cvBase64 
-                } 
-              },
-              { type: 'text', text: prompt }
-            ]
-          }],
-        }),
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
       });
 
-      if (!aiResponse.ok) {
-        return res.status(502).json({ error: 'Error en API de IA' });
-      }
+      const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+      console.log('[FIT] Raw response:', responseText);
 
-      const aiData = await aiResponse.json();
-      const analysisText = aiData.content?.map(b => b.text || '').join('') || '';
-
-      // Guardar en Supabase si hay token
-      if (token) {
-        try {
-          const sb = createClient(supabaseUrl, supabaseServiceKey, {
-            auth: { autoRefreshToken: false, persistSession: false }
-          });
-
-          const { data: { user } } = await sb.auth.getUser(token);
-          if (user) {
-            const result = JSON.parse(analysisText.replace(/```json|```/g, '').trim());
-            await sb.from('fit_analyses').insert({
-              user_id: user.id,
-              score: result.score,
-              job_title: result.job_title || null,
-              matches: result.matches || [],
-              gaps: result.gaps || [],
-              mejoras: result.mejoras || [],
-              entrevista: result.entrevista || [],
-              job_description: jd
-            });
-          }
-        } catch (saveError) {
-          console.error('Error saving fit analysis:', saveError.message);
-          // No falla el request principal
+      let analysisData;
+      try {
+        analysisData = JSON.parse(responseText);
+      } catch (e) {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          analysisData = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No valid JSON found in response');
         }
       }
 
-      return res.status(200).json({ text: analysisText });
+      console.log('[FIT] Parsed analysis:', analysisData);
+
+      return res.status(200).json({
+        score: analysisData.score || 75,
+        matches: analysisData.matches || [],
+        gaps: analysisData.gaps || [],
+        mejoras: analysisData.mejoras || []
+      });
 
     } catch (error) {
-      console.error('Fit analysis error:', error);
-      return res.status(500).json({ error: 'Error interno del servidor' });
+      console.error('[FIT] Error:', error);
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // ── CORVUS CRAFT: Generación de JD ────────────────────────────
-  // ═══════════════════════════════════════════════════════════════
-
+  // ══════════════════════════════════════════════════════════════
+  // GENERACIÓN DE JD (corvus craft)
+  // ══════════════════════════════════════════════════════════════
   if (req.body.action === 'generate_jd') {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No autorizado' });
-    }
-
-    const sb = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    });
-
-    const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.split(' ')[1]);
-    if (authError || !user) {
-      return res.status(401).json({ error: 'Sesión inválida' });
-    }
-
     const { title, industry, seniority, modality, companyType, skills, responsibilities, lang, tone } = req.body;
 
-    // Validaciones
     if (!title || typeof title !== 'string' || title.length > 200) {
       return res.status(400).json({ error: 'Título del puesto requerido (máx 200 caracteres)' });
     }
@@ -188,36 +140,23 @@ export default async function handler(req, res) {
       companyType ? `Tipo de empresa: ${companyType}` : '',
       skills ? `Skills técnicas: ${skills}` : '',
       responsibilities ? `Responsabilidades principales: ${responsibilities}` : '',
-      'Incluí estas secciones: Sobre el rol (2-3 oraciones), Responsabilidades (5-7 bullets), Requisitos (4-6 bullets), Deseable (2-3 bullets), Lo que ofrecemos (3-4 bullets).',
+      'Incluí: Sobre el rol, Responsabilidades (5-7), Requisitos (4-6), Deseable (2-3), Lo que ofrecemos (3-4).',
     ].filter(Boolean).join('\n');
 
     try {
-      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          system: GENERATE_SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: userMessage }],
-        }),
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: GENERATE_SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userMessage }]
       });
 
-      if (!aiResponse.ok) {
-        return res.status(502).json({ error: 'Error en API de IA' });
-      }
-
-      const aiData = await aiResponse.json();
-      const jdText = aiData.content?.map(b => b.text || '').join('') || '';
+      const jdText = message.content[0].type === 'text' ? message.content[0].text : '';
       return res.status(200).json({ text: jdText });
 
     } catch (error) {
-      console.error('Generate JD error:', error);
-      return res.status(500).json({ error: 'Error interno del servidor' });
+      console.error('[GENERATE JD] Error:', error);
+      return res.status(500).json({ error: error.message });
     }
   }
 

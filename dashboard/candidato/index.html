@@ -5,387 +5,844 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Dashboard — Corvus Talent</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f5f5f5;
             color: #333;
         }
-        nav {
-            background: #0a1628;
+        
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #0a1628 0%, #152132 100%);
             color: white;
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        nav a { color: white; text-decoration: none; margin-right: 2rem; }
-        nav a:hover { color: #8fa8c8; }
-        .nav-right { display: flex; align-items: center; gap: 1rem; }
-        .logo { font-weight: bold; font-size: 1.2rem; }
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        header h1 { font-size: 1.5rem; }
+        header .user-info {
+            text-align: right;
         }
-        .tabs {
-            display: flex;
+        header .user-info small { opacity: 0.8; }
+        .logout-btn {
+            background: #8fa8c8;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        .logout-btn:hover { background: #7a94b0; }
+        
+        /* ONBOARDING BANNER */
+        .onboarding-banner {
+            background: linear-gradient(135deg, #8fa8c8 0%, #6b8ba8 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            margin: 1.5rem 2rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .onboarding-banner.show { display: block; }
+        .onboarding-banner h3 { margin-bottom: 1rem; }
+        .onboarding-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #ddd;
+        }
+        .step {
+            background: rgba(255,255,255,0.15);
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .step.completed { background: rgba(255,255,255,0.3); opacity: 0.6; }
+        .step-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .step-text { font-size: 0.9rem; }
+        
+        /* QUICK ACTIONS */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 2rem;
+        }
+        .action-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            border-left: 4px solid #8fa8c8;
+        }
+        .action-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        .action-card .icon { font-size: 2rem; }
+        .action-card h3 { color: #0a1628; font-size: 1.1rem; }
+        .action-card p { font-size: 0.9rem; color: #666; }
+        
+        /* VISIBILITY TOGGLE */
+        .visibility-section {
+            background: white;
+            padding: 1.5rem 2rem;
+            margin: 1.5rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active { background: #4ade80; }
+        .toggle-switch .slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+        .toggle-switch.active .slider { left: 33px; }
+        
+        /* TABS */
+        .tabs-container {
+            background: white;
+            margin: 1.5rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            overflow-x: auto;
         }
         .tab-button {
-            padding: 0.75rem 1.5rem;
+            flex: 1;
+            padding: 1rem;
             background: none;
             border: none;
-            border-bottom: 3px solid transparent;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #666;
             transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
         }
         .tab-button.active {
             color: #0a1628;
             border-bottom-color: #8fa8c8;
+            background: #f9fafb;
         }
-        .tab-content {
-            display: none;
-            background: white;
+        .tab-button:hover {
+            background: #f9fafb;
+        }
+        .tabs-content {
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            min-height: 400px;
         }
-        .tab-content.active {
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        
+        /* FORMS */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
             display: block;
-        }
-        .solicitud-item {
-            background: #f9f9f9;
-            border-left: 4px solid #8fa8c8;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-        }
-        .solicitud-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 0.5rem;
-        }
-        .solicitud-from {
-            font-weight: bold;
+            font-weight: 500;
             color: #0a1628;
         }
-        .solicitud-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
         }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-accepted { background: #d1fae5; color: #065f46; }
-        .status-rejected { background: #fee2e2; color: #991b1b; }
-        .solicitud-message {
-            color: #666;
-            margin: 0.75rem 0;
-            line-height: 1.5;
+        textarea { resize: vertical; min-height: 100px; }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #8fa8c8;
+            box-shadow: 0 0 0 3px rgba(143, 168, 200, 0.1);
         }
-        .solicitud-actions {
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        button {
+            background: #0a1628;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #152132; }
+        button:disabled { background: #999; cursor: not-allowed; }
+        
+        /* MESSAGES */
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .alert.show { display: block; }
+        .alert.success { background: #d1fae5; color: #065f46; }
+        .alert.error { background: #fee2e2; color: #991b1b; }
+        
+        /* LISTS */
+        .request-list, .message-list {
             display: flex;
-            gap: 0.75rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .request-card, .message-card {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #8fa8c8;
+        }
+        .request-card strong { color: #0a1628; }
+        .request-card small { color: #666; }
+        .request-card .actions {
+            display: flex;
+            gap: 0.5rem;
             margin-top: 1rem;
         }
-        .btn {
+        .request-card button {
             padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
             font-size: 0.9rem;
-            transition: all 0.3s;
         }
-        .btn-accept {
-            background: #10b981;
-            color: white;
-        }
-        .btn-accept:hover { background: #059669; }
-        .btn-reject {
-            background: #ef4444;
-            color: white;
-        }
-        .btn-reject:hover { background: #dc2626; }
-        .btn-logout {
-            background: #ef4444;
-            color: white;
-            padding: 0.5rem 1rem;
-        }
-        .btn-logout:hover { background: #dc2626; }
+        .btn-accept { background: #4ade80; }
+        .btn-accept:hover { background: #22c55e; }
+        .btn-reject { background: #f87171; }
+        .btn-reject:hover { background: #ef4444; }
+        
+        /* EMPTY STATE */
         .empty-state {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 2rem;
             color: #999;
         }
-        .error-message {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-        }
-        .success-message {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: 1fr; }
+            .onboarding-steps { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 1rem; text-align: center; }
+            .tabs-header { flex-wrap: wrap; }
+            .tab-button { font-size: 0.8rem; padding: 0.75rem 0.5rem; }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">🦅 Corvus Talent</div>
-        <div class="nav-right">
-            <span id="user-name">Cargando...</span>
-            <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    <!-- HEADER -->
+    <header>
+        <h1>🦅 Corvus Talent</h1>
+        <div style="display: flex; align-items: center;">
+            <div class="user-info">
+                <strong id="user-name">Usuario</strong><br>
+                <small id="user-role">Candidato</small>
+            </div>
+            <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
         </div>
-    </nav>
+    </header>
 
-    <div class="container">
-        <div class="tabs">
-            <button class="tab-button active" onclick="switchTab('solicitudes')">Solicitudes (Recibidas)</button>
-            <button class="tab-button" onclick="switchTab('enviadas')">Solicitudes (Enviadas)</button>
-            <button class="tab-button" onclick="switchTab('perfil')">Mi Perfil</button>
+    <!-- ONBOARDING BANNER -->
+    <div class="onboarding-banner" id="onboarding-banner">
+        <h3>🚀 Bienvenido a Corvus Talent</h3>
+        <div class="onboarding-steps">
+            <div class="step" id="step-1">
+                <div class="step-number">1️⃣</div>
+                <div class="step-text">Completar perfil</div>
+            </div>
+            <div class="step" id="step-2">
+                <div class="step-number">2️⃣</div>
+                <div class="step-text">Primer análisis</div>
+            </div>
+            <div class="step" id="step-3">
+                <div class="step-number">3️⃣</div>
+                <div class="step-text">Activar visibilidad</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+        <a href="/corvit" class="action-card">
+            <div class="icon">🎮</div>
+            <h3>Corvit</h3>
+            <p>Practica preguntas de entrevista con IA</p>
+        </a>
+        <a href="/corvus-fit" class="action-card">
+            <div class="icon">🧩</div>
+            <h3>Corvus Fit</h3>
+            <p>Analiza tu CV vs ofertas de trabajo</p>
+        </a>
+    </div>
+
+    <!-- VISIBILITY TOGGLE -->
+    <div class="visibility-section">
+        <div>
+            <h3 style="color: #0a1628; margin-bottom: 0.25rem;">👁️ Visible para Recruiters</h3>
+            <p style="color: #666; font-size: 0.9rem;">Los recruiters podrán ver tu perfil y contactarte</p>
+        </div>
+        <div class="toggle-switch" id="visibility-toggle" onclick="toggleVisibility()">
+            <div class="slider"></div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="selectTab('perfil')">👤 Mi Perfil</button>
+            <button class="tab-button" onclick="selectTab('busco')">🎯 Qué Busco</button>
+            <button class="tab-button" onclick="selectTab('analisis')">📊 Mis Análisis</button>
+            <button class="tab-button" onclick="selectTab('recibidas')">📬 Solicitudes Recibidas</button>
+            <button class="tab-button" onclick="selectTab('enviadas')">📤 Solicitudes Enviadas</button>
+            <button class="tab-button" onclick="selectTab('mensajes')">💬 Mensajes</button>
         </div>
 
-        <div id="solicitudes" class="tab-content active">
-            <h2>Solicitudes de Contacto Recibidas</h2>
-            <div id="solicitudes-container"></div>
-        </div>
+        <div class="tabs-content">
+            <!-- TAB: MI PERFIL -->
+            <div class="tab-pane active" id="tab-perfil">
+                <div class="alert" id="alert-perfil"></div>
+                <form onsubmit="savePerfil(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="profile-nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="profile-email" disabled>
+                        </div>
+                    </div>
 
-        <div id="enviadas" class="tab-content">
-            <h2>Solicitudes que Envié</h2>
-            <div id="enviadas-container"></div>
-        </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" id="profile-telefono">
+                        </div>
+                        <div class="form-group">
+                            <label>LinkedIn</label>
+                            <input type="url" id="profile-linkedin" placeholder="https://linkedin.com/in/...">
+                        </div>
+                    </div>
 
-        <div id="perfil" class="tab-content">
-            <h2>Mi Perfil</h2>
-            <div id="perfil-container"></div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>País</label>
+                            <select id="profile-pais" onchange="loadProvincias()">
+                                <option value="">Seleccionar...</option>
+                                <option value="Argentina">Argentina</option>
+                                <option value="Brasil">Brasil</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Provincia/Estado</label>
+                            <select id="profile-provincia"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Rubro/Industria</label>
+                            <select id="profile-rubro">
+                                <option value="">Seleccionar...</option>
+                                <option value="IT">IT</option>
+                                <option value="Finanzas">Finanzas</option>
+                                <option value="Recursos Humanos">Recursos Humanos</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Ventas">Ventas</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Seniority Actual</label>
+                            <select id="profile-seniority">
+                                <option value="">Seleccionar...</option>
+                                <option value="Junior">Junior (0-2 años)</option>
+                                <option value="Semi-Senior">Semi-Senior (2-5 años)</option>
+                                <option value="Senior">Senior (5-10 años)</option>
+                                <option value="Lead">Lead (10+ años)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notas/Resumen Profesional</label>
+                        <textarea id="profile-notas" placeholder="Cuéntanos sobre tu experiencia, habilidades y objetivos..."></textarea>
+                    </div>
+
+                    <button type="submit">💾 Guardar Cambios</button>
+                </form>
+            </div>
+
+            <!-- TAB: QUÉ BUSCO -->
+            <div class="tab-pane" id="tab-busco">
+                <div class="alert" id="alert-busco"></div>
+                <form onsubmit="saveBusco(event)">
+                    <div class="form-group">
+                        <label>Modalidad de Trabajo</label>
+                        <select id="busco-modalidad">
+                            <option value="">Seleccionar...</option>
+                            <option value="Remoto">100% Remoto</option>
+                            <option value="Presencial">Presencial</option>
+                            <option value="Híbrido">Híbrido</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Seniority Deseado</label>
+                        <select id="busco-seniority-deseado">
+                            <option value="">Seleccionar...</option>
+                            <option value="Junior">Junior</option>
+                            <option value="Semi-Senior">Semi-Senior</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Lead">Lead</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Disponibilidad</label>
+                        <select id="busco-disponibilidad">
+                            <option value="">Seleccionar...</option>
+                            <option value="Inmediata">Inmediata (próximas 2 semanas)</option>
+                            <option value="1mes">En 1 mes</option>
+                            <option value="2meses">En 2 meses</option>
+                            <option value="Explorando">Solo explorando oportunidades</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Salario Esperado (ARS)</label>
+                            <input type="number" id="busco-salario-ars" placeholder="Ej: 150000">
+                        </div>
+                        <div class="form-group">
+                            <label>Salario Esperado (USD)</label>
+                            <input type="number" id="busco-salario-usd" placeholder="Ej: 2000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rubros de Interés (máximo 3)</label>
+                        <small style="color: #666; display: block; margin-bottom: 0.5rem;">Selecciona los rubros donde quieres trabajar</small>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; font-weight: normal; gap: 0.5rem;">
+                                <input type="checkbox" class="rubros-checkbox" value="IT"> IT
+                            </label>
+                            <label style="display: flex; align-items: center; font-weight: normal; gap: 0.5rem;">
+                                <input type="checkbox" class="rubros-checkbox" value="Finanzas"> Finanzas
+                            </label>
+                            <label style="display: flex; align-items: center; font-weight: normal; gap: 0.5rem;">
+                                <input type="checkbox" class="rubros-checkbox" value="RRHH"> RRHH
+                            </label>
+                            <label style="display: flex; align-items: center; font-weight: normal; gap: 0.5rem;">
+                                <input type="checkbox" class="rubros-checkbox" value="Marketing"> Marketing
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit">💾 Guardar Preferencias</button>
+                </form>
+            </div>
+
+            <!-- TAB: MIS ANÁLISIS -->
+            <div class="tab-pane" id="tab-analisis">
+                <div class="alert" id="alert-analisis"></div>
+                <div id="analisis-list" class="request-list">
+                    <div class="empty-state">
+                        <div class="icon">📊</div>
+                        <p>Aún no tienes análisis. <a href="/corvus-fit" style="color: #8fa8c8;">¡Crea tu primer análisis ahora!</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: SOLICITUDES RECIBIDAS -->
+            <div class="tab-pane" id="tab-recibidas">
+                <div class="alert" id="alert-recibidas"></div>
+                <div id="solicitudes-recibidas" class="request-list">
+                    <div class="empty-state">
+                        <div class="icon">📬</div>
+                        <p>No hay solicitudes de contacto recibidas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: SOLICITUDES ENVIADAS -->
+            <div class="tab-pane" id="tab-enviadas">
+                <div class="alert" id="alert-enviadas"></div>
+                <div id="solicitudes-enviadas" class="request-list">
+                    <div class="empty-state">
+                        <div class="icon">📤</div>
+                        <p>No has enviado solicitudes de contacto</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: MENSAJES -->
+            <div class="tab-pane" id="tab-mensajes">
+                <div class="alert" id="alert-mensajes"></div>
+                <div id="mensajes-list" class="message-list">
+                    <div class="empty-state">
+                        <div class="icon">💬</div>
+                        <p>No hay mensajes. Cuando un recruiter acepte tu solicitud, podrán comunicarse aquí.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Funciones globales
-        window.logout = logout;
-        window.switchTab = switchTab;
-        window.respondSolicitud = respondSolicitud;
+        // PROVINCIAS DE ARGENTINA Y BRASIL
+        const provincias = {
+            Argentina: ['Buenos Aires', 'Santa Fe', 'Córdoba', 'Mendoza', 'La Plata', 'Rosario', 'Tucumán', 'Misiones', 'Corrientes', 'Entre Ríos', 'Chubut', 'Neuquén', 'Salta', 'Jujuy', 'Formosa', 'La Rioja', 'San Luis', 'Santa Cruz', 'Tierra del Fuego', 'Catamarca', 'Santiago del Estero'],
+            Brasil: ['São Paulo', 'Minas Gerais', 'Rio de Janeiro', 'Bahia', 'Paraná', 'Pernambuco', 'Ceará', 'Rio Grande do Sul', 'Pará', 'Santa Catarina', 'Goiás', 'Maranhão', 'Paraíba', 'Amazonas', 'Espírito Santo']
+        };
 
-        function getToken() {
-            return localStorage.getItem('corvus_token');
-        }
+        let globalToken = localStorage.getItem('corvus_token');
+        let currentUser = null;
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            if (tabName === 'solicitudes') loadSolicitudes();
-            if (tabName === 'enviadas') loadEnviadas();
-            if (tabName === 'perfil') loadPerfil();
-        }
-
-        async function loadSolicitudes() {
-            const token = getToken();
-            const container = document.getElementById('solicitudes-container');
-
-            if (!token) {
-                showError('solicitudes', 'No hay sesión. Por favor inicia sesión.');
+        // INIT
+        window.addEventListener('load', async () => {
+            if (!globalToken) {
+                window.location.href = '/auth';
                 return;
             }
 
+            await loadUserProfile();
+            loadProvincias();
+            checkOnboarding();
+            loadSolicitudes();
+            loadAnalisis();
+            loadMensajes();
+        });
+
+        // LOAD USER PROFILE
+        async function loadUserProfile() {
             try {
-                const response = await fetch('/api/moderation', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
+                const response = await fetch('/api/profile', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
                 });
 
-                console.log('[loadSolicitudes] Status:', response.status);
-
                 if (!response.ok) {
-                    throw new Error(`Error ${response.status}`);
+                    if (response.status === 401) {
+                        localStorage.removeItem('corvus_token');
+                        window.location.href = '/auth';
+                    }
+                    throw new Error('No se pudo cargar el perfil');
                 }
 
-                const solicitudes = await response.json();
-                console.log('[loadSolicitudes] Data:', solicitudes);
+                currentUser = await response.json();
+                console.log('[DASHBOARD] User loaded:', currentUser.email);
 
-                if (!Array.isArray(solicitudes) || solicitudes.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No hay solicitudes recibidas.</div>';
+                // POPULATE UI
+                document.getElementById('user-name').textContent = currentUser.nombre || 'Usuario';
+                document.getElementById('user-role').textContent = currentUser.role === 'candidato' ? 'Candidato' : 'Recruiter';
+
+                // POPULATE FORM
+                document.getElementById('profile-nombre').value = currentUser.nombre || '';
+                document.getElementById('profile-email').value = currentUser.email || '';
+                document.getElementById('profile-telefono').value = currentUser.telefono || '';
+                document.getElementById('profile-linkedin').value = currentUser.linkedin || '';
+                document.getElementById('profile-pais').value = currentUser.pais || 'Argentina';
+                document.getElementById('profile-rubro').value = currentUser.rubro || '';
+                document.getElementById('profile-seniority').value = currentUser.seniority || '';
+                document.getElementById('profile-notas').value = currentUser.notas || '';
+
+                // POPULATE BUSCO TAB
+                document.getElementById('busco-modalidad').value = currentUser.modalidad || '';
+                document.getElementById('busco-seniority-deseado').value = currentUser.seniority_deseado || '';
+                document.getElementById('busco-disponibilidad').value = currentUser.disponibilidad || '';
+                document.getElementById('busco-salario-ars').value = currentUser.salario_ars || '';
+                document.getElementById('busco-salario-usd').value = currentUser.salario_usd || '';
+
+                // SET VISIBILITY TOGGLE
+                if (currentUser.visible) {
+                    document.getElementById('visibility-toggle').classList.add('active');
+                }
+
+                loadProvincias();
+            } catch (error) {
+                console.error('[DASHBOARD] Error loading profile:', error);
+                showAlert('alert-perfil', 'Error al cargar el perfil', 'error');
+            }
+        }
+
+        // LOAD PROVINCIAS
+        function loadProvincias() {
+            const pais = document.getElementById('profile-pais').value;
+            const provinciaSelect = document.getElementById('profile-provincia');
+            provinciaSelect.innerHTML = '<option value="">Seleccionar...</option>';
+
+            if (pais && provincias[pais]) {
+                provincias[pais].forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p;
+                    option.textContent = p;
+                    provinciaSelect.appendChild(option);
+                });
+                provinciaSelect.value = currentUser?.provincia || '';
+            }
+        }
+
+        // SELECT TAB
+        function selectTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // SAVE PERFIL
+        async function savePerfil(e) {
+            e.preventDefault();
+
+            const data = {
+                nombre: document.getElementById('profile-nombre').value,
+                telefono: document.getElementById('profile-telefono').value,
+                linkedin: document.getElementById('profile-linkedin').value,
+                pais: document.getElementById('profile-pais').value,
+                provincia: document.getElementById('profile-provincia').value,
+                rubro: document.getElementById('profile-rubro').value,
+                seniority: document.getElementById('profile-seniority').value,
+                notas: document.getElementById('profile-notas').value
+            };
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${globalToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Error al guardar');
+
+                showAlert('alert-perfil', '✅ Perfil guardado exitosamente', 'success');
+                currentUser = { ...currentUser, ...data };
+                checkOnboarding();
+            } catch (error) {
+                showAlert('alert-perfil', `❌ ${error.message}`, 'error');
+            }
+        }
+
+        // SAVE BUSCO
+        async function saveBusco(e) {
+            e.preventDefault();
+
+            const rubrosChecked = Array.from(document.querySelectorAll('.rubros-checkbox:checked')).map(el => el.value);
+
+            const data = {
+                modalidad: document.getElementById('busco-modalidad').value,
+                seniority_deseado: document.getElementById('busco-seniority-deseado').value,
+                disponibilidad: document.getElementById('busco-disponibilidad').value,
+                salario_ars: document.getElementById('busco-salario-ars').value,
+                salario_usd: document.getElementById('busco-salario-usd').value,
+                rubros_interes: rubrosChecked
+            };
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${globalToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Error al guardar');
+
+                showAlert('alert-busco', '✅ Preferencias guardadas exitosamente', 'success');
+                currentUser = { ...currentUser, ...data };
+                checkOnboarding();
+            } catch (error) {
+                showAlert('alert-busco', `❌ ${error.message}`, 'error');
+            }
+        }
+
+        // TOGGLE VISIBILITY
+        async function toggleVisibility() {
+            try {
+                const newVisible = !currentUser.visible;
+                const response = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${globalToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ visible: newVisible })
+                });
+
+                if (!response.ok) throw new Error('Error');
+
+                currentUser.visible = newVisible;
+                document.getElementById('visibility-toggle').classList.toggle('active');
+                checkOnboarding();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // CHECK ONBOARDING
+        function checkOnboarding() {
+            const step1 = currentUser?.nombre && currentUser?.rubro && currentUser?.seniority;
+            const step2 = false; // TODO: Check si tiene análisis en BD
+            const step3 = currentUser?.visible;
+
+            const hasIncomplete = !step1 || !step2 || !step3;
+            document.getElementById('onboarding-banner').classList.toggle('show', hasIncomplete);
+
+            if (step1) document.getElementById('step-1').classList.add('completed');
+            if (step2) document.getElementById('step-2').classList.add('completed');
+            if (step3) document.getElementById('step-3').classList.add('completed');
+        }
+
+        // LOAD SOLICITUDES
+        async function loadSolicitudes() {
+            try {
+                const response = await fetch('/api/moderation?type=received', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
+                });
+
+                if (!response.ok) return;
+
+                const solicitudes = await response.json();
+                const container = document.getElementById('solicitudes-recibidas');
+
+                if (!solicitudes || solicitudes.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">📬</div><p>No hay solicitudes de contacto</p></div>';
                     return;
                 }
 
                 container.innerHTML = solicitudes.map(s => `
-                    <div class="solicitud-item">
-                        <div class="solicitud-header">
-                            <div>
-                                <div class="solicitud-from">${s.recruiter_email || 'Recruiter'}</div>
-                                <div style="font-size: 0.9rem; color: #999;">${s.company || 'Empresa no especificada'}</div>
-                            </div>
-                            <span class="solicitud-status status-${s.status}">${s.status.toUpperCase()}</span>
+                    <div class="request-card">
+                        <strong>${s.recruiter_nombre || 'Recruiter'}</strong> (${s.company || 'Empresa'})<br>
+                        <small>${s.message}</small>
+                        <div class="actions">
+                            <button class="btn-accept" onclick="respondToRequest('${s.id}', 'accepted')">✅ Aceptar</button>
+                            <button class="btn-reject" onclick="respondToRequest('${s.id}', 'rejected')">❌ Rechazar</button>
                         </div>
-                        <div class="solicitud-message">${s.message || '(Sin mensaje)'}</div>
-                        ${s.status === 'pending' ? `
-                            <div class="solicitud-actions">
-                                <button class="btn btn-accept" onclick="respondSolicitud(${s.id}, 'accepted')">Aceptar</button>
-                                <button class="btn btn-reject" onclick="respondSolicitud(${s.id}, 'rejected')">Rechazar</button>
-                            </div>
-                        ` : ''}
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('[loadSolicitudes] Error:', error);
-                showError('solicitudes', `Error: ${error.message}`);
+                console.error('[DASHBOARD] Error loading solicitudes:', error);
             }
         }
 
-        async function respondSolicitud(requestId, status) {
-            const token = getToken();
-            if (!token) return;
+        // LOAD ANÁLISIS
+        async function loadAnalisis() {
+            // TODO: Llamar a endpoint que obtenga fit_analyses del usuario
+            const container = document.getElementById('analisis-list');
+            container.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>Aún no tienes análisis. <a href="/corvus-fit" style="color: #8fa8c8;">¡Crea tu primer análisis ahora!</a></p></div>';
+        }
 
+        // LOAD MENSAJES
+        async function loadMensajes() {
+            try {
+                const response = await fetch('/api/chat', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
+                });
+
+                if (!response.ok) return;
+
+                const mensajes = await response.json();
+                const container = document.getElementById('mensajes-list');
+
+                if (!mensajes || mensajes.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>No hay mensajes</p></div>';
+                    return;
+                }
+
+                container.innerHTML = mensajes.map(m => `
+                    <div class="message-card">
+                        <strong>${m.de}</strong><br>
+                        <small>${new Date(m.fecha).toLocaleString()}</small><br>
+                        ${m.contenido}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('[DASHBOARD] Error loading mensajes:', error);
+            }
+        }
+
+        // RESPOND TO REQUEST
+        async function respondToRequest(id, status) {
             try {
                 const response = await fetch('/api/moderation', {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${globalToken}`,
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        action: 'respond_contact_request',
-                        request_id: requestId,
-                        status: status,
-                        token: token
-                    })
+                    body: JSON.stringify({ id, status })
                 });
 
-                console.log('[respondSolicitud] Status:', response.status);
+                if (!response.ok) throw new Error('Error al responder');
 
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}`);
-                }
-
-                showSuccess('solicitudes', `Solicitud ${status === 'accepted' ? 'aceptada' : 'rechazada'}.`);
-                setTimeout(() => loadSolicitudes(), 1000);
+                loadSolicitudes();
+                showAlert('alert-recibidas', '✅ Respuesta guardada', 'success');
             } catch (error) {
-                console.error('[respondSolicitud] Error:', error);
-                showError('solicitudes', `Error: ${error.message}`);
+                showAlert('alert-recibidas', `❌ ${error.message}`, 'error');
             }
         }
 
-        async function loadEnviadas() {
-            const token = getToken();
-            const container = document.getElementById('enviadas-container');
-
-            if (!token) return;
-
-            try {
-                const response = await fetch('/api/moderation?type=sent', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) throw new Error(`Error ${response.status}`);
-
-                const solicitudes = await response.json();
-
-                if (!Array.isArray(solicitudes) || solicitudes.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No has enviado solicitudes.</div>';
-                    return;
-                }
-
-                container.innerHTML = solicitudes.map(s => `
-                    <div class="solicitud-item">
-                        <div class="solicitud-header">
-                            <div>
-                                <div class="solicitud-from">${s.candidate_email || 'Candidato'}</div>
-                            </div>
-                            <span class="solicitud-status status-${s.status}">${s.status.toUpperCase()}</span>
-                        </div>
-                        <div class="solicitud-message">${s.message || '(Sin mensaje)'}</div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('[loadEnviadas] Error:', error);
-                showError('enviadas', `Error: ${error.message}`);
-            }
+        // SHOW ALERT
+        function showAlert(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `alert show ${type}`;
+            setTimeout(() => el.classList.remove('show'), 4000);
         }
 
-        async function loadPerfil() {
-            const token = getToken();
-            const container = document.getElementById('perfil-container');
-
-            if (!token) return;
-
-            try {
-                const response = await fetch('/api/profile', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) throw new Error(`Error ${response.status}`);
-
-                const data = await response.json();
-
-                container.innerHTML = `
-                    <div style="background: #f9f9f9; padding: 2rem; border-radius: 8px;">
-                        <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
-                        <p><strong>Nombre:</strong> ${data.nombre || 'N/A'}</p>
-                        <p><strong>Empresa:</strong> ${data.company || 'N/A'}</p>
-                        <p><strong>Rubro:</strong> ${data.rubro || 'N/A'}</p>
-                        <p><strong>Seniority:</strong> ${data.seniority || 'N/A'}</p>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('[loadPerfil] Error:', error);
-                showError('perfil', `Error: ${error.message}`);
-            }
-        }
-
-        function showError(tab, message) {
-            const container = document.getElementById(tab + '-container');
-            container.innerHTML = `<div class="error-message">${message}</div>`;
-        }
-
-        function showSuccess(tab, message) {
-            const container = document.getElementById(tab + '-container');
-            const msg = document.createElement('div');
-            msg.className = 'success-message';
-            msg.textContent = message;
-            container.insertBefore(msg, container.firstChild);
-        }
-
+        // LOGOUT
         function logout() {
             localStorage.removeItem('corvus_token');
-            localStorage.removeItem('corvus_user');
             window.location.href = '/auth';
         }
-
-        // Init
-        window.addEventListener('load', () => {
-            const user = JSON.parse(localStorage.getItem('corvus_user') || '{}');
-            document.getElementById('user-name').textContent = user.nombre || 'Usuario';
-            loadSolicitudes();
-        });
     </script>
 </body>
 </html>

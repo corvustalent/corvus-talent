@@ -1,809 +1,859 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Recruiter — Corvus Talent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --navy:#0A1628;--navy-mid:#142038;--navy-light:#1E3050;
-    --slate:#8FA8C8;--white:#FFFFFF;--off-white:#F5F7FA;
-    --gray:#9CA3AF;--border:rgba(143,168,200,0.2);
-    --green:#4ADE80;--yellow:#FBBF24;--red:#F87171;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-
-  nav{padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--navy);z-index:100}
-  .nav-brand{font-size:15px;font-weight:700;letter-spacing:1px;color:var(--white);text-decoration:none}
-  .nav-brand span{color:var(--slate)}
-  .nav-right{display:flex;align-items:center;gap:16px}
-  .nav-badge{font-size:11px;color:var(--slate);background:rgba(143,168,200,0.1);border:1px solid var(--border);border-radius:20px;padding:3px 10px}
-  .nav-user{font-size:13px;color:var(--gray)}
-  .btn-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--gray);font-size:12px;font-family:inherit;cursor:pointer;transition:all 0.15s}
-  .btn-logout:hover{border-color:var(--red);color:var(--red)}
-
-  main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:32px 24px}
-
-  .dashboard-header{margin-bottom:28px}
-  .welcome{font-size:clamp(22px,4vw,28px);font-weight:700;margin-bottom:6px}
-  .welcome span{color:var(--slate)}
-  .header-sub{font-size:13px;color:var(--gray)}
-
-  /* STATS */
-  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
-  .stat-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
-  .stat-num{font-size:28px;font-weight:700;color:var(--slate);margin-bottom:4px}
-  .stat-label{font-size:12px;color:var(--gray)}
-
-  /* FILTERS */
-  .filters-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
-  .filters-title{font-size:12px;color:var(--slate);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
-  .filters-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-items:end}
-  select,input[type=range]{background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-family:inherit;font-size:13px;outline:none;width:100%;transition:border-color 0.2s}
-  select:focus{border-color:var(--slate)}
-  select option{background:var(--navy-mid)}
-  .filter-label{font-size:11px;color:var(--gray);margin-bottom:5px;display:block}
-  .score-display{font-size:12px;color:var(--slate);text-align:right;margin-top:4px}
-  .btn-filter{background:var(--white);color:var(--navy);border:none;border-radius:8px;padding:9px 20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:all 0.15s}
-  .btn-filter:hover{background:var(--off-white)}
-
-  /* CANDIDATES */
-  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .section-title{font-size:13px;color:var(--slate);font-weight:600;letter-spacing:1px;text-transform:uppercase}
-  .results-count{font-size:12px;color:var(--gray)}
-
-  .candidate-card{background:var(--navy-mid);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;transition:border-color 0.2s}
-  .candidate-card:hover{border-color:var(--slate)}
-  .candidate-top{display:flex;align-items:center;gap:16px;margin-bottom:14px}
-  .candidate-avatar{width:44px;height:44px;border-radius:50%;background:rgba(143,168,200,0.15);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--slate);flex-shrink:0}
-  .candidate-info{flex:1}
-  .candidate-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:3px}
-  .candidate-meta{font-size:12px;color:var(--gray)}
-  .candidate-score{text-align:right}
-  .score-num{font-size:22px;font-weight:700}
-  .score-label{font-size:10px;color:var(--gray);margin-top:2px}
-
-  .candidate-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-  .tag{background:rgba(143,168,200,0.08);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:11px;color:var(--gray)}
-  .tag.highlight{border-color:rgba(143,168,200,0.4);color:var(--slate)}
-
-  .candidate-contact{display:flex;gap:10px;flex-wrap:wrap}
-  .contact-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;border:1px solid var(--border);color:var(--slate);transition:all 0.15s;cursor:pointer;background:none;font-family:inherit}
-  .contact-btn:hover{border-color:var(--slate);color:var(--white)}
-  .contact-btn.primary{background:var(--white);color:var(--navy);border-color:var(--white)}
-  .contact-btn.primary:hover{background:var(--off-white)}
-
-  .empty-state{text-align:center;padding:60px 20px;color:var(--gray)}
-  .empty-icon{font-size:40px;margin-bottom:16px}
-  .empty-state p{font-size:14px;margin-bottom:8px}
-  .empty-state span{font-size:12px;color:var(--gray)}
-
-  .loading{text-align:center;padding:40px;color:var(--slate);font-size:14px}
-
-  /* MODAL */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-  .modal-overlay.visible{display:flex}
-  .modal{background:var(--navy-mid);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:480px;width:100%;position:relative}
-  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;line-height:1}
-  .modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
-  .modal-sub{font-size:13px;color:var(--gray);margin-bottom:20px}
-  .modal-field{margin-bottom:16px}
-  .modal-field label{font-size:11px;color:var(--slate);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px}
-  textarea{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--white);font-family:inherit;font-size:13px;resize:vertical;min-height:100px;outline:none;line-height:1.5}
-  textarea:focus{border-color:var(--slate)}
-  .modal-actions{display:flex;gap:10px;justify-content:flex-end}
-  .btn-cancel{background:none;border:1px solid var(--border);border-radius:6px;padding:9px 18px;color:var(--gray);font-family:inherit;font-size:13px;cursor:pointer}
-  .btn-send{background:var(--white);color:var(--navy);border:none;border-radius:6px;padding:9px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-  .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
-  .msg.success{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);display:block}
-  .msg.error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);display:block}
-
-  @media(max-width:600px){
-    main{padding:20px 16px}
-    .stats-row{grid-template-columns:1fr 1fr}
-    .filters-grid{grid-template-columns:1fr}
-    .candidate-top{flex-wrap:wrap}
-    .candidate-score{min-width:auto}
-    nav{padding:12px 16px}
-    .nav-right{gap:8px}
-    .candidate-contact{flex-direction:column}
-    .contact-btn{width:100%;justify-content:center}
-    .modal{padding:20px 16px}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Recruiter — Corvus Talent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #0a1628 0%, #152132 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 1.5rem; }
+        header .user-info {
+            text-align: right;
+        }
+        header .user-info small { opacity: 0.8; }
+        .logout-btn {
+            background: #8fa8c8;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+        .logout-btn:hover { background: #7a94b0; }
+        
+        /* QUICK ACTION */
+        .corvus-craft-section {
+            background: linear-gradient(135deg, #8fa8c8 0%, #6b8ba8 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            margin: 1.5rem 2rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .corvus-craft-section h3 { margin-bottom: 0.5rem; }
+        .corvus-craft-section p { font-size: 0.9rem; opacity: 0.9; margin-bottom: 1rem; }
+        .corvus-craft-btn {
+            background: white;
+            color: #0a1628;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .corvus-craft-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #8fa8c8;
+        }
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0a1628;
+        }
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* TABS */
+        .tabs-container {
+            background: white;
+            margin: 1.5rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            overflow-x: auto;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .tab-button.active {
+            color: #0a1628;
+            border-bottom-color: #8fa8c8;
+            background: #f9fafb;
+        }
+        .tab-button:hover {
+            background: #f9fafb;
+        }
+        .tabs-content {
+            padding: 2rem;
+            min-height: 400px;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        
+        /* FILTERS */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #0a1628;
+            font-size: 0.9rem;
+        }
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        select:focus {
+            outline: none;
+            border-color: #8fa8c8;
+            box-shadow: 0 0 0 3px rgba(143, 168, 200, 0.1);
+        }
+        
+        /* CANDIDATES LIST */
+        .candidates-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .candidate-card {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #8fa8c8;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            align-items: start;
+        }
+        .candidate-info h3 {
+            color: #0a1628;
+            margin-bottom: 0.5rem;
+        }
+        .candidate-info small {
+            color: #666;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .candidate-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background: #e5eef5;
+            color: #0a1628;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .tag.available { background: #d1fae5; color: #065f46; }
+        .tag.high-score { background: #fef3c7; color: #92400e; }
+        
+        .candidate-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .score-box {
+            background: white;
+            border: 2px solid #8fa8c8;
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .score-box .number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0a1628;
+        }
+        .score-box .label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        button {
+            background: #0a1628;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #152132; }
+        button:disabled { background: #999; cursor: not-allowed; }
+        .btn-secondary {
+            background: #8fa8c8;
+        }
+        .btn-secondary:hover { background: #7a94b0; }
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        
+        /* FORMS */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #0a1628;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #8fa8c8;
+            box-shadow: 0 0 0 3px rgba(143, 168, 200, 0.1);
+        }
+        
+        /* ALERTS */
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .alert.show { display: block; }
+        .alert.success { background: #d1fae5; color: #065f46; }
+        .alert.error { background: #fee2e2; color: #991b1b; }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .modal-content h2 { margin-bottom: 1rem; color: #0a1628; }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .candidate-card { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 1rem; text-align: center; }
+            .filters { grid-template-columns: 1fr; }
+            .tabs-header { flex-wrap: wrap; }
+            .tab-button { font-size: 0.8rem; padding: 0.75rem 0.5rem; }
+            .corvus-craft-section { flex-direction: column; text-align: center; gap: 1rem; }
+        }
+    </style>
 </head>
 <body>
-
-<nav>
-  <a href="/" class="nav-brand">CORVUS <span>TALENT</span></a>
-  <div class="nav-right">
-    <span class="nav-badge">Recruiter</span>
-    <a href="/chat" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--slate);text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:20px;transition:all 0.15s" onmouseover="this.style.borderColor='var(--slate)'" onmouseout="this.style.borderColor='var(--border)'">💬 Mensajes <span id="chat-badge" style="display:none;background:var(--green);color:var(--navy);border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700"></span></a>
-    <span class="nav-user" id="nav-company"></span>
-    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
-  </div>
-</nav>
-
-<main>
-  <div class="dashboard-header">
-    <h1 class="welcome">Hola, <span id="welcome-name"></span></h1>
-    <p class="header-sub">Panel de búsqueda de talento — Corvus Talent</p>
-    
-    <!-- BADGES DEL RECRUITER -->
-    <div id="recruiter-badges-container" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;min-height:28px">
-      <!-- Se llena dinámicamente con loadRecruiterBadges() -->
-    </div>
-  </div>
-
-  <!-- SECCIÓN DE VERIFICACIÓN DE EMAIL CORPORATIVO -->
-  <div style="background: var(--navy-mid); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-    <h3 style="color: #FFFFFF; margin-top: 0; margin-bottom: 1rem; font-size: 1rem; font-weight: 600;">🔐 Verifica tu email corporativo</h3>
-    
-    <div id="verification-status" style="display: none; padding: 1rem; background: #0A1628; border-left: 3px solid #4CAF50; border-radius: 4px; margin-bottom: 1rem;">
-      <p style="color: #4CAF50; margin: 0; font-size: 0.9rem;"><strong>✓ Email verificado</strong></p>
-      <p id="verified-email" style="color: #BABDC2; margin: 0.5rem 0 0 0; font-size: 0.85rem;"></p>
-    </div>
-
-    <div id="verification-form" style="">
-      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-        <input 
-          type="email" 
-          id="corporate-email-input" 
-          placeholder="tu.email@empresa.com" 
-          style="flex: 1; padding: 0.75rem; background: #0A1628; border: 1px solid #152132; border-radius: 4px; color: #BABDC2; font-size: 0.9rem;"
-        >
-        <button 
-          id="send-verification-btn" 
-          onclick="sendVerification()" 
-          style="padding: 0.75rem 1.5rem; background: #8FA8C8; color: #0A1628; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
-        >
-          Enviar verificación
-        </button>
-      </div>
-      <p id="verification-message" style="color: #656D78; font-size: 0.85rem; margin: 0;"></p>
-    </div>
-
-    <div id="reputation-metrics" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #152132; display: none;">
-      <p style="color: #656D78; font-size: 0.85rem; margin: 0.5rem 0;">
-        <strong style="color: #BABDC2;">Solicitudes aceptadas:</strong> <span id="metric-aceptadas">0</span>
-      </p>
-      <p style="color: #656D78; font-size: 0.85rem; margin: 0.5rem 0;">
-        <strong style="color: #BABDC2;">Tasa de aceptación:</strong> <span id="metric-tasa">0</span>%
-      </p>
-    </div>
-  </div>
-
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-num" id="stat-candidates">0</div>
-      <div class="stat-label">candidatos disponibles</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-high-score">0</div>
-      <div class="stat-label">con score +70</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-new">0</div>
-      <div class="stat-label">disponibilidad inmediata</div>
-    </div>
-  </div>
-
-  <!-- FILTERS -->
-  <div class="filters-card">
-    <div class="filters-title">Filtros de búsqueda</div>
-    <div class="filters-grid">
-      <div>
-        <label class="filter-label">Rubro</label>
-        <select id="filter-rubro">
-          <option>Todos los rubros</option>
-        </select>
-      </div>
-      <div>
-        <label class="filter-label">Seniority</label>
-        <select id="filter-seniority">
-          <option>Cualquier nivel</option>
-        </select>
-      </div>
-      <div>
-        <label class="filter-label">Modalidad buscada</label>
-        <select id="filter-modality">
-          <option>Cualquiera</option>
-        </select>
-      </div>
-      <div>
-        <label class="filter-label">Disponibilidad</label>
-        <select id="filter-availability">
-          <option>Cualquiera</option>
-        </select>
-      </div>
-    </div>
-    <label class="filter-label" style="margin-top:12px">Score mínimo: <span class="score-display" id="score-display">0%</span></label>
-    <input type="range" id="filter-score" min="0" max="100" value="0" onchange="updateScoreDisplay()">
-    <button class="btn-filter" onclick="loadCandidates()">Buscar candidatos</button>
-  </div>
-
-  <!-- CANDIDATES -->
-  <div class="section-header">
-    <div class="section-title">Candidatos</div>
-    <div class="results-count" id="results-count">0 resultados</div>
-  </div>
-  <div id="candidates-list"></div>
-
-  <!-- ╔═══════════════════════════════════════════════════════════════
-       ║ MODAL: REPORTAR USUARIO (SESIÓN 5)
-       ╚═══════════════════════════════════════════════════════════════ -->
-  <div id="reportModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,22,40,0.8);z-index:1000;align-items:center;justify-content:center;padding:20px">
-    <div style="background:var(--navy);border:1px solid rgba(143,168,200,0.3);border-radius:16px;padding:32px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">
-      
-      <!-- HEADER -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-        <div style="font-size:20px;font-weight:700;color:var(--white)">Reportar Usuario</div>
-        <button onclick="closeReportModal()" style="background:none;border:none;color:var(--slate);font-size:24px;cursor:pointer;padding:0">✕</button>
-      </div>
-
-      <!-- FORM -->
-      <form id="reportForm" onsubmit="submitReport(event)">
-        
-        <!-- TIPO -->
-        <div style="margin-bottom:20px">
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px">Tipo de reporte *</label>
-          <select id="reportType" required style="width:100%;padding:10px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:8px;color:var(--white);font-size:13px;font-family:inherit">
-            <option value="">Seleccioná...</option>
-            <option value="estafa">Estafa o fraude</option>
-            <option value="inactividad">Inactividad sospechosa</option>
-            <option value="acoso">Acoso o hostigamiento</option>
-            <option value="perfil_falso">Perfil falso</option>
-            <option value="cobranza">Cobranza fuera del sistema</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
-
-        <!-- DESCRIPCIÓN -->
-        <div style="margin-bottom:20px">
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px">Descripción *</label>
-          <textarea id="reportDescription" required placeholder="Explica qué sucedió..." style="width:100%;padding:10px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:8px;color:var(--white);font-size:13px;min-height:100px;resize:vertical;font-family:inherit" maxlength="1000"></textarea>
-          <div style="font-size:11px;color:var(--gray);margin-top:4px" id="charCount">0/1000</div>
-        </div>
-
-        <!-- EVIDENCIA -->
-        <div style="margin-bottom:20px">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="reportHasEvidence" style="cursor:pointer">
-            <span style="font-size:13px;color:var(--white)">Tengo un enlace de evidencia</span>
-          </label>
-          <input type="url" id="reportEvidenceUrl" placeholder="https://..." style="display:none;width:100%;padding:10px;background:var(--navy-mid);border:1px solid rgba(143,168,200,0.3);border-radius:8px;color:var(--white);font-size:13px;margin-top:8px" maxlength="255">
-        </div>
-
-        <!-- AVISO -->
-        <div style="background:rgba(248,113,113,0.1);border-left:3px solid var(--red);padding:12px;border-radius:6px;margin-bottom:20px;font-size:12px;color:var(--gray)">
-          ⚠ Los reportes falsos pueden resultar en la suspensión de tu cuenta.
-        </div>
-
-        <!-- BOTONES -->
-        <div style="display:flex;gap:12px;justify-content:flex-end">
-          <button type="button" onclick="closeReportModal()" style="padding:8px 16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--white);cursor:pointer;font-family:inherit">Cancelar</button>
-          <button type="submit" id="reportSubmitBtn" style="padding:8px 16px;background:var(--slate);border:none;border-radius:8px;color:var(--navy);font-weight:600;cursor:pointer;font-family:inherit">Enviar Reporte</button>
-        </div>
-
-      </form>
-    </div>
-  </div>
-
-</main>
-
-<!-- MODAL CONTACTO -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h2 class="modal-title">Contactar candidato</h2>
-    <p class="modal-sub">Envía un mensaje personalizado para iniciar la conversación.</p>
-    <div id="modal-msg" class="msg"></div>
-    <div class="modal-field">
-      <label>Candidato</label>
-      <p style="font-size:13px;color:var(--white);margin:0" id="modal-candidate-name"></p>
-    </div>
-    <div class="modal-field">
-      <label>Tu mensaje</label>
-      <textarea id="modal-message" placeholder="Hola, nos interesa tu perfil..."></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-send" id="modal-send-btn" onclick="sendContactRequest()">Enviar solicitud</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ── AUTH & STATE ────────────────────────────────────────────
-const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-const user = JSON.parse(localStorage.getItem('corvus_user') || '{}');
-let currentCandidateId = null;
-let currentPage = 1;
-
-if (!token) {
-  window.location.href = '/login';
-}
-
-// ── INIT ────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('welcome-name').textContent = user.company || user.nombre || 'Recruiter';
-  document.getElementById('nav-company').textContent = user.company || '—';
-  loadRecruiterBadges();
-  loadCandidates();
-  loadChatBadge();
-  // loadVerificationStatus(); // TODO: Implementar /api/profile endpoint
-  if (!localStorage.getItem('corvus_notif_dismissed')) {
-    initializeNotifications();
-  }
-  pollForContactRequests();
-  setInterval(pollForContactRequests, 5000);
-});
-
-// ── CANDIDATES ──────────────────────────────────────────────
-// ── RECRUITER BADGES ───────────────────────────────────────
-async function loadRecruiterBadges() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  if (!token) return;
-
-  try {
-    const res = await fetch('/api/profile', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    const badges = data.badges || [];
-
-    const container = document.getElementById('recruiter-badges-container');
-    if (!container) return;
-
-    container.innerHTML = badges.map(badge => `
-      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(${hexToRgb(badge.color)},0.1);border:1px solid ${badge.color};border-radius:20px;font-size:12px;font-weight:600;color:${badge.color}">
-        <span style="font-size:14px">${badge.icon}</span>
-        <span>${badge.name}</span>
-      </div>
-    `).join('');
-  } catch (err) {
-    console.error('Error loading recruiter badges:', err);
-  }
-}
-
-async function loadCandidates() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  const rubro = document.getElementById('filter-rubro').value;
-  const seniority = document.getElementById('filter-seniority').value;
-  const modality = document.getElementById('filter-modality').value;
-  const availability = document.getElementById('filter-availability').value;
-  const score = document.getElementById('filter-score').value;
-
-  document.getElementById('candidates-list').innerHTML = '<div class="loading">Buscando candidatos...</div>';
-
-  try {
-    const params = new URLSearchParams({
-      rubro: rubro !== 'Todos los rubros' ? rubro : '',
-      seniority: seniority !== 'Cualquier nivel' ? seniority : '',
-      modality: modality !== 'Cualquiera' ? modality : '',
-      availability: availability !== 'Cualquiera' ? availability : '',
-      score: score,
-      limit: 20
-    });
-
-    const res = await fetch(`/api/candidates?${params}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-
-    if (!data.candidates || data.candidates.length === 0) {
-      document.getElementById('candidates-list').innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>No se encontraron candidatos</p><span>Intenta ajustar los filtros</span></div>';
-      document.getElementById('results-count').textContent = '0 resultados';
-      return;
-    }
-
-    document.getElementById('results-count').textContent = `${data.candidates.length} resultados`;
-    document.getElementById('stat-candidates').textContent = data.candidates.length;
-
-    const html = data.candidates.map(c => `
-      <div class="candidate-card">
-        <div class="candidate-top">
-          <div class="candidate-avatar">${getInitials(c.nombre, c.apellido)}</div>
-          <div class="candidate-info">
-            <div class="candidate-name">${c.nombre} ${c.apellido}</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;min-height:20px">
-              ${(c.badges || []).map(b => `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:rgba(${hexToRgb(b.color)},0.15);border:1px solid ${b.color};border-radius:12px;font-size:11px;font-weight:600;color:${b.color}"><span style="font-size:11px">${b.icon}</span>${b.name}</span>`).join('')}
+    <!-- HEADER -->
+    <header>
+        <h1>🦅 Corvus Talent</h1>
+        <div style="display: flex; align-items: center;">
+            <div class="user-info">
+                <strong id="user-name">Recruiter</strong><br>
+                <small id="user-company">Empresa</small>
             </div>
-            <div class="candidate-meta">${c.seniority || '—'} • ${c.ubicacion || '—'}</div>
-          </div>
-          <div class="candidate-score">
-            <div class="score-num" style="color:${getSscoreColor(c.score)}">${c.score || 0}%</div>
-            <div class="score-label">match</div>
-          </div>
+            <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
         </div>
-        <div class="candidate-tags">
-          ${(c.skills || []).slice(0, 3).map(s => `<span class="tag">${s}</span>`).join('')}
+    </header>
+
+    <!-- CORVUS CRAFT CTA -->
+    <div class="corvus-craft-section">
+        <div>
+            <h3>✦ Corvus Craft</h3>
+            <p>Genera descripciones de puestos de trabajo en segundos</p>
         </div>
-        <div class="candidate-contact">
-          <button class="contact-btn" onclick="openModal('${c.id}', '${c.nombre} ${c.apellido}')">📧 Contactar</button>
-          <a href="/cv?id=${c.id}" class="contact-btn">📄 Ver CV</a>
-          <a href="https://linkedin.com/in/${c.linkedin || ''}" class="contact-btn" target="_blank">in LinkedIn</a>
-          <button class="contact-btn" onclick="openReportModal('${c.id}')" style="color:var(--red);">🚩 Reportar</button>
+        <a href="/corvus-craft" style="text-decoration: none;">
+            <button class="corvus-craft-btn">Ir a Corvus Craft →</button>
+        </a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number" id="stat-candidates">—</div>
+            <div class="label">Candidatos Disponibles</div>
         </div>
-      </div>
-    `).join('');
+        <div class="stat-card">
+            <div class="number" id="stat-high-score">—</div>
+            <div class="label">Score +70 (CV Match)</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="stat-available">—</div>
+            <div class="label">Disponibilidad Inmediata</div>
+        </div>
+    </div>
 
-    document.getElementById('candidates-list').innerHTML = html;
-  } catch(e) {
-    document.getElementById('candidates-list').innerHTML = '<div class="empty-state"><p>Error cargando candidatos</p></div>';
-  }
-}
+    <!-- TABS -->
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="selectTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-button" onclick="selectTab('candidatos')">👥 Candidatos</button>
+            <button class="tab-button" onclick="selectTab('enviadas')">📤 Solicitudes Enviadas</button>
+            <button class="tab-button" onclick="selectTab('mensajes')">💬 Mensajes</button>
+            <button class="tab-button" onclick="selectTab('perfil')">⚙️ Mi Perfil</button>
+        </div>
 
-function getSscoreColor(score) {
-  if (score >= 80) return '#4ADE80';
-  if (score >= 60) return '#FBBF24';
-  return '#F87171';
-}
+        <div class="tabs-content">
+            <!-- TAB: DASHBOARD -->
+            <div class="tab-pane active" id="tab-dashboard">
+                <h2>Resumen de Actividad</h2>
+                <div class="alert" id="alert-dashboard"></div>
+                
+                <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+                    <h3 style="color: #0a1628; margin-bottom: 1rem;">📋 Próximos Pasos</h3>
+                    <ul style="list-style: none; line-height: 1.8;">
+                        <li>✅ Ve a la pestaña <strong>Candidatos</strong> para ver talento disponible</li>
+                        <li>✅ Usa los filtros para encontrar candidatos que coincidan con tu búsqueda</li>
+                        <li>✅ Envía solicitudes de contacto para conectar con los candidatos</li>
+                        <li>✅ Mantén conversaciones en la pestaña <strong>Mensajes</strong></li>
+                        <li>✅ Usa <strong>Corvus Craft</strong> para generar descripciones de puesto</li>
+                    </ul>
+                </div>
 
-function getInitials(nombre, apellido) {
-  return ((nombre ? nombre[0] : '') + (apellido ? apellido[0] : '')).toUpperCase();
-}
+                <div id="dashboard-stats" style="margin-top: 2rem;">
+                    <!-- Stats dinámicos aquí -->
+                </div>
+            </div>
 
-function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
-}
+            <!-- TAB: CANDIDATOS -->
+            <div class="tab-pane" id="tab-candidatos">
+                <div class="alert" id="alert-candidatos"></div>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Rubro</label>
+                        <select id="filter-rubro" onchange="applyFilters()">
+                            <option value="">Todos</option>
+                            <option value="IT">IT</option>
+                            <option value="Finanzas">Finanzas</option>
+                            <option value="RRHH">RRHH</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Seniority</label>
+                        <select id="filter-seniority" onchange="applyFilters()">
+                            <option value="">Todos</option>
+                            <option value="Junior">Junior</option>
+                            <option value="Semi-Senior">Semi-Senior</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Lead">Lead</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Modalidad</label>
+                        <select id="filter-modalidad" onchange="applyFilters()">
+                            <option value="">Todas</option>
+                            <option value="Remoto">100% Remoto</option>
+                            <option value="Presencial">Presencial</option>
+                            <option value="Híbrido">Híbrido</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Disponibilidad</label>
+                        <select id="filter-disponibilidad" onchange="applyFilters()">
+                            <option value="">Cualquiera</option>
+                            <option value="Inmediata">Inmediata</option>
+                            <option value="1mes">En 1 mes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Score Mínimo (CV Match)</label>
+                        <select id="filter-score" onchange="applyFilters()">
+                            <option value="0">Cualquiera</option>
+                            <option value="50">50+</option>
+                            <option value="70">70+</option>
+                            <option value="80">80+</option>
+                        </select>
+                    </div>
+                </div>
 
-function updateScoreDisplay() {
-  const val = document.getElementById('filter-score').value;
-  document.getElementById('score-display').textContent = val + '%';
-}
+                <div id="candidates-list" class="candidates-list">
+                    <div class="empty-state">
+                        <div class="icon">👥</div>
+                        <p>Cargando candidatos...</p>
+                    </div>
+                </div>
+            </div>
 
-// ── MODAL ───────────────────────────────────────────────────
-function openModal(candidateId, candidateName) {
-  currentCandidateId = candidateId;
-  document.getElementById('modal-candidate-name').textContent = candidateName;
-  document.getElementById('modal-message').value = '';
-  document.getElementById('modal-msg').innerHTML = '';
-  document.getElementById('modal').classList.add('visible');
-}
+            <!-- TAB: SOLICITUDES ENVIADAS -->
+            <div class="tab-pane" id="tab-enviadas">
+                <div class="alert" id="alert-enviadas"></div>
+                <div id="solicitudes-list" class="candidates-list">
+                    <div class="empty-state">
+                        <div class="icon">📤</div>
+                        <p>No has enviado solicitudes de contacto</p>
+                    </div>
+                </div>
+            </div>
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('visible');
-}
+            <!-- TAB: MENSAJES -->
+            <div class="tab-pane" id="tab-mensajes">
+                <div class="alert" id="alert-mensajes"></div>
+                <div id="mensajes-list" class="candidates-list">
+                    <div class="empty-state">
+                        <div class="icon">💬</div>
+                        <p>No hay mensajes. Cuando un candidato acepte tu solicitud, podrán comunicarse aquí.</p>
+                    </div>
+                </div>
+            </div>
 
-async function sendContactRequest() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  const message = document.getElementById('modal-message').value;
-  const sendBtn = document.getElementById('modal-send-btn');
+            <!-- TAB: MI PERFIL -->
+            <div class="tab-pane" id="tab-perfil">
+                <div class="alert" id="alert-perfil"></div>
+                <form onsubmit="saveRecruiterPerfil(event)">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="profile-nombre" required>
+                    </div>
 
-  if (!message.trim()) {
-    alert('Por favor escribe un mensaje');
-    return;
-  }
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="profile-email" disabled>
+                    </div>
 
-  sendBtn.disabled = true;
-  sendBtn.textContent = 'Enviando...';
+                    <div class="form-group">
+                        <label>Empresa</label>
+                        <input type="text" id="profile-empresa">
+                    </div>
 
-  try {
-    const res = await fetch('/api/moderation', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({action: 'send_contact_request', candidate_id: currentCandidateId, message: message})
-    });
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="profile-telefono">
+                    </div>
 
-    const data = await res.json();
+                    <div class="form-group">
+                        <label>Descripción de la Empresa</label>
+                        <textarea id="profile-descripcion" placeholder="Cuéntanos sobre tu empresa, qué buscan, cultura, etc."></textarea>
+                    </div>
 
-    if (res.ok) {
-      const el = document.getElementById('modal-msg');
-      el.textContent = '✓ Solicitud enviada correctamente.';
-      el.className = 'msg success';
-      setTimeout(closeModal, 2000);
-    } else {
-      const el = document.getElementById('modal-msg');
-      el.textContent = data.error || 'Error al enviar.';
-      el.className = 'msg error';
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Enviar solicitud';
-    }
-  } catch(e) {
-    const el = document.getElementById('modal-msg');
-    el.textContent = 'Error de conexión.';
-    el.className = 'msg error';
-    sendBtn.disabled = false;
-    sendBtn.textContent = 'Enviar solicitud';
-  }
-}
+                    <button type="submit">💾 Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-// ── LOGOUT ──────────────────────────────────────────────────
-function logout() {
-  localStorage.removeItem('corvus_token');
-  localStorage.removeItem('corvus_user');
-  window.location.href = '/';
-}
+    <!-- MODAL: ENVIAR SOLICITUD -->
+    <div class="modal" id="request-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h2>Enviar Solicitud a <span id="modal-candidate-name"></span></h2>
+            
+            <form onsubmit="sendRequest(event)">
+                <div class="form-group">
+                    <label>Mensaje (opcional)</label>
+                    <textarea id="request-message" placeholder="Hola, me interesa tu perfil porque..."></textarea>
+                </div>
 
-// ── CHAT BADGE ──────────────────────────────────────────────
-async function loadChatBadge() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  try {
-    const res = await fetch('/api/chat', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-    const total = (data.conversations || []).reduce((s, c) => s + (c.unread || 0), 0);
-    if (total > 0) {
-      const badge = document.getElementById('chat-badge');
-      badge.style.display = 'inline';
-      badge.textContent = total;
-    }
-  } catch(e) {}
-}
+                <div class="form-group">
+                    <label>Empresa</label>
+                    <input type="text" id="request-company" required>
+                </div>
 
-// ── VERIFICACIÓN DE EMAIL ──────────────────────────────────
-async function loadVerificationStatus() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  if (!token) return;
+                <button type="submit" style="width: 100%;">Enviar Solicitud</button>
+            </form>
+        </div>
+    </div>
 
-  try {
-    const res = await fetch('/api/verify-corporate-email', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
+    <script>
+        let globalToken = localStorage.getItem('corvus_token');
+        let currentUser = null;
+        let allCandidates = [];
+        let selectedCandidateId = null;
 
-    const formEl = document.getElementById('verification-form');
-    const statusEl = document.getElementById('verification-status');
-    const metricsEl = document.getElementById('reputation-metrics');
+        // INIT
+        window.addEventListener('load', async () => {
+            if (!globalToken) {
+                window.location.href = '/auth';
+                return;
+            }
 
-    if (data.corporate_email_verified) {
-      formEl.style.display = 'none';
-      statusEl.style.display = 'block';
-      document.getElementById('verified-email').textContent = `${data.corporate_email}`;
-      metricsEl.style.display = 'block';
-      document.getElementById('metric-aceptadas').textContent = data.solicitudes_aceptadas;
-      document.getElementById('metric-tasa').textContent = data.tasa_aceptacion;
-    } else if (data.corporate_email) {
-      document.getElementById('corporate-email-input').value = data.corporate_email;
-    }
-  } catch (err) {
-    console.error('Error loading verification status:', err);
-  }
-}
+            await loadRecruiterProfile();
+            loadCandidates();
+            loadSolicitudes();
+            loadMensajes();
+        });
 
-async function sendVerification() {
-  const email = document.getElementById('corporate-email-input').value;
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  const msgEl = document.getElementById('verification-message');
+        // LOAD RECRUITER PROFILE
+        async function loadRecruiterProfile() {
+            try {
+                const response = await fetch('/api/profile', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
+                });
 
-  if (!email || !email.includes('@')) {
-    msgEl.textContent = '❌ Ingresa un email válido';
-    return;
-  }
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('corvus_token');
+                        window.location.href = '/auth';
+                    }
+                    throw new Error('No se pudo cargar el perfil');
+                }
 
-  try {
-    const res = await fetch('/api/verify-corporate-email', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ action: 'send-verification', email })
-    });
-    const data = await res.json();
+                currentUser = await response.json();
+                console.log('[RECRUITER DASHBOARD] User loaded:', currentUser.email);
 
-    if (res.ok) {
-      msgEl.textContent = `✓ Email enviado a ${email}. Revisa tu inbox.`;
-      msgEl.style.color = '#4CAF50';
-    } else {
-      msgEl.textContent = `❌ ${data.error || 'Error enviando email'}`;
-      msgEl.style.color = '#F44336';
-    }
-  } catch (err) {
-    msgEl.textContent = '❌ Error enviando verificación';
-    console.error(err);
-  }
-}
+                // POPULATE UI
+                document.getElementById('user-name').textContent = currentUser.nombre || 'Recruiter';
+                document.getElementById('user-company').textContent = currentUser.company || 'Empresa';
 
-// ── NOTIFICACIONES ──────────────────────────────────────────
-function initializeNotifications() {
-  if ('Notification' in window && Notification.permission === 'default') {
-    const notifBanner = document.createElement('div');
-    notifBanner.id = 'notificationBanner';
-    notifBanner.style.cssText = `
-      background: rgba(143, 168, 200, 0.1);
-      border: 1px solid #8FA8C8;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    `;
-    notifBanner.innerHTML = `
-      <p style="color: #BABDC2; flex: 1;">Activa notificaciones para saber cuándo un candidato acepta tu solicitud.</p>
-      <button id="enableNotifBtn" style="padding: 0.5rem 1rem; background: #8FA8C8; color: #0A1628; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">Activar</button>
-      <button id="dismissNotifBtn" style="padding: 0.5rem 1rem; background: transparent; color: #8FA8C8; border: 1px solid #8FA8C8; border-radius: 4px; font-weight: 600; cursor: pointer;">Descartar</button>
-    `;
-    
-    const mainSection = document.querySelector('main');
-    if (mainSection) {
-      mainSection.parentElement.insertBefore(notifBanner, mainSection);
-    }
-
-    document.getElementById('enableNotifBtn').addEventListener('click', () => {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          notifBanner.remove();
+                // POPULATE FORM
+                document.getElementById('profile-nombre').value = currentUser.nombre || '';
+                document.getElementById('profile-email').value = currentUser.email || '';
+                document.getElementById('profile-empresa').value = currentUser.company || '';
+                document.getElementById('profile-telefono').value = currentUser.telefono || '';
+                document.getElementById('profile-descripcion').value = currentUser.descripcion || '';
+            } catch (error) {
+                console.error('[RECRUITER DASHBOARD] Error loading profile:', error);
+                showAlert('alert-perfil', 'Error al cargar el perfil', 'error');
+            }
         }
-      });
-    });
 
-    document.getElementById('dismissNotifBtn').addEventListener('click', () => {
-      notifBanner.remove();
-      localStorage.setItem('corvus_notif_dismissed', 'true');
-    });
-  }
-}
+        // LOAD CANDIDATES
+        async function loadCandidates() {
+            try {
+                const response = await fetch('/api/candidates', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
+                });
 
-let lastSolicitudStates = {};
+                if (!response.ok) {
+                    showAlert('alert-candidatos', 'Error al cargar candidatos', 'error');
+                    return;
+                }
 
-async function pollForContactRequests() {
-  const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-  try {
-    const res = await fetch('/api/moderation?type=sent', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    const solicitudes = data.requests || [];
+                allCandidates = await response.json();
+                console.log('[RECRUITER DASHBOARD] Candidates loaded:', allCandidates.length);
 
-    solicitudes.forEach(sol => {
-      const key = sol.id;
-      const lastState = lastSolicitudStates[key];
-      
-      if (lastState && lastState.status !== 'accepted' && sol.status === 'accepted') {
-        showAcceptanceNotification(sol);
-      }
+                renderCandidates(allCandidates);
+                updateStats();
+            } catch (error) {
+                console.error('[RECRUITER DASHBOARD] Error loading candidates:', error);
+                showAlert('alert-candidatos', 'Error al cargar candidatos', 'error');
+            }
+        }
 
-      lastSolicitudStates[key] = { status: sol.status };
-    });
-  } catch (err) {
-    console.error('Error polling contact requests:', err);
-  }
-}
+        // RENDER CANDIDATES
+        function renderCandidates(candidates) {
+            const container = document.getElementById('candidates-list');
 
-function showAcceptanceNotification(solicitud) {
-  const candidateName = solicitud.candidate?.nombre || 'Un candidato';
-  
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('✓ ¡Solicitud aceptada!', {
-      body: `${candidateName} aceptó tu solicitud de contacto. Podés empezar a chatear.`,
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
-      tag: 'acceptance-' + solicitud.id,
-      requireInteraction: true
-    }).addEventListener('click', () => {
-      window.location.href = '/chat/';
-    });
-  }
+            if (!candidates || candidates.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>No hay candidatos disponibles</p></div>';
+                return;
+            }
 
-  playNotificationSound();
-}
+            container.innerHTML = candidates.map(c => `
+                <div class="candidate-card">
+                    <div class="candidate-info">
+                        <h3>${c.nombre || 'Candidato'}</h3>
+                        <small>${c.rubro || 'Rubro no especificado'} • ${c.seniority || 'Seniority no especificado'}</small>
+                        <small>${c.provincia || 'Ubicación'}, ${c.pais || 'País'}</small>
+                        <div class="candidate-tags">
+                            ${c.modalidad ? `<span class="tag">${c.modalidad}</span>` : ''}
+                            ${c.disponibilidad ? `<span class="tag available">${c.disponibilidad}</span>` : ''}
+                            ${c.cv_fit_score && c.cv_fit_score >= 70 ? `<span class="tag high-score">Score ${c.cv_fit_score}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="candidate-actions">
+                        ${c.cv_fit_score ? `
+                            <div class="score-box">
+                                <div class="number">${c.cv_fit_score}</div>
+                                <div class="label">CV Match</div>
+                            </div>
+                        ` : ''}
+                        <button class="btn-secondary btn-small" onclick="openRequestModal('${c.id}', '${c.nombre || 'Candidato'}')">📬 Contactar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-function playNotificationSound() {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
+        // APPLY FILTERS
+        function applyFilters() {
+            const rubro = document.getElementById('filter-rubro').value;
+            const seniority = document.getElementById('filter-seniority').value;
+            const modalidad = document.getElementById('filter-modalidad').value;
+            const disponibilidad = document.getElementById('filter-disponibilidad').value;
+            const score = parseInt(document.getElementById('filter-score').value);
 
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
+            const filtered = allCandidates.filter(c => {
+                if (rubro && c.rubro !== rubro) return false;
+                if (seniority && c.seniority !== seniority) return false;
+                if (modalidad && c.modalidad !== modalidad) return false;
+                if (disponibilidad && c.disponibilidad !== disponibilidad) return false;
+                if (score > 0 && (!c.cv_fit_score || c.cv_fit_score < score)) return false;
+                return true;
+            });
 
-  oscillator.frequency.value = 800;
-  oscillator.type = 'sine';
+            renderCandidates(filtered);
+        }
 
-  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        // UPDATE STATS
+        function updateStats() {
+            const total = allCandidates.length;
+            const highScore = allCandidates.filter(c => c.cv_fit_score >= 70).length;
+            const available = allCandidates.filter(c => c.disponibilidad === 'Inmediata').length;
 
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.5);
-}
+            document.getElementById('stat-candidates').textContent = total;
+            document.getElementById('stat-high-score').textContent = highScore;
+            document.getElementById('stat-available').textContent = available;
+        }
 
-// ── REPORTES (SESIÓN 5) ──────────────────────────────────────
-let reportedUserId = null;
-let reportConversationId = null;
+        // OPEN REQUEST MODAL
+        function openRequestModal(candidateId, candidateName) {
+            selectedCandidateId = candidateId;
+            document.getElementById('modal-candidate-name').textContent = candidateName;
+            document.getElementById('request-message').value = '';
+            document.getElementById('request-company').value = currentUser.company || '';
+            document.getElementById('request-modal').classList.add('show');
+        }
 
-function openReportModal(userId, conversationId = null) {
-  if (!userId) return; // No abrir si no hay usuario
-  reportedUserId = userId;
-  reportConversationId = conversationId;
-  document.getElementById('reportModal').style.display = 'flex';
-  document.getElementById('reportModal').style.alignItems = 'center';
-  document.getElementById('reportModal').style.justifyContent = 'center';
-  document.body.style.overflow = 'hidden';
-  document.getElementById('reportForm').reset();
-  document.getElementById('charCount').textContent = '0/1000';
-  document.getElementById('reportEvidenceUrl').style.display = 'none';
-}
+        // CLOSE MODAL
+        function closeModal() {
+            document.getElementById('request-modal').classList.remove('show');
+            selectedCandidateId = null;
+        }
 
-function closeReportModal() {
-  document.getElementById('reportModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
-  reportedUserId = null;
-  reportConversationId = null;
-}
+        // SEND REQUEST
+        async function sendRequest(e) {
+            e.preventDefault();
 
-document.getElementById('reportDescription')?.addEventListener('input', function() {
-  document.getElementById('charCount').textContent = this.value.length + '/1000';
-});
+            const data = {
+                candidate_id: selectedCandidateId,
+                message: document.getElementById('request-message').value,
+                company: document.getElementById('request-company').value
+            };
 
-document.getElementById('reportHasEvidence')?.addEventListener('change', function() {
-  const url = document.getElementById('reportEvidenceUrl');
-  url.style.display = this.checked ? 'block' : 'none';
-  if (!this.checked) url.value = '';
-});
+            try {
+                const response = await fetch('/api/moderation', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${globalToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
 
-async function submitReport(e) {
-  e.preventDefault();
-  if (!reportedUserId) return alert('Error: usuario no identificado');
+                if (!response.ok) throw new Error('Error al enviar');
 
-  const type = document.getElementById('reportType').value;
-  const desc = document.getElementById('reportDescription').value;
-  const evidence = document.getElementById('reportHasEvidence').checked ? 
-                   document.getElementById('reportEvidenceUrl').value : null;
+                closeModal();
+                showAlert('alert-candidatos', '✅ Solicitud enviada exitosamente', 'success');
+                loadSolicitudes();
+            } catch (error) {
+                showAlert('alert-candidatos', `❌ ${error.message}`, 'error');
+            }
+        }
 
-  if (!type || desc.length < 10) {
-    return alert('Por favor completa todos los campos');
-  }
+        // LOAD SOLICITUDES
+        async function loadSolicitudes() {
+            try {
+                const response = await fetch('/api/moderation?type=sent', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
+                });
 
-  const btn = document.getElementById('reportSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Enviando...';
+                if (!response.ok) return;
 
-  try {
-    const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-    const res = await fetch('/api/moderation', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        action: 'create_report',
-        reported_user_id: reportedUserId,
-        report_type: type,
-        description: desc,
-        evidence_url: evidence || null,
-        conversation_id: reportConversationId || null
-      })
-    });
+                const solicitudes = await response.json();
+                const container = document.getElementById('solicitudes-list');
 
-    const data = await res.json();
-    if (res.ok) {
-      alert('✓ Reporte enviado. Nuestro equipo lo revisará pronto.');
-      closeReportModal();
-    } else {
-      alert('Error: ' + (data.error || 'No se pudo enviar'));
-    }
-  } catch(err) {
-    console.error(err);
-    alert('Error al enviar el reporte');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Enviar Reporte';
-  }
-}
+                if (!solicitudes || solicitudes.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">📤</div><p>No has enviado solicitudes</p></div>';
+                    return;
+                }
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && document.getElementById('reportModal').style.display === 'flex') {
-    closeReportModal();
-  }
-});
+                container.innerHTML = solicitudes.map(s => `
+                    <div class="candidate-card">
+                        <div class="candidate-info">
+                            <h3>${s.candidate_nombre || 'Candidato'}</h3>
+                            <small>${s.company || 'Empresa'}</small>
+                            <small style="color: #999; font-size: 0.8rem;">Enviada ${new Date(s.created_at).toLocaleDateString()}</small>
+                            ${s.status === 'accepted' ? '<span class="tag available">✅ Aceptada</span>' : ''}
+                            ${s.status === 'rejected' ? '<span class="tag" style="background: #fee2e2; color: #991b1b;">❌ Rechazada</span>' : ''}
+                            ${s.status === 'pending' ? '<span class="tag" style="background: #fef3c7; color: #92400e;">⏳ Pendiente</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('[RECRUITER DASHBOARD] Error loading solicitudes:', error);
+            }
+        }
 
-document.getElementById('reportModal')?.addEventListener('click', function(e) {
-  if (e.target === this) closeReportModal();
-});
+        // LOAD MENSAJES
+        async function loadMensajes() {
+            try {
+                const response = await fetch('/api/chat', {
+                    headers: { 'Authorization': `Bearer ${globalToken}` }
+                });
 
-</script>
+                if (!response.ok) return;
 
+                const mensajes = await response.json();
+                const container = document.getElementById('mensajes-list');
+
+                if (!mensajes || mensajes.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>No hay mensajes</p></div>';
+                    return;
+                }
+
+                container.innerHTML = mensajes.map(m => `
+                    <div style="background: #f9fafb; padding: 1rem; border-radius: 4px; border-left: 4px solid #8fa8c8;">
+                        <strong>${m.de}</strong><br>
+                        <small>${new Date(m.fecha).toLocaleString()}</small><br>
+                        ${m.contenido}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('[RECRUITER DASHBOARD] Error loading mensajes:', error);
+            }
+        }
+
+        // SAVE RECRUITER PROFILE
+        async function saveRecruiterPerfil(e) {
+            e.preventDefault();
+
+            const data = {
+                nombre: document.getElementById('profile-nombre').value,
+                company: document.getElementById('profile-empresa').value,
+                telefono: document.getElementById('profile-telefono').value,
+                descripcion: document.getElementById('profile-descripcion').value
+            };
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${globalToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Error al guardar');
+
+                showAlert('alert-perfil', '✅ Perfil guardado exitosamente', 'success');
+                currentUser = { ...currentUser, ...data };
+            } catch (error) {
+                showAlert('alert-perfil', `❌ ${error.message}`, 'error');
+            }
+        }
+
+        // SELECT TAB
+        function selectTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // SHOW ALERT
+        function showAlert(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `alert show ${type}`;
+            setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        // LOGOUT
+        function logout() {
+            localStorage.removeItem('corvus_token');
+            window.location.href = '/auth';
+        }
+    </script>
 </body>
 </html>

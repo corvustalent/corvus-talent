@@ -6,244 +6,199 @@
     <title>Corvus Fit — Análisis CV vs JD</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-        .container { max-width: 900px; margin: 0 auto; padding: 1rem; }
-        header {
-            background: #0a1628;
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h1 { font-size: 1.8rem; }
-        .user-info { display: flex; gap: 1rem; align-items: center; }
-        .logout-btn {
-            background: #8fa8c8;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .card { background: white; border-radius: 8px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-        .btn { background: #0a1628; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
-        .btn:hover { background: #152132; }
-        .step { display: none; }
-        .step.active { display: block; }
-        .progress-bar { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        .progress-item {
-            flex: 1;
-            height: 8px;
-            background: #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-item.active { background: #8fa8c8; }
-        .input-group { margin-bottom: 1.5rem; }
-        label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
-        input, textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; }
-        textarea { min-height: 150px; resize: vertical; }
-        .file-upload {
-            border: 2px dashed #8fa8c8;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .file-upload.active { background: #eef2f8; }
-        .result { background: #f5f7fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #8fa8c8; }
-        .score { font-size: 2.5rem; font-weight: bold; color: #0a1628; }
-        .matches { background: #d1fae5; padding: 1rem; border-radius: 6px; margin: 1rem 0; }
-        .gaps { background: #fee2e2; padding: 1rem; border-radius: 6px; margin: 1rem 0; }
-        .mejoras { background: #fef3c7; padding: 1rem; border-radius: 6px; margin: 1rem 0; }
-        .loading { text-align: center; padding: 2rem; }
-        .spinner {
-            border: 3px solid #ddd;
-            border-top-color: #8fa8c8;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a1628; color: #babdc2; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        header { text-align: center; margin-bottom: 3rem; }
+        h1 { color: #fff; font-size: 32px; margin-bottom: 0.5rem; }
+        .subtitle { color: #656d78; font-size: 14px; }
+        .form-section { background: #19273b; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; color: #8fa8c8; font-size: 12px; text-transform: uppercase; margin-bottom: 0.5rem; }
+        input, textarea, select { width: 100%; background: #0a1628; border: 1px solid #152132; color: #fff; padding: 0.75rem; border-radius: 4px; font-family: inherit; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #8fa8c8; }
+        button { background: #8fa8c8; color: #0a1628; border: none; padding: 0.75rem 2rem; border-radius: 4px; font-weight: 600; cursor: pointer; }
+        button:hover { background: #a0b8d8; }
+        button.loading { opacity: 0.5; cursor: not-allowed; }
+        .results { background: #19273b; padding: 2rem; border-radius: 8px; display: none; }
+        .results.active { display: block; }
+        .score-bar { background: #0a1628; height: 40px; border-radius: 4px; overflow: hidden; margin-bottom: 2rem; }
+        .score-fill { height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 14px; }
+        .score-fill.high { background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%); }
+        .score-fill.medium { background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%); }
+        .score-fill.low { background: linear-gradient(90deg, #f87171 0%, #dc2626 100%); }
+        .result-section { margin-bottom: 2rem; }
+        .result-section h3 { color: #8fa8c8; font-size: 14px; text-transform: uppercase; margin-bottom: 1rem; }
+        .result-section ul { list-style: none; }
+        .result-section li { padding: 0.75rem; background: #0a1628; margin-bottom: 0.5rem; border-radius: 4px; border-left: 3px solid #152132; }
+        .result-section li.match { border-left-color: #4ade80; color: #4ade80; }
+        .result-section li.gap { border-left-color: #f87171; color: #babdc2; }
+        .result-section li.improvement { border-left-color: #fbbf24; color: #babdc2; }
+        .error { color: #f87171; font-size: 12px; margin-top: 0.5rem; }
+        .limit-info { color: #656d78; font-size: 12px; margin-top: 1rem; }
+        .nav { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .nav a { color: #8fa8c8; text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; }
+        .nav a:hover { background: #19273b; }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="nav">
+            <a href="/dashboard/candidato/">← Volver</a>
+            <a href="#" onclick="logout(); return false;">Salir</a>
+        </div>
+
         <header>
-            <h1>📊 Corvus Fit</h1>
-            <div class="user-info">
-                <span id="user-name">Cargando...</span>
-                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-            </div>
+            <h1>🧩 Corvus Fit</h1>
+            <p class="subtitle">Análisis de compatibilidad entre tu CV y una oferta de trabajo</p>
         </header>
 
-        <div class="card">
-            <h2>Análisis CV vs Job Description</h2>
-            <p style="color: #666; margin-bottom: 1.5rem;">Compara tu CV con la oferta y obtén un score de compatibilidad.</p>
-            
-            <div class="progress-bar">
-                <div class="progress-item active"></div>
-                <div class="progress-item" id="progress-2"></div>
-                <div class="progress-item" id="progress-3"></div>
+        <div class="form-section">
+            <form onsubmit="handleAnalyze(event)">
+                <div class="form-group">
+                    <label>Tu CV (texto plano)</label>
+                    <textarea id="cvInput" placeholder="Pega aquí tu CV... Experiencia, habilidades, proyectos, etc." rows="8" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Título del puesto</label>
+                    <input type="text" id="jobTitle" placeholder="Ej: Senior Backend Developer" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción de la oferta</label>
+                    <textarea id="jobDescription" placeholder="Pega aquí la descripción completa del puesto..." rows="8" required></textarea>
+                </div>
+
+                <button type="submit" id="analyzeBtn">Analizar Compatibilidad</button>
+                <div id="analyzeError" class="error"></div>
+                <p class="limit-info">Límite: 2 análisis por día. Usos hoy: <span id="usageCount">0</span>/2</p>
+            </form>
+        </div>
+
+        <div id="resultsSection" class="results">
+            <h2 style="color: #fff; margin-bottom: 2rem;">Resultados del análisis</h2>
+
+            <div class="result-section">
+                <div class="score-bar">
+                    <div id="scoreFill" class="score-fill high" style="width: 0%;">0/100</div>
+                </div>
+                <p style="color: #656d78; font-size: 13px; margin-bottom: 1rem;">Tu compatibilidad con este puesto</p>
             </div>
 
-            <div class="step active" id="step-1">
-                <h3>Paso 1: Sube tu CV</h3>
-                <div class="input-group">
-                    <div class="file-upload" onclick="document.getElementById('cv-input').click()">
-                        <p>📄 Arrastra tu CV aquí o haz clic para seleccionar</p>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">PDF o TXT (máx 10MB)</p>
-                        <input type="file" id="cv-input" style="display: none;" accept=".pdf,.txt">
-                    </div>
-                    <p id="cv-filename" style="margin-top: 1rem; color: #666;"></p>
-                </div>
-                <button class="btn" onclick="nextStep(2)" id="btn-step-1">Siguiente →</button>
+            <div class="result-section">
+                <h3>✓ Lo que coincide</h3>
+                <ul id="matchesList"></ul>
             </div>
 
-            <div class="step" id="step-2">
-                <h3>Paso 2: Job Description</h3>
-                <div class="input-group">
-                    <label>Título del Puesto</label>
-                    <input type="text" id="job-title" placeholder="Ej: Senior Full Stack Developer">
-                </div>
-                <div class="input-group">
-                    <label>Descripción de la Oferta</label>
-                    <textarea id="job-description" placeholder="Pega aquí la descripción completa del puesto..."></textarea>
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button class="btn" onclick="prevStep(1)">← Anterior</button>
-                    <button class="btn" onclick="nextStep(3)">Siguiente →</button>
-                </div>
+            <div class="result-section">
+                <h3>⚠️ Lo que falta</h3>
+                <ul id="gapsList"></ul>
             </div>
 
-            <div class="step" id="step-3">
-                <h3>Paso 3: Análisis</h3>
-                <p style="color: #666; margin-bottom: 1.5rem;">Revisamos tu compatibilidad...</p>
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 1rem; color: #666;">Analizando CV y Job Description...</p>
-                </div>
-                <div id="results" style="display: none;"></div>
+            <div class="result-section">
+                <h3>💡 Mejoras para la entrevista</h3>
+                <ul id="mejoras List"></ul>
             </div>
+
+            <button onclick="resetForm()" style="width: 100%; margin-top: 2rem;">Nuevo análisis</button>
         </div>
     </div>
 
     <script>
-        let cvContent = '';
-        let userToken = null;
+        const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+        if (!token) window.location.href = '/auth/';
 
-        window.addEventListener('load', () => {
-            userToken = localStorage.getItem('corvus_token');
-            if (!userToken || userToken.trim() === '') {
-                console.log('[CORVUS-FIT] No token, redirecting to /auth');
-                window.location.href = '/auth';
+        function getUsageCount() {
+            const today = new Date().toISOString().split('T')[0];
+            const key = `corvus_fit_usage_${today}`;
+            return parseInt(localStorage.getItem(key) || '0');
+        }
+
+        function incrementUsageCount() {
+            const today = new Date().toISOString().split('T')[0];
+            const key = `corvus_fit_usage_${today}`;
+            const count = getUsageCount();
+            localStorage.setItem(key, (count + 1).toString());
+        }
+
+        document.getElementById('usageCount').textContent = getUsageCount();
+
+        async function handleAnalyze(e) {
+            e.preventDefault();
+            const cv = document.getElementById('cvInput').value;
+            const job_title = document.getElementById('jobTitle').value;
+            const job_description = document.getElementById('jobDescription').value;
+            const btn = document.getElementById('analyzeBtn');
+            const errorDiv = document.getElementById('analyzeError');
+
+            if (getUsageCount() >= 2) {
+                errorDiv.textContent = 'Límite diario alcanzado. Vuelve mañana.';
                 return;
             }
-            console.log('[CORVUS-FIT] Logged in as:', userToken);
-            document.getElementById('user-name').textContent = userToken.split('@')[0];
-            setupFileInput();
-        });
 
-        function setupFileInput() {
-            const input = document.getElementById('cv-input');
-            const upload = document.querySelector('.file-upload');
-            
-            input.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    document.getElementById('cv-filename').textContent = `✅ ${file.name}`;
-                    upload.classList.add('active');
-                    const reader = new FileReader();
-                    reader.onload = (evt) => { cvContent = evt.target.result; };
-                    reader.readAsText(file);
-                }
-            });
-        }
+            btn.classList.add('loading');
+            errorDiv.textContent = '';
 
-        function nextStep(n) {
-            if (n === 2 && !cvContent) {
-                alert('Sube tu CV primero');
-                return;
-            }
-            if (n === 3) {
-                if (!document.getElementById('job-title').value || !document.getElementById('job-description').value) {
-                    alert('Completa título y descripción');
-                    return;
-                }
-                runAnalysis();
-            }
-            showStep(n);
-        }
-
-        function prevStep(n) { showStep(n); }
-
-        function showStep(n) {
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById(`step-${n}`).classList.add('active');
-            document.querySelectorAll('.progress-item').forEach((p, i) => {
-                if (i + 1 <= n) p.classList.add('active');
-                else p.classList.remove('active');
-            });
-        }
-
-        async function runAnalysis() {
-            const title = document.getElementById('job-title').value;
-            const jd = document.getElementById('job-description').value;
-            
             try {
-                const response = await fetch('/api/fit', {
+                const res = await fetch('/api/corvus', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userToken}`
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ cv: cvContent, job_title: title, job_description: jd })
+                    body: JSON.stringify({
+                        action: 'analyze_fit',
+                        cv,
+                        job_title,
+                        job_description
+                    })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    displayResults(result);
-                } else {
-                    document.getElementById('loading').innerHTML = '<p style="color: #991b1b;">Error en el análisis</p>';
-                }
-            } catch (error) {
-                console.error('[ANALYSIS]:', error);
-                document.getElementById('loading').innerHTML = '<p style="color: #991b1b;">Error de conexión</p>';
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                renderResults(data);
+                incrementUsageCount();
+                document.getElementById('usageCount').textContent = getUsageCount();
+            } catch (err) {
+                errorDiv.textContent = err.message;
+            } finally {
+                btn.classList.remove('loading');
             }
         }
 
-        function displayResults(data) {
-            document.getElementById('loading').style.display = 'none';
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.style.display = 'block';
-            resultsDiv.innerHTML = `
-                <div class="result">
-                    <h3 style="margin-bottom: 1rem;">Tu Score: <span class="score">${data.score || 75}%</span></h3>
-                    
-                    <h4>✅ Coincidencias:</h4>
-                    <div class="matches">${(data.matches || ['Skills técnicos alineados', 'Experiencia relevante']).join('<br>')}</div>
-                    
-                    <h4>❌ Brechas:</h4>
-                    <div class="gaps">${(data.gaps || ['Experiencia en tecnología X', 'Años de experiencia']).join('<br>')}</div>
-                    
-                    <h4>💡 Mejoras para Entrevista:</h4>
-                    <div class="mejoras">${(data.mejoras || ['Preparar ejemplos de proyectos', 'Practicar respuestas técnicas']).join('<br>')}</div>
-                </div>
-            `;
+        function renderResults(data) {
+            const score = data.score || 0;
+            const scoreClass = score >= 70 ? 'high' : score >= 50 ? 'medium' : 'low';
+            
+            document.getElementById('scoreFill').className = `score-fill ${scoreClass}`;
+            document.getElementById('scoreFill').style.width = score + '%';
+            document.getElementById('scoreFill').textContent = `${score}/100`;
+
+            renderList('matchesList', data.matches || [], 'match');
+            renderList('gapsList', data.gaps || [], 'gap');
+            renderList('mejorasList', data.mejoras || [], 'improvement');
+
+            document.getElementById('resultsSection').classList.add('active');
+        }
+
+        function renderList(elementId, items, className) {
+            const list = document.getElementById(elementId);
+            list.innerHTML = items.map(item => `<li class="${className}">• ${item}</li>`).join('');
+        }
+
+        function resetForm() {
+            document.getElementById('cvInput').value = '';
+            document.getElementById('jobTitle').value = '';
+            document.getElementById('jobDescription').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+            document.getElementById('analyzeError').textContent = '';
         }
 
         function logout() {
             localStorage.removeItem('corvus_token');
-            window.location.href = '/auth';
+            sessionStorage.removeItem('corvus_token');
+            window.location.href = '/auth/';
         }
     </script>
 </body>

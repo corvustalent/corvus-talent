@@ -1,13 +1,14 @@
-// Script compartido — maneja el estado de auth en el nav
+// /auth-nav.js — Verificación de auth + nav rendering + inactividad (Sesión 19 MEJORADO)
 (function() {
   const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutos
   const ACTIVITY_KEY = 'corvus_last_activity';
 
   function getUser() {
     try {
-      const raw = localStorage.getItem('corvus_user') || sessionStorage.getItem('corvus_user');
       const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
-      if (!raw || !token) return null;
+      const raw = localStorage.getItem('corvus_user') || sessionStorage.getItem('corvus_user');
+      if (!token) return null;
+      if (!raw) return { token }; // Token pero sin datos de user
       return { user: JSON.parse(raw), token };
     } catch(e) { return null; }
   }
@@ -18,28 +19,38 @@
     sessionStorage.removeItem('corvus_token');
     sessionStorage.removeItem('corvus_user');
     localStorage.removeItem(ACTIVITY_KEY);
-    window.location.href = '/';
+    window.location.href = '/auth';
   }
 
-  // Check inactivity
+  // Verificación de inactividad
   function checkInactivity() {
     const last = parseInt(localStorage.getItem(ACTIVITY_KEY) || '0');
     if (last && Date.now() - last > INACTIVITY_LIMIT) {
+      console.log('[AUTH-NAV] Inactivity timeout, logging out');
       logout();
     }
   }
 
-  // Update activity timestamp
+  // Actualizar timestamp de actividad
   function updateActivity() {
     localStorage.setItem(ACTIVITY_KEY, Date.now().toString());
   }
 
+  // Verificación principal: si hay token, permite acceso
   const session = getUser();
-  const authArea = document.getElementById('nav-auth-area');
-  if (!authArea) return;
+  
+  if (!session || !session.token) {
+    console.log('[AUTH-NAV] No token found, redirecting to /auth');
+    window.location.href = '/auth';
+    return;
+  }
 
-  if (session) {
-    // Si es sesión temporal, limpiar al cerrar el navegador
+  console.log('[AUTH-NAV] Token verified, user logged in:', session.token.split('@')[0]);
+
+  // Usuario logueado: configurar nav + inactividad
+  const authArea = document.getElementById('nav-auth-area');
+  
+  // Limpiar sesión temporal al cerrar navegador
   if (localStorage.getItem('corvus_session_temp') === '1') {
     window.addEventListener('beforeunload', () => {
       localStorage.removeItem('corvus_token');
@@ -49,22 +60,24 @@
     });
   }
 
-  // Check inactivity on page load
-    checkInactivity();
-    updateActivity();
+  // Verificar inactividad
+  checkInactivity();
+  updateActivity();
 
-    // Track activity
-    ['click','keydown','mousemove','touchstart'].forEach(evt => {
-      document.addEventListener(evt, updateActivity, { passive: true });
-    });
+  // Rastrear actividad del usuario
+  ['click', 'keydown', 'mousemove', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, updateActivity, { passive: true });
+  });
 
-    // Check every minute
-    setInterval(checkInactivity, 60 * 1000);
+  // Verificar inactividad cada minuto
+  setInterval(checkInactivity, 60 * 1000);
 
+  // Renderizar nav si existe el elemento
+  if (authArea) {
     const { user } = session;
-    const initial = user.nombre ? user.nombre[0].toUpperCase() : user.email?.[0]?.toUpperCase() || '?';
-    const dashUrl = user.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidato';
-    const displayName = user.nombre || user.email?.split('@')[0] || 'Mi cuenta';
+    const initial = user?.nombre ? user.nombre[0].toUpperCase() : session.token.split('@')[0][0].toUpperCase() || '?';
+    const dashUrl = user?.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidato';
+    const displayName = user?.nombre || session.token.split('@')[0] || 'Mi cuenta';
 
     authArea.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px">
@@ -75,7 +88,5 @@
         <button onclick="(${logout.toString()})()" style="background:none;border:1px solid rgba(143,168,200,0.2);border-radius:6px;padding:5px 10px;color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;font-family:inherit">Salir</button>
       </div>
     `;
-  } else {
-    authArea.innerHTML = `<a href="/auth" style="background:#FFFFFF;color:#0A1628;padding:7px 18px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Ingresar</a>`;
   }
 })();

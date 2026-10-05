@@ -202,12 +202,6 @@
         button[type="submit"]:hover, button[type="button"]:hover {
             background: #152132;
         }
-        button[type="button"].secondary {
-            background: #666;
-        }
-        button[type="button"].secondary:hover {
-            background: #555;
-        }
         
         .toggle-switch {
             display: flex;
@@ -256,17 +250,6 @@
             color: #065f46;
             display: block;
         }
-        
-        .list-item {
-            background: white;
-            padding: 1rem;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
     </style>
 </head>
 <body>
@@ -282,7 +265,7 @@
 
     <div class="container">
         <!-- BANNER ONBOARDING -->
-        <div class="banner" id="onboarding-banner">
+        <div class="banner">
             <h2>¡Bienvenido a Corvus Talent!</h2>
             <div class="banner-steps">
                 <div class="banner-step">
@@ -370,9 +353,7 @@
                                     <option value="Full Stack">Full Stack</option>
                                     <option value="DevOps">DevOps</option>
                                     <option value="QA">QA</option>
-                                    <option value="Seguridad">Seguridad</option>
-                                    <option value="Datos">Datos / Analytics</option>
-                                    <option value="Producto">Producto</option>
+                                    <option value="Data">Data</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -462,16 +443,8 @@
                                 <label for="rubro-qa">QA</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-seguridad" value="Seguridad">
-                                <label for="rubro-seguridad">Seguridad</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-datos" value="Datos">
-                                <label for="rubro-datos">Datos / Analytics</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-producto" value="Producto">
-                                <label for="rubro-producto">Producto</label>
+                                <input type="checkbox" id="rubro-data" value="Data">
+                                <label for="rubro-data">Data</label>
                             </div>
                         </div>
 
@@ -546,7 +519,6 @@
 
         // VARIABLES GLOBALES
         let userEmail = null;
-        let currentTab = 'perfil';
 
         // INICIALIZACIÓN
         window.addEventListener('load', () => {
@@ -579,7 +551,6 @@
             
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
-            currentTab = tabName;
         }
 
         function setupCountrySelect() {
@@ -627,7 +598,6 @@
                 if (response.ok) {
                     const profile = await response.json();
                     
-                    // LLENAR FORMULARIOS
                     document.getElementById('perfil-nombre').value = profile.nombre || '';
                     document.getElementById('perfil-email').value = profile.email || '';
                     document.getElementById('perfil-telefono').value = profile.telefono || '';
@@ -643,7 +613,6 @@
                     document.getElementById('busco-salario-ars').value = profile.salario_ars || '';
                     document.getElementById('busco-salario-usd').value = profile.salario_usd || '';
 
-                    // ACTUALIZAR CASCADA
                     if (profile.pais) {
                         document.getElementById('perfil-pais').dispatchEvent(new Event('change'));
                         setTimeout(() => {
@@ -657,15 +626,14 @@
                         }, 100);
                     }
 
-                    // RUBROS INTERÉS
                     if (profile.rubros_interes && Array.isArray(profile.rubros_interes)) {
                         profile.rubros_interes.forEach(rubro => {
-                            const checkbox = document.getElementById(`rubro-${rubro.toLowerCase()}`);
+                            const id = `rubro-${rubro.toLowerCase().replace(/\s+/g, '')}`;
+                            const checkbox = document.getElementById(id);
                             if (checkbox) checkbox.checked = true;
                         });
                     }
 
-                    // VISIBILIDAD
                     if (profile.visible) {
                         document.getElementById('visibility-toggle').classList.add('active');
                     }

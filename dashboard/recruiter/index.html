@@ -620,7 +620,7 @@
 
         async function loadSentRequests() {
             try {
-                const response = await fetch('/api/contact-requests', {
+                const response = await fetch('/api/profile?type=contact_requests', {
                     headers: { 'Authorization': `Bearer ${userEmail}` }
                 });
                 if (response.ok) {
@@ -647,13 +647,14 @@
         async function sendContactRequest() {
             const message = document.getElementById('contact-message').value;
             try {
-                const response = await fetch('/api/contact-requests', {
+                const response = await fetch('/api/profile', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${userEmail}`
                     },
                     body: JSON.stringify({
+                        action: 'contact_create',
                         candidate_email: currentCandidateEmail,
                         message: message || undefined,
                         company: 'Tu Empresa'

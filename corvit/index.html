@@ -3,307 +3,668 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corvit — Entrenamiento de Entrevistas</title>
+    <title>Corvit — Juego de Entrevistas</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2f4a 100%);
+            min-height: 100vh;
             color: #333;
-            padding: 1rem;
         }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+        
         header {
-            background: #0a1628;
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
             margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        h1 { font-size: 1.8rem; }
+        h1 { font-size: 2rem; color: #0a1628; }
         .user-info { display: flex; gap: 1rem; align-items: center; }
         .logout-btn {
             background: #8fa8c8;
             color: white;
             padding: 0.5rem 1rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            font-weight: 600;
         }
-        .card {
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat {
             background: white;
+            padding: 1.5rem;
             border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .stats {
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: #8fa8c8; }
+        .stat-label { font-size: 0.9rem; color: #666; margin-top: 0.5rem; }
+        
+        .main-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        .rubros-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        .stat-box {
-            background: #f5f7fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            border-left: 4px solid #8fa8c8;
-        }
-        .stat-number { font-size: 2rem; font-weight: bold; color: #0a1628; }
-        .stat-label { color: #666; font-size: 0.9rem; margin-top: 0.5rem; }
-        .questions { display: grid; gap: 1rem; }
-        .question-card {
-            background: #f5f7fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-        .question-card:hover { border-left-color: #8fa8c8; transform: translateX(4px); }
-        .question-title { font-weight: 600; margin-bottom: 0.5rem; }
-        .question-meta { color: #666; font-size: 0.85rem; }
-        .btn {
-            background: #0a1628;
+        .rubro-btn {
+            background: linear-gradient(135deg, #8fa8c8 0%, #5a7a9e 100%);
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 1.5rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
         }
-        .btn:hover { background: #152132; }
-        .btn-secondary {
-            background: #8fa8c8;
+        .rubro-btn:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(143,168,200,0.3); }
+        .rubro-btn.active { background: linear-gradient(135deg, #0a1628 0%, #152132 100%); }
+        
+        .difficulty-select {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
-        .btn-secondary:hover { background: #7a96b0; }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            padding: 1rem;
-        }
-        .modal.active { display: flex; justify-content: center; align-items: center; }
-        .modal-content {
+        .diff-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #ddd;
             background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
         }
+        .diff-btn.active { background: #8fa8c8; color: white; border-color: #8fa8c8; }
+        
+        .question-container {
+            margin-bottom: 2rem;
+        }
+        .question-header {
+            background: #f5f7fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .question-text { font-size: 1.2rem; font-weight: 600; color: #0a1628; margin-bottom: 0.5rem; }
+        .question-meta { color: #666; font-size: 0.9rem; }
+        
         .options {
             display: grid;
             gap: 1rem;
-            margin: 1.5rem 0;
         }
         .option {
             background: #f5f7fa;
-            padding: 1rem;
-            border-radius: 6px;
+            padding: 1.5rem;
+            border-radius: 8px;
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.3s;
         }
         .option:hover { border-color: #8fa8c8; background: #eef2f8; }
-        .option input { margin-right: 0.5rem; }
+        .option input { margin-right: 0.75rem; }
+        .option label { cursor: pointer; display: flex; align-items: center; width: 100%; }
+        
         .feedback {
             margin-top: 1.5rem;
             padding: 1.5rem;
-            border-radius: 6px;
+            border-radius: 8px;
             display: none;
         }
         .feedback.show { display: block; }
-        .feedback.success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
-        .feedback.error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .feedback.correct { background: #d1fae5; border-left: 4px solid #10b981; color: #065f46; }
+        .feedback.incorrect { background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .feedback strong { display: block; margin-bottom: 0.5rem; }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #0a1628;
+            color: white;
+        }
+        .btn-primary:hover { background: #152132; }
+        .btn-primary:disabled { background: #999; cursor: not-allowed; }
+        .btn-secondary {
+            background: #8fa8c8;
+            color: white;
+        }
+        .btn-secondary:hover { background: #7a96b0; }
+        
+        .progress {
+            background: #eee;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .progress-bar { background: #8fa8c8; height: 100%; transition: width 0.3s; }
+        
+        .result-card {
+            background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+            border: 2px solid #10b981;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .result-score { font-size: 3rem; font-weight: bold; color: #065f46; }
+        .result-text { color: #065f46; margin-top: 1rem; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎯 Corvit</h1>
+            <div>
+                <h1>🎯 Corvit</h1>
+                <p style="color: #666; margin-top: 0.5rem;">Juego de Entrevistas con Feedback IA</p>
+            </div>
             <div class="user-info">
                 <span id="user-name">Cargando...</span>
                 <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
             </div>
         </header>
 
-        <div class="card">
-            <h2>Entrenamiento de Entrevistas</h2>
-            <p style="color: #666; margin-bottom: 1.5rem;">Responde preguntas de entrevista y obtén feedback instantáneo de nuestro asistente IA.</p>
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-number" id="respuestas-hoy">0</div>
-                    <div class="stat-label">Respuestas Hoy</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="streak">0</div>
-                    <div class="stat-label">Racha Actual</div>
-                </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-number" id="score-total">0</div>
+                <div class="stat-label">Puntuación Total</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="questions-answered">0</div>
+                <div class="stat-label">Preguntas Respondidas</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div class="stat-label">Precisión</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Racha Actual</div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Preguntas Disponibles</h2>
-            <div class="questions" id="questions-list">
-                <p>Cargando preguntas...</p>
+        <div class="main-card">
+            <!-- SECCIÓN 1: Seleccionar Rubro -->
+            <div class="section active" id="sec-rubros">
+                <h2 style="margin-bottom: 1.5rem;">Elige un Rubro</h2>
+                <div class="rubros-grid" id="rubros-container"></div>
             </div>
-        </div>
-    </div>
 
-    <div class="modal" id="question-modal">
-        <div class="modal-content">
-            <h2 id="modal-question">Pregunta</h2>
-            <div class="options" id="options-container"></div>
-            <div class="feedback" id="feedback"></div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <button class="btn" id="submit-btn" onclick="submitAnswer()" style="display: none;">Enviar Respuesta</button>
-                <button class="btn btn-secondary" onclick="closeModal()">Cerrar</button>
+            <!-- SECCIÓN 2: Seleccionar Dificultad -->
+            <div class="section" id="sec-difficulty">
+                <h2 style="margin-bottom: 1.5rem;">Elige Nivel de Dificultad</h2>
+                <div class="difficulty-select">
+                    <button class="diff-btn active" onclick="selectDifficulty('Junior')">🟢 Junior (0-2 años)</button>
+                    <button class="diff-btn" onclick="selectDifficulty('Semi-Senior')">🟡 Semi-Senior (2-5 años)</button>
+                    <button class="diff-btn" onclick="selectDifficulty('Senior')">🔴 Senior (5+ años)</button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goBack()">← Atrás</button>
+                    <button class="btn btn-primary" onclick="startQuiz()">Comenzar Juego →</button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: Juego -->
+            <div class="section" id="sec-game">
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <div id="question-content"></div>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()" disabled>Enviar Respuesta</button>
+                    <button class="btn btn-secondary" onclick="skipQuestion()">Saltar Pregunta</button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 4: Resultados -->
+            <div class="section" id="sec-results">
+                <h2 style="margin-bottom: 2rem; text-align: center;">🎉 ¡Juego Completado!</h2>
+                <div class="result-card">
+                    <div class="result-score" id="final-score">0/0</div>
+                    <div class="result-text" id="result-text"></div>
+                </div>
+                <div class="button-group" style="justify-content: center; margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="resetGame()">Jugar de Nuevo</button>
+                    <button class="btn btn-secondary" onclick="goHome()">Volver al Inicio</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const PREGUNTAS = [
-            { id: 1, rubro: "IT", nivel: "Junior", text: "¿Cuál fue tu primer proyecto en programación?" },
-            { id: 2, rubro: "IT", nivel: "Senior", text: "¿Cómo escalas una aplicación Node.js?" },
-            { id: 3, rubro: "Business", nivel: "Junior", text: "¿Por qué quieres trabajar en esta empresa?" },
-            { id: 4, rubro: "Business", nivel: "Senior", text: "¿Cómo liderías un equipo en crisis?" },
-        ];
-
-        const OPCIONES = {
-            1: [
-                "Un proyecto universitario simple",
-                "Un freelance que me contrató",
-                "Una aplicación personal de prueba",
-                "Ninguno, es mi primer trabajo"
-            ],
-            2: [
-                "Usando clusters de Node",
-                "Con load balancers y bases de datos distribuidas",
-                "Escalando verticalmente",
-                "No sé, nunca lo he hecho"
-            ],
-            3: [
-                "Me atrae el desafío técnico",
-                "Búsqueda de estabilidad económica",
-                "El equipo y la cultura",
-                "Ofrecen el mejor sueldo"
-            ],
-            4: [
-                "Comunicación abierta y decisiones rápidas",
-                "Centralizaría el control",
-                "Buscaría culpables",
-                "Dejaría que otros decidan"
-            ]
+        // BASE DE DATOS DE PREGUNTAS POR RUBRO
+        const PREGUNTAS_DB = {
+            "Backend": {
+                "Junior": [
+                    {
+                        q: "¿Cuál es la función principal de una base de datos?",
+                        opts: [
+                            { text: "Almacenar y organizar datos de forma permanente", correct: true, feedback: "✅ Exacto. Las BD almacenan, organizan y permiten recuperar datos eficientemente." },
+                            { text: "Mostrar información en la pantalla", correct: false, feedback: "❌ Eso es responsabilidad del frontend. La BD almacena datos." },
+                            { text: "Ejecutar cálculos matemáticos", correct: false, feedback: "❌ Ese es trabajo del servidor. La BD gestiona datos." },
+                            { text: "Conectar usuarios entre sí", correct: false, feedback: "❌ Eso es una función de networking. La BD almacena datos." }
+                        ]
+                    },
+                    {
+                        q: "¿Qué es un ORM?",
+                        opts: [
+                            { text: "Object-Relational Mapping", correct: true, feedback: "✅ ORM convierte datos de la BD a objetos del código." },
+                            { text: "Object Request Manager", correct: false, feedback: "❌ Ese no es el término correcto." },
+                            { text: "Online Resource Monitor", correct: false, feedback: "❌ Incorrecto. ORM = Object-Relational Mapping." },
+                            { text: "Operating Response Model", correct: false, feedback: "❌ No es la respuesta. ORM mapea objetos a bases de datos." }
+                        ]
+                    },
+                    {
+                        q: "¿Cuál es la diferencia entre SQL y NoSQL?",
+                        opts: [
+                            { text: "SQL es relacional, NoSQL no", correct: true, feedback: "✅ SQL usa tablas y relaciones, NoSQL es flexible (documentos, clave-valor, etc)." },
+                            { text: "SQL es más rápido que NoSQL", correct: false, feedback: "❌ La velocidad depende del caso de uso, no del tipo." },
+                            { text: "NoSQL no se usa en producción", correct: false, feedback: "❌ NoSQL es usado por empresas grandes (MongoDB, Firebase, etc)." },
+                            { text: "SQL es para datos grandes", correct: false, feedback: "❌ Ambos pueden manejar datos grandes dependiendo del diseño." }
+                        ]
+                    }
+                ],
+                "Semi-Senior": [
+                    {
+                        q: "¿Qué es una transacción ACID?",
+                        opts: [
+                            { text: "Atomicidad, Consistencia, Aislamiento, Durabilidad", correct: true, feedback: "✅ ACID garantiza que las transacciones se completen correctamente." },
+                            { text: "Un tipo de error en bases de datos", correct: false, feedback: "❌ ACID son propiedades, no errores." },
+                            { text: "Un protocolo de comunicación", correct: false, feedback: "❌ ACID es sobre garantías de transacciones." },
+                            { text: "Una compresión de datos", correct: false, feedback: "❌ No. ACID = Atomicidad, Consistencia, Aislamiento, Durabilidad." }
+                        ]
+                    },
+                    {
+                        q: "¿Cómo optimizarías una query lenta?",
+                        opts: [
+                            { text: "Usar índices, evitar N+1 queries, analizar EXPLAIN PLAN", correct: true, feedback: "✅ Esas son técnicas estándar de optimización SQL." },
+                            { text: "Simplemente usar más poder de computadora", correct: false, feedback: "❌ Escalabilidad vertical no siempre es la solución." },
+                            { text: "Cambiar de base de datos", correct: false, feedback: "❌ Primero optimiza la query antes de cambiar tecnología." },
+                            { text: "No hay forma de optimizarla", correct: false, feedback: "❌ Siempre hay formas de optimizar queries." }
+                        ]
+                    }
+                ],
+                "Senior": [
+                    {
+                        q: "¿Cómo diseñarías una arquitectura para manejar 1 millón de requests/segundo?",
+                        opts: [
+                            { text: "Caché distribuido, load balancing, BD replicada, colas de tareas", correct: true, feedback: "✅ Para escala masiva necesitas caché, distribución y replicación." },
+                            { text: "Una BD SQL central potente", correct: false, feedback: "❌ Un servidor central es un cuello de botella." },
+                            { text: "Un servidor Node.js grande", correct: false, feedback: "❌ Necesitas múltiples servidores distribuidos." },
+                            { text: "Usar AWS sin configuración", correct: false, feedback: "❌ La nube requiere arquitectura cuidadosa." }
+                        ]
+                    },
+                    {
+                        q: "¿Cuáles son los trade-offs entre consistencia y disponibilidad?",
+                        opts: [
+                            { text: "Consistencia inmediata vs disponibilidad bajo fallas (Teorema CAP)", correct: true, feedback: "✅ CAP theorem: no puedes tener las 3 simultáneamente." },
+                            { text: "No hay trade-offs", correct: false, feedback: "❌ El Teorema CAP describe trade-offs reales." },
+                            { text: "Siempre priorizas consistencia", correct: false, feedback: "❌ Depende del caso: a veces disponibilidad es más importante." },
+                            { text: "Es solo un mito de internet", correct: false, feedback: "❌ CAP es un principio fundamental comprobado." }
+                        ]
+                    }
+                ]
+            },
+            "Frontend": {
+                "Junior": [
+                    {
+                        q: "¿Cuál es la diferencia entre let, const y var?",
+                        opts: [
+                            { text: "const es inmutable, let es block-scoped, var es function-scoped", correct: true, feedback: "✅ const previene reasignación, let es más seguro que var." },
+                            { text: "No hay diferencia", correct: false, feedback: "❌ Las hay. var es antigua, let y const son mejores." },
+                            { text: "var es mejor que let", correct: false, feedback: "❌ let evita bugs que var causa con hoisting." },
+                            { text: "const hace el código más rápido", correct: false, feedback: "❌ const es sobre seguridad, no sobre performance." }
+                        ]
+                    },
+                    {
+                        q: "¿Qué es el DOM?",
+                        opts: [
+                            { text: "Document Object Model - árbol de elementos HTML", correct: true, feedback: "✅ El DOM permite manipular HTML desde JavaScript." },
+                            { text: "Un tipo de server", correct: false, feedback: "❌ DOM es parte del navegador, no del servidor." },
+                            { text: "Una base de datos", correct: false, feedback: "❌ DOM es el árbol de elementos en la página." },
+                            { text: "Un framework de CSS", correct: false, feedback: "❌ DOM es JavaScript, no CSS." }
+                        ]
+                    },
+                    {
+                        q: "¿Cómo pasas datos a un componente React?",
+                        opts: [
+                            { text: "Con props", correct: true, feedback: "✅ Props es cómo pasan datos de padre a hijo en React." },
+                            { text: "Con variables globales", correct: false, feedback: "❌ Las globales son malas práctica. Usa props." },
+                            { text: "Con localStorage", correct: false, feedback: "❌ localStorage es para persistencia, no para componentes." },
+                            { text: "No se puede", correct: false, feedback: "❌ Props es el mecanismo estándar." }
+                        ]
+                    }
+                ],
+                "Semi-Senior": [
+                    {
+                        q: "¿Qué es el Virtual DOM en React?",
+                        opts: [
+                            { text: "Representación en memoria del DOM que React usa para optimizar", correct: true, feedback: "✅ VDOM permite cambios eficientes sin tocar el DOM real cada vez." },
+                            { text: "El DOM en una máquina virtual", correct: false, feedback: "❌ VDOM es una abstracción en memoria de React." },
+                            { text: "No existe, es un mito", correct: false, feedback: "❌ VDOM es central en la arquitectura de React." },
+                            { text: "Una copia del DOM en el servidor", correct: false, feedback: "❌ VDOM es en el navegador, en memoria." }
+                        ]
+                    },
+                    {
+                        q: "¿Cómo manejas estado compartido entre componentes?",
+                        opts: [
+                            { text: "Context API, Redux, o Zustand", correct: true, feedback: "✅ Esas son formas de manejar estado global sin prop drilling." },
+                            { text: "Pasando props profundamente", correct: false, feedback: "❌ Eso es 'prop drilling' y es ineficiente." },
+                            { text: "Con variables globales de JS", correct: false, feedback: "❌ Eso causa bugs. Usa estado management." },
+                            { text: "No es posible en React", correct: false, feedback: "❌ React tiene varias soluciones para estado compartido." }
+                        ]
+                    }
+                ],
+                "Senior": [
+                    {
+                        q: "¿Cómo optimizas performance en React?",
+                        opts: [
+                            { text: "useMemo, useCallback, Code splitting, lazy loading", correct: true, feedback: "✅ Esas son técnicas avanzadas de optimización React." },
+                            { text: "Solo necesitas usar React", correct: false, feedback: "❌ React no es automáticamente rápido." },
+                            { text: "Usar className en lugar de style", correct: false, feedback: "❌ Eso es CSS, no optimización React." },
+                            { text: "No hay mucho que puedas hacer", correct: false, feedback: "❌ Hay muchas técnicas profesionales de optimización." }
+                        ]
+                    }
+                ]
+            },
+            "RRHH": {
+                "Junior": [
+                    {
+                        q: "¿Cuál es tu mayor fortaleza?",
+                        opts: [
+                            { text: "Soy honesto, doy ejemplos concretos y reconozco áreas de mejora", correct: true, feedback: "✅ Los entrevistadores valoran la honestidad con ejemplos reales." },
+                            { text: "Soy perfecto en todo", correct: false, feedback: "❌ Nadie es perfecto. Muestra autenticidad." },
+                            { text: "No sé, depende del trabajo", correct: false, feedback: "❌ Deberías saber tus fortalezas. Prepárate." },
+                            { text: "Mi fortaleza es ganar dinero", correct: false, feedback: "❌ Enfócate en contribución al equipo, no en dinero." }
+                        ]
+                    },
+                    {
+                        q: "¿Cómo manejaste un conflicto con un compañero?",
+                        opts: [
+                            { text: "Busqué entender su perspectiva y llegamos a un acuerdo", correct: true, feedback: "✅ Muestra empatía, comunicación y resolución colaborativa." },
+                            { text: "Le dije que estaba equivocado", correct: false, feedback: "❌ Ese enfoque defensivo no resuelve conflictos." },
+                            { text: "Nunca he tenido conflictos", correct: false, feedback: "❌ Todos tienen. La pregunta busca cómo los resuelves." },
+                            { text: "Me fui del equipo", correct: false, feedback: "❌ Evitar no es solucionar. Muestra crecimiento." }
+                        ]
+                    }
+                ],
+                "Semi-Senior": [
+                    {
+                        q: "¿Cómo liderías un equipo de 5 personas?",
+                        opts: [
+                            { text: "Doy autonomía, claridad en objetivos, y 1on1 regulares", correct: true, feedback: "✅ Liderazgo efectivo: empoderamiento + comunicación clara." },
+                            { text: "Yo decido todo, el equipo ejecuta", correct: false, feedback: "❌ Eso es comando-control. El liderazgo moderno es diferente." },
+                            { text: "Todos votan en todas las decisiones", correct: false, feedback: "❌ Democracia total puede ser ineficiente." },
+                            { text: "No sé, nunca he liderado", correct: false, feedback: "❌ En una entrevista Senior, prepárate para liderazgo." }
+                        ]
+                    }
+                ]
+            },
+            "Ventas": {
+                "Junior": [
+                    {
+                        q: "Un cliente dice que tu producto es caro. ¿Qué haces?",
+                        opts: [
+                            { text: "Pregunto qué valor espera y muestro ROI específico", correct: true, feedback: "✅ Entender necesidades primero, luego comunicar valor." },
+                            { text: "Bajo el precio inmediatamente", correct: false, feedback: "❌ Eso devalúa el producto. Primero explora necesidades." },
+                            { text: "Digo que el precio es competitivo", correct: false, feedback: "❌ No es convincente sin entender su perspectiva." },
+                            { text: "Lo pierdo y paso al siguiente", correct: false, feedback: "❌ Debería explorar si hay fit antes de desistir." }
+                        ]
+                    },
+                    {
+                        q: "¿Cuál es tu plan para alcanzar la cuota este mes?",
+                        opts: [
+                            { text: "Seguimiento diario a leads, llamadas enfocadas, análisis de datos", correct: true, feedback: "✅ Planificación metódica + acción disciplinada." },
+                            { text: "Esperar que lleguen buenos leads", correct: false, feedback: "❌ Eso es pasivo. Ventas requiere acción proactiva." },
+                            { text: "Hacer muchas llamadas rápidas", correct: false, feedback: "❌ Cantidad sin calidad no genera ventas. Necesitas estrategia." },
+                            { text: "No sé, depende del mercado", correct: false, feedback: "❌ Debería tener un plan concreto." }
+                        ]
+                    }
+                ]
+            },
+            "Marketing": {
+                "Junior": [
+                    {
+                        q: "¿Cuál es el objetivo del marketing?",
+                        opts: [
+                            { text: "Atraer, convertir y retener clientes rentables", correct: true, feedback: "✅ Marketing es todo el ciclo: awareness → conversion → loyalty." },
+                            { text: "Hacer publicidad llamativa", correct: false, feedback: "❌ Eso es solo una tácnica. Marketing es más amplio." },
+                            { text: "Vender productos", correct: false, feedback: "❌ Ventas vende. Marketing genera demanda." },
+                            { text: "Aumentar followers en redes", correct: false, feedback: "❌ Followers es una métrica, no el objetivo final." }
+                        ]
+                    },
+                    {
+                        q: "¿Qué KPI medirías para una campaña?",
+                        opts: [
+                            { text: "CTR, conversión, CAC, LTV, ROAS", correct: true, feedback: "✅ Esos KPIs miden efectividad real de una campaña." },
+                            { text: "Solo las impresiones", correct: false, feedback: "❌ Impresiones no dicen si conviertes. Necesitas más." },
+                            { text: "Qué tan bonito quedó el anuncio", correct: false, feedback: "❌ Estética no es métrica. Mide resultados." },
+                            { text: "Cuántas personas lo compartieron", correct: false, feedback: "❌ Shares son engagement, no conversión." }
+                        ]
+                    }
+                ]
+            },
+            "Diseño": {
+                "Junior": [
+                    {
+                        q: "¿Qué es UX/UI?",
+                        opts: [
+                            { text: "UX es experiencia, UI es interfaz visual", correct: true, feedback: "✅ UX es cómo se siente, UI es cómo se ve." },
+                            { text: "Son lo mismo", correct: false, feedback: "❌ Son conceptos relacionados pero diferentes." },
+                            { text: "UX es código", correct: false, feedback: "❌ UX es investigación y diseño, no código." },
+                            { text: "No importa la diferencia", correct: false, feedback: "❌ Son disciplinas distintas en la práctica." }
+                        ]
+                    },
+                    {
+                        q: "¿Qué herramientas usas para diseño?",
+                        opts: [
+                            { text: "Figma, Adobe XD, Sketch - depende del proyecto", correct: true, feedback: "✅ Las herramientas modernas son esas. Figma es la más popular." },
+                            { text: "Photoshop es lo mejor", correct: false, feedback: "❌ Photoshop es para fotos, no para UI/UX." },
+                            { text: "Word o PowerPoint", correct: false, feedback: "❌ Esas no son herramientas de diseño profesional." },
+                            { text: "Cualquier cosa sirve", correct: false, feedback: "❌ Necesitas herramientas especializadas para diseño." }
+                        ]
+                    }
+                ]
+            }
         };
 
-        let currentQuestion = null;
+        let currentRubro = null;
+        let currentDifficulty = 'Junior';
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalAnswered = 0;
         let userToken = null;
 
         window.addEventListener('load', () => {
             userToken = localStorage.getItem('corvus_token');
             if (!userToken || userToken.trim() === '') {
-                console.log('[CORVIT] No token, redirecting to /auth');
                 window.location.href = '/auth';
                 return;
             }
-            console.log('[CORVIT] Logged in as:', userToken);
             document.getElementById('user-name').textContent = userToken.split('@')[0];
-            loadQuestions();
-            updateUsageStats();
+            loadRubros();
+            loadStats();
         });
 
-        function loadQuestions() {
-            const list = document.getElementById('questions-list');
-            list.innerHTML = PREGUNTAS.map(q => `
-                <div class="question-card" onclick="openQuestion(${q.id})">
-                    <div class="question-title">🎯 ${q.text}</div>
-                    <div class="question-meta">${q.rubro} • Nivel ${q.nivel}</div>
-                </div>
+        function loadRubros() {
+            const container = document.getElementById('rubros-container');
+            container.innerHTML = Object.keys(PREGUNTAS_DB).map(rubro => `
+                <button class="rubro-btn" onclick="selectRubro('${rubro}')">${rubro}</button>
             `).join('');
         }
 
-        function openQuestion(qid) {
-            currentQuestion = PREGUNTAS.find(q => q.id === qid);
-            document.getElementById('modal-question').textContent = currentQuestion.text;
-            
-            const container = document.getElementById('options-container');
-            container.innerHTML = (OPCIONES[qid] || []).map((opt, idx) => `
-                <label class="option">
-                    <input type="radio" name="answer" value="${opt}">
-                    ${opt}
-                </label>
-            `).join('');
-            
-            document.getElementById('feedback').innerHTML = '';
-            document.getElementById('feedback').classList.remove('show', 'success', 'error');
-            document.getElementById('submit-btn').style.display = 'block';
-            document.getElementById('question-modal').classList.add('active');
+        function selectRubro(rubro) {
+            currentRubro = rubro;
+            document.querySelectorAll('.rubro-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            showSection('sec-difficulty');
         }
 
-        async function submitAnswer() {
-            const selected = document.querySelector('input[name="answer"]:checked');
-            if (!selected) {
-                alert('Selecciona una opción');
+        function selectDifficulty(diff) {
+            currentDifficulty = diff;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestions = PREGUNTAS_DB[currentRubro][currentDifficulty] || [];
+            currentQuestionIndex = 0;
+            score = 0;
+            showSection('sec-game');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= currentQuestions.length) {
+                endQuiz();
                 return;
             }
-
+            
+            const q = currentQuestions[currentQuestionIndex];
+            const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            let html = `
+                <div class="question-container">
+                    <div class="question-header">
+                        <div class="question-text">Pregunta ${currentQuestionIndex + 1}/${currentQuestions.length}</div>
+                        <div class="question-meta">${currentRubro} • ${currentDifficulty}</div>
+                    </div>
+                    <div style="background: #f5f7fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <p style="font-size: 1.1rem; color: #0a1628;">${q.q}</p>
+                    </div>
+                    <div class="options">
+            `;
+            
+            q.opts.forEach((opt, idx) => {
+                html += `
+                    <label class="option">
+                        <input type="radio" name="answer" value="${idx}">
+                        ${opt.text}
+                    </label>
+                `;
+            });
+            
+            html += `</div><div class="feedback" id="feedback"></div>`;
+            
+            document.getElementById('question-content').innerHTML = html;
             document.getElementById('submit-btn').disabled = true;
-            const feedbackDiv = document.getElementById('feedback');
-            feedbackDiv.innerHTML = '<p>Analizando tu respuesta...</p>';
-            feedbackDiv.classList.add('show');
-
-            try {
-                const response = await fetch('/api/feedback', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userToken}`
-                    },
-                    body: JSON.stringify({
-                        question_id: currentQuestion.id,
-                        question_text: currentQuestion.text,
-                        answer: selected.value,
-                        rubro: currentQuestion.rubro
-                    })
+            
+            document.querySelectorAll('input[name="answer"]').forEach(input => {
+                input.addEventListener('change', () => {
+                    document.getElementById('submit-btn').disabled = false;
                 });
+            });
+        }
 
-                if (response.ok) {
-                    const data = await response.json();
-                    feedbackDiv.innerHTML = `<strong>✅ Bien!</strong><p>${data.feedback || 'Tu respuesta fue aceptada.'}</p>`;
-                    feedbackDiv.classList.add('success');
-                    updateUsageStats();
-                } else {
-                    feedbackDiv.innerHTML = '<strong>⚠️ Error</strong><p>No se pudo procesar el feedback.</p>';
-                    feedbackDiv.classList.add('error');
-                }
-            } catch (error) {
-                console.error('[SUBMIT]:', error);
-                feedbackDiv.innerHTML = '<strong>❌ Error</strong><p>Error de conexión</p>';
-                feedbackDiv.classList.add('error');
-            } finally {
-                document.getElementById('submit-btn').disabled = false;
+        function submitAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) return;
+            
+            const q = currentQuestions[currentQuestionIndex];
+            const opt = q.opts[selected.value];
+            const feedbackDiv = document.getElementById('feedback');
+            
+            if (opt.correct) {
+                score++;
+                feedbackDiv.className = 'feedback show correct';
+            } else {
+                feedbackDiv.className = 'feedback show incorrect';
             }
+            
+            feedbackDiv.innerHTML = `<strong>${opt.feedback}</strong>`;
+            totalAnswered++;
+            updateStats();
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                showQuestion();
+            }, 2000);
         }
 
-        function closeModal() {
-            document.getElementById('question-modal').classList.remove('active');
+        function skipQuestion() {
+            currentQuestionIndex++;
+            showQuestion();
         }
 
-        function updateUsageStats() {
-            const today = new Date().toISOString().split('T')[0];
-            const key = `corvit_usage_${today}`;
-            const usage = JSON.parse(localStorage.getItem(key) || '{"count":0}');
-            document.getElementById('respuestas-hoy').textContent = usage.count;
+        function endQuiz() {
+            const accuracy = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+            document.getElementById('final-score').textContent = `${score}/${totalAnswered}`;
+            document.getElementById('result-text').textContent = 
+                accuracy >= 80 ? '¡Excelente desempeño! Estás bien preparado.' :
+                accuracy >= 60 ? 'Buen esfuerzo. Sigue practicando.' :
+                'Sigue estudiando. Practica más preguntas.';
+            showSection('sec-results');
+        }
+
+        function updateStats() {
+            const accuracy = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+            document.getElementById('score-total').textContent = score;
+            document.getElementById('questions-answered').textContent = totalAnswered;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function loadStats() {
+            const stats = JSON.parse(localStorage.getItem('corvit_stats') || '{"score":0,"answered":0,"correct":0}');
+            document.getElementById('score-total').textContent = stats.correct || 0;
+            document.getElementById('questions-answered').textContent = stats.answered || 0;
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function goBack() {
+            showSection('sec-rubros');
+        }
+
+        function goHome() {
+            window.location.href = '/dashboard/candidato';
+        }
+
+        function resetGame() {
+            currentRubro = null;
+            currentQuestionIndex = 0;
+            score = 0;
+            totalAnswered = 0;
+            showSection('sec-rubros');
         }
 
         function logout() {

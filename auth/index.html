@@ -74,6 +74,10 @@
         button:hover {
             background: #152132;
         }
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
         .error {
             background: #fee2e2;
             color: #991b1b;
@@ -88,9 +92,6 @@
             padding: 0.75rem;
             border-radius: 4px;
             margin-bottom: 1rem;
-            display: none;
-        }
-        .loading {
             display: none;
         }
         a {
@@ -140,14 +141,7 @@
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/+esm';
-
-        const SUPABASE_URL = 'https://fciquzvndvbbqecboumg.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjaXF1enZuZHZiYnFlY2JvdW1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjQyOTc4NjUsImV4cCI6MjA0MDExMzg2NX0.s_U5p_DF5j7HPJvzDNNS7PfFzMmMd2K6zTnc-8Egh9A';
-
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    <script>
         const form = document.getElementById('auth-form');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -183,55 +177,56 @@
             const password = passwordInput.value;
 
             try {
-                console.log('[LOGIN] Intentando login:', email);
+                console.log('[LOGIN] POST /api/auth con email:', email);
 
-                // Intenta login
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
+                // Enviar POST a nuestro endpoint /api/auth
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: email,
+                        password: password
+                    })
                 });
 
-                if (error) {
-                    console.error('[LOGIN] Error:', error);
-                    showError(`Error: ${error.message}`);
+                console.log('[LOGIN] Response status:', response.status);
+
+                const data = await response.json();
+                console.log('[LOGIN] Response data:', data);
+
+                if (!response.ok) {
+                    console.error('[LOGIN] Error:', data.error);
+                    showError(`Error: ${data.error || 'Login fallido'}`);
                     setLoading(false);
                     return;
                 }
 
-                console.log('[LOGIN] ✅ Login exitoso', data);
-
-                // Obtener perfil del usuario
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('email', email)
-                    .single();
-
-                if (profileError) {
-                    console.error('[LOGIN] Profile error:', profileError);
-                }
+                console.log('[LOGIN] ✅ Login exitoso');
 
                 // GUARDAR TOKEN como solo el email
                 localStorage.setItem('corvus_token', email);
                 console.log('[LOGIN] Token guardado:', email);
 
-                // Guardar usuario
-                if (profile) {
-                    localStorage.setItem('corvus_user', JSON.stringify(profile));
-                    console.log('[LOGIN] Perfil guardado:', profile);
+                // Guardar usuario (si viene en la respuesta)
+                if (data.user) {
+                    localStorage.setItem('corvus_user', JSON.stringify(data.user));
+                    console.log('[LOGIN] Perfil guardado:', data.user);
                 } else {
-                    localStorage.setItem('corvus_user', JSON.stringify({ email, nombre: email.split('@')[0] }));
-                }
-
-                // Opcionalmente guardar en sessionStorage si no marcó "Recordarme"
-                if (!rememberMe.checked) {
-                    sessionStorage.setItem('corvus_token_session', email);
+                    localStorage.setItem('corvus_user', JSON.stringify({ 
+                        email, 
+                        nombre: email.split('@')[0],
+                        role: data.role || 'candidato'
+                    }));
                 }
 
                 showSuccess('✅ Inicio de sesión exitoso. Redirigiendo...');
                 setTimeout(() => {
                     // Redirigir según rol
-                    if (profile && profile.role === 'recruiter') {
+                    const role = data.user?.role || data.role;
+                    if (role === 'recruiter') {
                         window.location.href = '/dashboard/recruiter';
                     } else {
                         window.location.href = '/dashboard/candidato';
@@ -239,7 +234,7 @@
                 }, 1000);
             } catch (error) {
                 console.error('[LOGIN] Unexpected error:', error);
-                showError('Error inesperado: ' + error.message);
+                showError('Error: ' + error.message);
                 setLoading(false);
             }
         });

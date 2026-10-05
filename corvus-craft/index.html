@@ -3,228 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corvus Craft — Generador de Job Descriptions</title>
+    <title>Corvus Craft — Generador de JD</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-        .container { max-width: 900px; margin: 0 auto; padding: 1rem; }
-        header {
-            background: #0a1628;
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h1 { font-size: 1.8rem; }
-        .user-info { display: flex; gap: 1rem; align-items: center; }
-        .logout-btn {
-            background: #8fa8c8;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .card { background: white; border-radius: 8px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a1628; color: #babdc2; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        header { text-align: center; margin-bottom: 3rem; }
+        h1 { color: #fff; font-size: 32px; margin-bottom: 0.5rem; }
+        .subtitle { color: #656d78; font-size: 14px; }
+        .form-section { background: #19273b; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
         .form-group { display: flex; flex-direction: column; }
-        label { font-weight: 600; margin-bottom: 0.5rem; }
-        input, select, textarea {
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: inherit;
-        }
-        textarea { min-height: 100px; resize: vertical; }
-        .btn {
-            background: #0a1628;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .btn:hover { background: #152132; }
-        .btn:disabled { background: #999; cursor: not-allowed; }
-        .result-box {
-            background: #f5f7fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid #8fa8c8;
-            display: none;
-            margin-top: 1.5rem;
-        }
-        .result-box.show { display: block; }
-        .copy-btn {
-            background: #8fa8c8;
-            margin-top: 1rem;
-        }
-        .loading { text-align: center; }
-        .spinner {
-            border: 3px solid #ddd;
-            border-top-color: #8fa8c8;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        label { color: #8fa8c8; font-size: 12px; text-transform: uppercase; margin-bottom: 0.5rem; }
+        input, textarea, select { background: #0a1628; border: 1px solid #152132; color: #fff; padding: 0.75rem; border-radius: 4px; font-family: inherit; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #8fa8c8; }
+        textarea { resize: vertical; min-height: 100px; }
+        button { background: #8fa8c8; color: #0a1628; border: none; padding: 0.75rem 2rem; border-radius: 4px; font-weight: 600; cursor: pointer; }
+        button:hover { background: #a0b8d8; }
+        button.loading { opacity: 0.5; cursor: not-allowed; }
+        .output-section { background: #19273b; padding: 2rem; border-radius: 8px; display: none; }
+        .output-section.active { display: block; }
+        .output-text { background: #0a1628; padding: 1.5rem; border-radius: 4px; color: #babdc2; line-height: 1.6; white-space: pre-wrap; margin-bottom: 1rem; }
+        .output-actions { display: flex; gap: 1rem; }
+        .output-actions button { flex: 1; }
+        .error { color: #f87171; font-size: 12px; margin-top: 0.5rem; }
+        .limit-info { color: #656d78; font-size: 12px; margin-top: 1rem; }
+        .nav { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .nav a { color: #8fa8c8; text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; }
+        .nav a:hover { background: #19273b; }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="nav">
+            <a href="/dashboard/candidato/">← Volver</a>
+            <a href="#" onclick="logout(); return false;">Salir</a>
+        </div>
+
         <header>
             <h1>✦ Corvus Craft</h1>
-            <div class="user-info">
-                <span id="user-name">Cargando...</span>
-                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-            </div>
+            <p class="subtitle">Genera descripciones de puestos profesionales en segundos</p>
         </header>
 
-        <div class="card">
-            <h2>Generador de Job Descriptions</h2>
-            <p style="color: #666; margin-bottom: 1.5rem;">Crea ofertas profesionales con un solo clic.</p>
-            
-            <form id="craft-form">
-                <div class="form-grid">
+        <div class="form-section">
+            <form onsubmit="handleGenerate(event)">
+                <div class="form-row">
                     <div class="form-group">
-                        <label>Título del Puesto *</label>
-                        <input type="text" name="job_title" placeholder="Ej: Senior Backend Developer" required>
+                        <label>Título del puesto *</label>
+                        <input type="text" id="title" placeholder="Ej: Senior Backend Developer" required>
                     </div>
                     <div class="form-group">
-                        <label>Empresa *</label>
-                        <input type="text" name="company" placeholder="Ej: Corvus Talent" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nivel Senior *</label>
-                        <select name="seniority" required>
-                            <option value="">Selecciona</option>
-                            <option value="Junior">Junior</option>
-                            <option value="Semi-Senior">Semi-Senior</option>
-                            <option value="Senior">Senior</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Modalidad *</label>
-                        <select name="modality" required>
-                            <option value="">Selecciona</option>
-                            <option value="Remoto">Remoto</option>
-                            <option value="Presencial">Presencial</option>
-                            <option value="Híbrido">Híbrido</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Idioma *</label>
-                        <select name="language" required>
+                        <label>Idioma</label>
+                        <select id="lang">
                             <option value="es">Español</option>
                             <option value="en">English</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
-                        <label>Tono *</label>
-                        <select name="tone" required>
-                            <option value="">Selecciona</option>
-                            <option value="formal">Formal</option>
-                            <option value="casual">Casual</option>
-                            <option value="amistoso">Amistoso</option>
-                            <option value="tecnico">Técnico</option>
-                            <option value="moderno">Moderno</option>
+                        <label>Rubro</label>
+                        <input type="text" id="industry" placeholder="Ej: Technology, Finance, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label>Seniority</label>
+                        <select id="seniority">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Junior">Junior</option>
+                            <option value="Mid">Mid-Level</option>
+                            <option value="Senior">Senior</option>
+                            <option value="Lead">Lead/Manager</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 1.5rem;">
-                    <label>Requisitos Específicos (opcional)</label>
-                    <textarea name="requirements" placeholder="Ej: React, Python, AWS..."></textarea>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Modalidad</label>
+                        <select id="modality">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Presencial">Presencial</option>
+                            <option value="Remoto">Remoto</option>
+                            <option value="Híbrido">Híbrido</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de empresa</label>
+                        <select id="companyType">
+                            <option value="">-- Selecciona --</option>
+                            <option value="Startup">Startup</option>
+                            <option value="PME">PME</option>
+                            <option value="Corporación">Corporación</option>
+                        </select>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn" id="submit-btn" style="margin-top: 1.5rem;">✨ Generar JD</button>
-            </form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Skills técnicas</label>
+                        <input type="text" id="skills" placeholder="Ej: Python, React, AWS, Docker">
+                    </div>
+                </div>
 
-            <div class="result-box" id="result">
-                <div id="result-content"></div>
-                <button class="btn copy-btn" onclick="copyToClipboard()">📋 Copiar al Portapapeles</button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Responsabilidades principales</label>
+                        <textarea id="responsibilities" placeholder="Describe las principales responsabilidades del rol"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tono</label>
+                        <select id="tone">
+                            <option value="Profesional">Profesional</option>
+                            <option value="Dinámico">Dinámico</option>
+                            <option value="Cercano">Cercano</option>
+                            <option value="Técnico">Técnico</option>
+                            <option value="Corporativo">Corporativo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="generateBtn">Generar JD</button>
+                <div id="generateError" class="error"></div>
+                <p class="limit-info">Límite: 3 generaciones por día. Usos hoy: <span id="usageCount">0</span>/3</p>
+            </form>
+        </div>
+
+        <div id="outputSection" class="output-section">
+            <h2 style="color: #fff; margin-bottom: 1.5rem;">Job Description generada</h2>
+            <div id="jdOutput" class="output-text"></div>
+            <div class="output-actions">
+                <button onclick="copyToClipboard()">📋 Copiar al portapapeles</button>
+                <button onclick="downloadJD()">⬇️ Descargar como texto</button>
+                <button onclick="resetForm()">✨ Nueva generación</button>
             </div>
         </div>
     </div>
 
     <script>
-        let userToken = null;
+        const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
+        if (!token) window.location.href = '/auth/';
 
-        window.addEventListener('load', () => {
-            userToken = localStorage.getItem('corvus_token');
-            if (!userToken || userToken.trim() === '') {
-                console.log('[CORVUS-CRAFT] No token, redirecting to /auth');
-                window.location.href = '/auth';
+        function getUsageCount() {
+            const today = new Date().toISOString().split('T')[0];
+            const key = `corvus_craft_usage_${today}`;
+            return parseInt(localStorage.getItem(key) || '0');
+        }
+
+        function incrementUsageCount() {
+            const today = new Date().toISOString().split('T')[0];
+            const key = `corvus_craft_usage_${today}`;
+            const count = getUsageCount();
+            localStorage.setItem(key, (count + 1).toString());
+        }
+
+        document.getElementById('usageCount').textContent = getUsageCount();
+
+        async function handleGenerate(e) {
+            e.preventDefault();
+
+            if (getUsageCount() >= 3) {
+                document.getElementById('generateError').textContent = 'Límite diario alcanzado. Vuelve mañana.';
                 return;
             }
-            console.log('[CORVUS-CRAFT] Logged in as:', userToken);
-            document.getElementById('user-name').textContent = userToken.split('@')[0];
-            document.getElementById('craft-form').addEventListener('submit', handleSubmit);
-        });
 
-        async function handleSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.textContent = '⏳ Generando...';
+            const btn = document.getElementById('generateBtn');
+            const errorDiv = document.getElementById('generateError');
+
+            const title = document.getElementById('title').value;
+            const industry = document.getElementById('industry').value || undefined;
+            const seniority = document.getElementById('seniority').value || undefined;
+            const modality = document.getElementById('modality').value || undefined;
+            const companyType = document.getElementById('companyType').value || undefined;
+            const skills = document.getElementById('skills').value || undefined;
+            const responsibilities = document.getElementById('responsibilities').value || undefined;
+            const lang = document.getElementById('lang').value;
+            const tone = document.getElementById('tone').value;
+
+            btn.classList.add('loading');
+            errorDiv.textContent = '';
 
             try {
-                const response = await fetch('/api/generate', {
+                const res = await fetch('/api/corvus', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userToken}`
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                        action: 'generate_jd',
+                        title,
+                        industry,
+                        seniority,
+                        modality,
+                        companyType,
+                        skills,
+                        responsibilities,
+                        lang,
+                        tone
+                    })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    displayResult(result.jd || 'No se pudo generar la JD');
-                } else {
-                    displayResult('❌ Error al generar la JD');
-                }
-            } catch (error) {
-                console.error('[GENERATE]:', error);
-                displayResult('❌ Error de conexión');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                document.getElementById('jdOutput').textContent = data.text;
+                document.getElementById('outputSection').classList.add('active');
+                incrementUsageCount();
+                document.getElementById('usageCount').textContent = getUsageCount();
+            } catch (err) {
+                errorDiv.textContent = err.message;
             } finally {
-                btn.disabled = false;
-                btn.textContent = '✨ Generar JD';
+                btn.classList.remove('loading');
             }
         }
 
-        function displayResult(jd) {
-            const resultBox = document.getElementById('result');
-            const content = document.getElementById('result-content');
-            content.textContent = jd;
-            content.style.whiteSpace = 'pre-wrap';
-            content.style.wordWrap = 'break-word';
-            resultBox.classList.add('show');
+        function copyToClipboard() {
+            const text = document.getElementById('jdOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✓ Copiado al portapapeles');
+            }).catch(() => {
+                alert('Error al copiar');
+            });
         }
 
-        function copyToClipboard() {
-            const text = document.getElementById('result-content').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('✅ Copiado al portapapeles');
-            });
+        function downloadJD() {
+            const text = document.getElementById('jdOutput').textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jd_${new Date().getTime()}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function resetForm() {
+            document.getElementById('title').value = '';
+            document.getElementById('industry').value = '';
+            document.getElementById('seniority').value = '';
+            document.getElementById('modality').value = '';
+            document.getElementById('companyType').value = '';
+            document.getElementById('skills').value = '';
+            document.getElementById('responsibilities').value = '';
+            document.getElementById('tone').value = 'Profesional';
+            document.getElementById('generateError').textContent = '';
+            document.getElementById('outputSection').classList.remove('active');
         }
 
         function logout() {
             localStorage.removeItem('corvus_token');
-            window.location.href = '/auth';
+            sessionStorage.removeItem('corvus_token');
+            window.location.href = '/auth/';
         }
     </script>
 </body>

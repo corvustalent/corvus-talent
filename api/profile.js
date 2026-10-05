@@ -1,4 +1,4 @@
-// /api/profile.js — GET/POST perfil del usuario
+// /api/profile.js — GET/POST perfil + solicitudes de contacto
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -35,29 +35,20 @@ function extractToken(req) {
 
 function getEmailFromToken(token) {
   if (!token) return null;
-  
   token = token.trim();
-  
-  // Si tiene formato "email|algo", sacar la parte antes del |
   if (token.includes('|')) {
     return token.split('|')[0].trim();
   }
-  
-  // Si contiene @, es un email directo
   if (token.includes('@')) {
     return token;
   }
-  
   return null;
 }
 
 export default async function handler(req, res) {
-  // GET: obtener perfil del usuario
   if (req.method === 'GET') {
     return handleGET(req, res);
-  }
-  // POST: actualizar perfil del usuario
-  else if (req.method === 'POST') {
+  } else if (req.method === 'POST') {
     return handlePOST(req, res);
   } else {
     res.status(405).json({ error: 'Method not allowed' });
@@ -73,9 +64,26 @@ async function handleGET(req, res) {
       console.log('[GET] Invalid token:', token);
       return res.status(401).json({ error: 'Invalid token' });
     }
-    
+
+    // GET solicitudes de contacto enviadas por recruiter
+    if (req.query.type === 'contact_requests') {
+      console.log('[GET] Fetching contact_requests for:', email);
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .select('*')
+        .eq('recruiter_email', email)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('[GET] Supabase error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+      console.log('[GET] Found', data?.length || 0, 'contact requests');
+      return res.status(200).json(data || []);
+    }
+
+    // GET: obtener perfil del usuario (default)
     console.log('[GET] Fetching profile for:', email);
-    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -109,11 +117,60 @@ async function handlePOST(req, res) {
       console.log('[POST] Invalid token:', token);
       return res.status(401).json({ error: 'Invalid token' });
     }
-    
+
+    const { action } = req.body;
+
+    // POST: crear solicitud de contacto
+    if (action === 'contact_create') {
+      const { candidate_email, message, company } = req.body;
+      
+      if (!candidate_email) {
+        return res.status(400).json({ error: 'candidate_email requerido' });
+      }
+
+      console.log('[POST] Creating contact_request from', email, 'to', candidate_email);
+
+      // Verificar que no exista solicitud previa
+      const { data: existing } = await supabase
+        .from('contact_requests')
+        .select('id')
+        .eq('recruiter_email', email)
+        .eq('candidate_email', candidate_email)
+        .maybeSingle();
+      
+      if (existing) {
+        console.log('[POST] Contact request already exists');
+        return res.status(400).json({ error: 'Ya enviaste una solicitud a este candidato' });
+      }
+
+      // Crear solicitud
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .insert({
+          recruiter_email: email,
+          candidate_email: candidate_email,
+          message: message || null,
+          company: company || 'Sin especificar',
+          status: 'pending',
+          created_at: new Date().toISOString()
+        })
+        .select();
+      
+      if (error) {
+        console.error('[POST] Supabase error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+      
+      console.log('[POST] Contact request created:', data[0].id);
+      return res.status(201).json(data[0]);
+    }
+
+    // POST: actualizar perfil del usuario (default)
     console.log('[POST] Updating profile for:', email);
     
     const updates = req.body;
     delete updates.email; // No permitir cambiar email
+    delete updates.action; // Remover action si vino en body
     
     const { data, error } = await supabase
       .from('profiles')

@@ -6,733 +6,294 @@
     <title>Dashboard Recruiter — Corvus Talent</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        header {
-            background: #0a1628;
-            color: white;
-            padding: 1.5rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        header .inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 { font-size: 1.5rem; }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-        .messages-badge {
-            position: relative;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-        .badge-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #f87171;
-            color: white;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-        .logout-btn {
-            background: #8fa8c8;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .logout-btn:hover { background: #7a96b0; }
-        
-        .banner {
-            background: linear-gradient(135deg, #8fa8c8 0%, #5a7a9e 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-        .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid white;
-        }
-        .stat-card h3 { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem; }
-        .stat-card .number { font-size: 2rem; font-weight: bold; }
-        .stat-card p { font-size: 0.85rem; opacity: 0.8; }
-        
-        .tabs {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-        .tab-buttons {
-            display: flex;
-            border-bottom: 1px solid #eee;
-            flex-wrap: wrap;
-        }
-        .tab-button {
-            flex: 1;
-            min-width: 150px;
-            padding: 1rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        .tab-button.active {
-            color: #0a1628;
-            border-bottom-color: #8fa8c8;
-        }
-        .tab-button:hover { background: #f5f7fa; }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-inner { padding: 2rem; }
-        
-        .filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: #f5f7fa;
-            border-radius: 8px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #333;
-            font-size: 0.9rem;
-        }
-        input, select {
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-family: inherit;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #8fa8c8;
-            box-shadow: 0 0 0 3px rgba(143, 168, 200, 0.1);
-        }
-        
-        .candidate-list {
-            display: grid;
-            gap: 1rem;
-        }
-        .candidate-card {
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 1.5rem;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1.5rem;
-            align-items: start;
-            transition: all 0.3s;
-        }
-        .candidate-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: #8fa8c8;
-        }
-        .candidate-info h3 { margin-bottom: 0.5rem; color: #0a1628; }
-        .candidate-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin: 1rem 0;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        .candidate-meta span {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        .fit-score {
-            background: #0a1628;
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-            min-width: 100px;
-        }
-        .fit-score .score { font-size: 2rem; font-weight: bold; }
-        .fit-score .label { font-size: 0.8rem; opacity: 0.8; }
-        
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        button {
-            padding: 0.75rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-        .btn-primary {
-            background: #0a1628;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #152132;
-        }
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #333;
-        }
-        .btn-secondary:hover {
-            background: #d1d5db;
-        }
-        .btn-success {
-            background: #d1fae5;
-            color: #065f46;
-            cursor: default;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal.active {
-            display: flex;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #0a1628;
-        }
-        .modal-body { margin-bottom: 1.5rem; }
-        textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: inherit;
-            min-height: 100px;
-            resize: vertical;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
-        .empty-state h3 { margin-bottom: 0.5rem; }
-        
-        .message {
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-        .message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a1628; color: #babdc2; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 1px solid #152132; }
+        .logo { font-size: 24px; font-weight: 600; color: #fff; }
+        nav { display: flex; gap: 1.5rem; }
+        nav a { color: #8fa8c8; text-decoration: none; font-size: 14px; }
+        nav a:hover { color: #fff; }
+        .unread-badge { background: #f87171; color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-left: 0.5rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .stat-card { background: #19273b; padding: 1.5rem; border-radius: 8px; border-left: 3px solid #8fa8c8; }
+        .stat-label { color: #656d78; font-size: 12px; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 32px; font-weight: 600; color: #fff; }
+        .filters { background: #19273b; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .filter-group { display: flex; flex-direction: column; }
+        label { color: #8fa8c8; font-size: 12px; text-transform: uppercase; margin-bottom: 0.5rem; }
+        select, input { background: #0a1628; border: 1px solid #152132; color: #fff; padding: 0.75rem; border-radius: 4px; }
+        select:focus, input:focus { outline: none; border-color: #8fa8c8; }
+        .candidates-list { display: grid; gap: 1rem; }
+        .candidate-card { background: #19273b; padding: 1.5rem; border-radius: 8px; display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center; border-left: 3px solid #152132; }
+        .candidate-card:hover { border-left-color: #8fa8c8; }
+        .candidate-info h3 { color: #fff; margin-bottom: 0.5rem; }
+        .candidate-meta { font-size: 13px; color: #656d78; display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
+        .candidate-score { background: #0a1628; padding: 0.5rem 1rem; border-radius: 4px; color: #4ade80; font-weight: 600; font-size: 12px; }
+        .candidate-score.low { color: #f87171; }
+        .candidate-score.medium { color: #fbbf24; }
+        .candidate-actions { display: flex; gap: 0.5rem; }
+        button { padding: 0.5rem 1rem; background: #8fa8c8; color: #0a1628; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 12px; transition: background 0.3s; }
+        button:hover { background: #a0b8d8; }
+        button.secondary { background: #152132; color: #8fa8c8; }
+        button.secondary:hover { background: #1e3244; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #19273b; padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%; }
+        .modal-close { float: right; cursor: pointer; font-size: 24px; color: #656d78; }
+        .modal-close:hover { color: #fff; }
+        textarea { width: 100%; background: #0a1628; border: 1px solid #152132; color: #fff; padding: 0.75rem; border-radius: 4px; font-family: inherit; resize: vertical; }
+        .error { color: #f87171; font-size: 12px; margin-top: 0.5rem; }
+        .success { color: #4ade80; font-size: 12px; margin-top: 0.5rem; }
+        .sent-badge { background: #4ade80; color: #0a1628; padding: 0.25rem 0.75rem; border-radius: 3px; font-size: 11px; font-weight: 600; }
+        .logout { cursor: pointer; color: #8fa8c8; }
+        .logout:hover { color: #f87171; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="inner">
-            <h1>🦅 Corvus Talent — Recruiter</h1>
-            <div class="user-info">
-                <span id="user-name">Cargando...</span>
-                <div class="messages-badge" onclick="goToMessages()">
-                    💬
-                    <div class="badge-count" id="msg-badge" style="display: none;">0</div>
-                </div>
-                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-            </div>
-        </div>
-    </header>
-
     <div class="container">
-        <div class="banner">
-            <h2>Panel de Búsqueda de Talento</h2>
-            <div class="stats-grid" id="stats-grid">
-                <div class="stat-card">
-                    <h3>Candidatos Disponibles</h3>
-                    <div class="number" id="stat-total">—</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Score +70</h3>
-                    <div class="number" id="stat-high">—</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Disponibilidad Inmediata</h3>
-                    <div class="number" id="stat-immediate">—</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Solicitudes Enviadas</h3>
-                    <div class="number" id="stat-requests">—</div>
-                </div>
+        <header>
+            <div class="logo">🦅 Corvus Talent</div>
+            <nav>
+                <a href="#" id="messagesLink">💬 Mensajes<span id="unreadBadge" class="unread-badge" style="display:none;"></span></a>
+                <a href="#" id="logoutLink" class="logout">Salir</a>
+            </nav>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Candidatos disponibles</div>
+                <div class="stat-value" id="totalCandidates">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Score +70</div>
+                <div class="stat-value" id="highScoreCandidates">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Disponibilidad inmediata</div>
+                <div class="stat-value" id="availableCandidates">—</div>
             </div>
         </div>
 
-        <div class="tabs">
-            <div class="tab-buttons">
-                <button class="tab-button active" data-tab="buscar">🔍 Buscar Candidatos</button>
-                <button class="tab-button" data-tab="solicitudes">📬 Mis Solicitudes</button>
-                <button class="tab-button" data-tab="mensajes">💬 Mensajes</button>
-                <button class="tab-button" data-tab="empresa">🏢 Mi Empresa</button>
+        <div class="filters">
+            <div class="filter-group">
+                <label>Rubro</label>
+                <select id="filterRubro" onchange="applyFilters()">
+                    <option value="">Todos</option>
+                </select>
             </div>
-
-            <div class="tab-content active" id="tab-buscar">
-                <div class="tab-inner">
-                    <h2>Buscar Candidatos</h2>
-                    <div id="buscar-message"></div>
-
-                    <div class="filters">
-                        <div class="form-group">
-                            <label>Rubro</label>
-                            <select id="filter-rubro">
-                                <option value="">Todos</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Seniority</label>
-                            <select id="filter-seniority">
-                                <option value="">Todos</option>
-                                <option value="Junior">Junior</option>
-                                <option value="Semi-Senior">Semi-Senior</option>
-                                <option value="Senior">Senior</option>
-                                <option value="Lead">Lead / Manager</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Modalidad</label>
-                            <select id="filter-modalidad">
-                                <option value="">Todos</option>
-                                <option value="Remoto">Remoto</option>
-                                <option value="Presencial">Presencial</option>
-                                <option value="Híbrido">Híbrido</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Disponibilidad</label>
-                            <select id="filter-disponibilidad">
-                                <option value="">Todos</option>
-                                <option value="Inmediata">Inmediata</option>
-                                <option value="2-4 semanas">2-4 semanas</option>
-                                <option value="1-2 meses">1-2 meses</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Score mínimo Corvus Fit</label>
-                            <input type="number" id="filter-score" min="0" max="100" placeholder="Ej: 70">
-                        </div>
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <button class="btn-primary" onclick="applyFilters()">Buscar</button>
-                        </div>
-                    </div>
-
-                    <div class="candidate-list" id="candidate-list">
-                        <div class="empty-state">
-                            <h3>Cargando candidatos...</h3>
-                        </div>
-                    </div>
-                </div>
+            <div class="filter-group">
+                <label>Seniority</label>
+                <select id="filterSeniority" onchange="applyFilters()">
+                    <option value="">Todos</option>
+                    <option value="Junior">Junior</option>
+                    <option value="Mid">Mid-Level</option>
+                    <option value="Senior">Senior</option>
+                    <option value="Lead">Lead</option>
+                </select>
             </div>
-
-            <div class="tab-content" id="tab-solicitudes">
-                <div class="tab-inner">
-                    <h2>Mis Solicitudes de Contacto</h2>
-                    <div id="solicitudes-list">Cargando...</div>
-                </div>
+            <div class="filter-group">
+                <label>Modalidad</label>
+                <select id="filterModality" onchange="applyFilters()">
+                    <option value="">Todos</option>
+                    <option value="Presencial">Presencial</option>
+                    <option value="Remoto">Remoto</option>
+                    <option value="Híbrido">Híbrido</option>
+                </select>
             </div>
-
-            <div class="tab-content" id="tab-mensajes">
-                <div class="tab-inner">
-                    <h2>Mensajes</h2>
-                    <div id="mensajes-list">Cargando...</div>
-                </div>
+            <div class="filter-group">
+                <label>Score mínimo</label>
+                <input type="number" id="filterMinScore" min="0" max="100" placeholder="0-100" onchange="applyFilters()">
             </div>
+        </div>
 
-            <div class="tab-content" id="tab-empresa">
-                <div class="tab-inner">
-                    <h2>Información de la Empresa</h2>
-                    <div id="empresa-message"></div>
-                    <form id="empresa-form" style="display: grid; gap: 1.5rem; max-width: 600px;">
-                        <div class="form-group">
-                            <label>Nombre de la Empresa</label>
-                            <input type="text" id="empresa-nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email de Contacto</label>
-                            <input type="email" id="empresa-email" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label>Teléfono</label>
-                            <input type="tel" id="empresa-telefono">
-                        </div>
-                        <div class="form-group">
-                            <label>Sitio Web</label>
-                            <input type="url" id="empresa-website" placeholder="https://...">
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea id="empresa-descripcion" placeholder="Cuéntanos sobre tu empresa..."></textarea>
-                        </div>
-                        <button type="submit" class="btn-primary">💾 Guardar</button>
-                    </form>
-                </div>
-            </div>
+        <div class="candidates-list" id="candidatesList">
+            <p style="text-align: center; color: #656d78;">Cargando candidatos...</p>
         </div>
     </div>
 
-    <div class="modal" id="contact-modal">
+    <!-- Modal de contacto -->
+    <div id="contactModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">Enviar Solicitud de Contacto</div>
-            <div class="modal-body">
-                <p><strong id="modal-candidate-name">Candidato</strong></p>
-                <p id="modal-candidate-role" style="color: #666; font-size: 0.9rem;"></p>
-                <div style="margin: 1.5rem 0;">
-                    <label>Mensaje (opcional)</label>
-                    <textarea id="contact-message" placeholder="Escribe un mensaje personalizado..."></textarea>
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 1.5rem; color: #fff;">Enviar solicitud de contacto</h2>
+            <form onsubmit="handleContactRequest(event)">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">Email del candidato</label>
+                    <input type="email" id="candidateEmail" readonly style="background: #0a1628; opacity: 0.7;">
                 </div>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn-primary" onclick="sendContactRequest()">Enviar</button>
-            </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">Mensaje (opcional)</label>
+                    <textarea id="contactMessage" placeholder="Cuéntale sobre la oportunidad..." rows="4"></textarea>
+                </div>
+                <button type="submit" style="width: 100%; margin-bottom: 1rem;">Enviar solicitud</button>
+                <div id="contactError" class="error"></div>
+                <div id="contactSuccess" class="success"></div>
+            </form>
         </div>
     </div>
 
     <script>
-        const RUBROS_GENERALES = [
-            "Tecnología / IT",
-            "Medicina / Salud",
-            "Legal / Derecho",
-            "Educación",
-            "Finanzas / Contabilidad",
-            "Recursos Humanos",
-            "Marketing / Comunicación",
-            "Ventas",
-            "Operaciones / Logística",
-            "Diseño",
-            "Construcción",
-            "Agricultura",
-            "Manufactura",
-            "Consultoría",
-            "Administración Pública",
-            "Transporte",
-            "Hogar / Servicios",
-            "Medios / Publicidad",
-            "Ingeniería",
-            "Ciencia / Investigación"
-        ];
-
-        let userEmail = null;
-        let currentCandidateEmail = null;
         let allCandidates = [];
         let sentRequests = new Set();
+        const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
 
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('corvus_token');
-            if (!token) {
-                window.location.href = '/auth';
-                return;
-            }
-            userEmail = token;
-            document.getElementById('user-name').textContent = userEmail.split('@')[0];
-            populateRubros();
-            setupTabButtons();
-            loadCompanyInfo();
-            loadCandidates();
-            loadSentRequests();
-        });
-
-        function populateRubros() {
-            const select = document.getElementById('filter-rubro');
-            RUBROS_GENERALES.forEach(rubro => {
-                const opt = document.createElement('option');
-                opt.value = rubro;
-                opt.textContent = rubro;
-                select.appendChild(opt);
-            });
-        }
-
-        function setupTabButtons() {
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const tabName = e.target.dataset.tab;
-                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    e.target.classList.add('active');
-                    document.getElementById(`tab-${tabName}`).classList.add('active');
-                });
-            });
-        }
+        if (!token) window.location.href = '/auth/';
 
         async function loadCandidates() {
             try {
-                const response = await fetch('/api/candidates', {
-                    headers: { 'Authorization': `Bearer ${userEmail}` }
+                const res = await fetch('/api/candidates', {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (response.ok) {
-                    allCandidates = await response.json();
-                    displayCandidates(allCandidates);
-                    updateStats();
-                }
-            } catch (error) {
-                console.error('[LOAD CANDIDATES] Error:', error);
+                const data = await res.json();
+                allCandidates = data || [];
+                
+                // Cargar solicitudes ENVIADAS para marcar cuáles ya contactamos
+                const sentRes = await fetch('/api/profile?type=contact_requests', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const sent = await sentRes.json();
+                sentRequests = new Set((sent || []).map(r => r.candidate_email));
+
+                loadRubros();
+                applyFilters();
+                updateStats();
+            } catch (err) {
+                console.error('Error loading candidates:', err);
             }
         }
 
-        function displayCandidates(candidates) {
-            const list = document.getElementById('candidate-list');
-            if (candidates.length === 0) {
-                list.innerHTML = '<div class="empty-state"><h3>No hay candidatos disponibles</h3></div>';
-                return;
-            }
-            list.innerHTML = candidates.map(c => `
-                <div class="candidate-card">
-                    <div class="candidate-info">
-                        <h3>${c.nombre || 'Sin nombre'} ${c.apellido || ''}</h3>
-                        <div class="candidate-meta">
-                            <span>🏷️ ${c.rubro || 'N/A'}</span>
-                            <span>📍 ${c.ciudad || 'N/A'}, ${c.provincia || ''}</span>
-                            <span>📊 ${c.seniority || 'N/A'}</span>
-                        </div>
-                        <div class="candidate-meta">
-                            <span>${c.modalidad || 'Modalidad no especificada'}</span>
-                            ${c.disponibilidad ? `<span>⏱️ ${c.disponibilidad}</span>` : ''}
-                        </div>
-                        ${c.linkedin ? `<div style="margin-top: 0.5rem;"><a href="${c.linkedin}" target="_blank" style="color: #8fa8c8; text-decoration: none;">→ Ver LinkedIn</a></div>` : ''}
-                        <div class="action-buttons">
-                            ${sentRequests.has(c.email) 
-                                ? `<button class="btn-success">✓ Solicitud Enviada</button>` 
-                                : `<button class="btn-primary" onclick="openContactModal('${c.email}', '${c.nombre} ${c.apellido}', '${c.seniority}')">Contactar</button>`
-                            }
-                        </div>
-                    </div>
-                    <div class="fit-score">
-                        <div class="score">${c.cv_fit_score || '—'}</div>
-                        <div class="label">Corvus Fit</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateStats() {
-            const totalVisible = allCandidates.filter(c => c.visible).length;
-            const highScore = allCandidates.filter(c => c.visible && (c.cv_fit_score || 0) >= 70).length;
-            const immediate = allCandidates.filter(c => c.visible && c.disponibilidad === 'Inmediata').length;
-            
-            document.getElementById('stat-total').textContent = totalVisible;
-            document.getElementById('stat-high').textContent = highScore;
-            document.getElementById('stat-immediate').textContent = immediate;
-            document.getElementById('stat-requests').textContent = sentRequests.size;
+        function loadRubros() {
+            const rubros = [...new Set(allCandidates.map(c => c.rubro).filter(Boolean))].sort();
+            const select = document.getElementById('filterRubro');
+            rubros.forEach(rubro => {
+                const option = document.createElement('option');
+                option.value = rubro;
+                option.textContent = rubro;
+                select.appendChild(option);
+            });
         }
 
         function applyFilters() {
-            const rubro = document.getElementById('filter-rubro').value;
-            const seniority = document.getElementById('filter-seniority').value;
-            const modalidad = document.getElementById('filter-modalidad').value;
-            const disponibilidad = document.getElementById('filter-disponibilidad').value;
-            const scoreMin = parseInt(document.getElementById('filter-score').value) || 0;
+            const rubro = document.getElementById('filterRubro').value;
+            const seniority = document.getElementById('filterSeniority').value;
+            const modality = document.getElementById('filterModality').value;
+            const minScore = parseInt(document.getElementById('filterMinScore').value) || 0;
 
-            let filtered = allCandidates.filter(c => {
-                if (!c.visible) return false;
+            const filtered = allCandidates.filter(c => {
                 if (rubro && c.rubro !== rubro) return false;
                 if (seniority && c.seniority !== seniority) return false;
-                if (modalidad && c.modalidad !== modalidad) return false;
-                if (disponibilidad && c.disponibilidad !== disponibilidad) return false;
-                if ((c.cv_fit_score || 0) < scoreMin) return false;
+                if (modality && c.modalidad !== modality) return false;
+                if (c.cv_fit_score && c.cv_fit_score < minScore) return false;
                 return true;
             });
 
-            displayCandidates(filtered);
+            renderCandidates(filtered);
         }
 
-        async function loadSentRequests() {
-            try {
-                const response = await fetch('/api/profile?type=contact_requests', {
-                    headers: { 'Authorization': `Bearer ${userEmail}` }
-                });
-                if (response.ok) {
-                    const requests = await response.json();
-                    requests.forEach(r => sentRequests.add(r.candidate_email));
-                }
-            } catch (error) {
-                console.error('[LOAD REQUESTS] Error:', error);
+        function renderCandidates(candidates) {
+            const list = document.getElementById('candidatesList');
+            if (candidates.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #656d78;">No hay candidatos que coincidan con los filtros.</p>';
+                return;
             }
+
+            list.innerHTML = candidates.map(c => {
+                const score = c.cv_fit_score || 0;
+                const scoreClass = score >= 70 ? '' : score >= 50 ? 'medium' : 'low';
+                const alreadySent = sentRequests.has(c.email);
+
+                return `
+                    <div class="candidate-card">
+                        <div class="candidate-info">
+                            <h3>${c.nombre} ${c.apellido || ''}</h3>
+                            <div class="candidate-meta">
+                                <span>${c.rubro || 'N/A'}</span>
+                                <span>${c.seniority || 'N/A'}</span>
+                                <span>${c.modalidad || 'N/A'}</span>
+                                <span>${c.disponibilidad || 'N/A'}</span>
+                            </div>
+                            ${c.cv_fit_score ? `<div class="candidate-score ${scoreClass}">Score: ${score}</div>` : ''}
+                        </div>
+                        <div class="candidate-actions">
+                            ${alreadySent ? `<div class="sent-badge">✓ Solicitud enviada</div>` : `<button onclick="openContactModal('${c.email}')">Contactar</button>`}
+                            <button class="secondary" onclick="alert('Ver perfil de ' + '${c.nombre}')">👁️ Ver</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function openContactModal(email, name, seniority) {
-            currentCandidateEmail = email;
-            document.getElementById('modal-candidate-name').textContent = name;
-            document.getElementById('modal-candidate-role').textContent = seniority || 'Candidato';
-            document.getElementById('contact-message').value = '';
-            document.getElementById('contact-modal').classList.add('active');
+        function updateStats() {
+            const visible = allCandidates.filter(c => c.visible !== false);
+            const highScore = visible.filter(c => c.cv_fit_score >= 70);
+            const available = visible.filter(c => c.disponibilidad === 'Inmediato');
+
+            document.getElementById('totalCandidates').textContent = visible.length;
+            document.getElementById('highScoreCandidates').textContent = highScore.length;
+            document.getElementById('availableCandidates').textContent = available.length;
+        }
+
+        function openContactModal(email) {
+            document.getElementById('candidateEmail').value = email;
+            document.getElementById('contactMessage').value = '';
+            document.getElementById('contactError').textContent = '';
+            document.getElementById('contactSuccess').textContent = '';
+            document.getElementById('contactModal').classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('contact-modal').classList.remove('active');
+            document.getElementById('contactModal').classList.remove('active');
         }
 
-        async function sendContactRequest() {
-            const message = document.getElementById('contact-message').value;
+        async function handleContactRequest(e) {
+            e.preventDefault();
+            const email = document.getElementById('candidateEmail').value;
+            const message = document.getElementById('contactMessage').value;
+            const errorDiv = document.getElementById('contactError');
+            const successDiv = document.getElementById('contactSuccess');
+
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+
             try {
-                const response = await fetch('/api/profile', {
+                const res = await fetch('/api/profile', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userEmail}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         action: 'contact_create',
-                        candidate_email: currentCandidateEmail,
-                        message: message || undefined,
-                        company: 'Tu Empresa'
+                        candidate_email: email,
+                        message: message
                     })
                 });
-                closeModal();
-                if (response.ok) {
-                    sentRequests.add(currentCandidateEmail);
-                    loadCandidates();
-                    showMessage('✅ Solicitud enviada correctamente', 'success', 'buscar-message');
-                } else {
-                    showMessage('❌ Error al enviar la solicitud', 'error', 'buscar-message');
-                }
-            } catch (error) {
-                console.error('[SEND REQUEST] Error:', error);
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                successDiv.textContent = 'Solicitud enviada correctamente';
+                sentRequests.add(email);
+                applyFilters();
+                setTimeout(closeModal, 1500);
+            } catch (err) {
+                errorDiv.textContent = err.message;
             }
         }
 
-        async function loadCompanyInfo() {
-            try {
-                const response = await fetch('/api/profile', {
-                    headers: { 'Authorization': `Bearer ${userEmail}` }
-                });
-                if (response.ok) {
-                    const profile = await response.json();
-                    document.getElementById('empresa-nombre').value = profile.company || '';
-                    document.getElementById('empresa-email').value = profile.email || '';
-                    document.getElementById('empresa-telefono').value = profile.telefono || '';
-                    document.getElementById('empresa-website').value = profile.website || '';
-                    document.getElementById('empresa-descripcion').value = profile.descripcion || '';
-                }
-            } catch (error) {
-                console.error('[LOAD COMPANY] Error:', error);
-            }
-        }
-
-        document.getElementById('empresa-form').addEventListener('submit', async (e) => {
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
             e.preventDefault();
-            const data = {
-                company: document.getElementById('empresa-nombre').value,
-                telefono: document.getElementById('empresa-telefono').value,
-                website: document.getElementById('empresa-website').value,
-                descripcion: document.getElementById('empresa-descripcion').value
-            };
-            try {
-                const response = await fetch('/api/profile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${userEmail}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) {
-                    showMessage('✅ Información guardada', 'success', 'empresa-message');
-                } else {
-                    showMessage('❌ Error al guardar', 'error', 'empresa-message');
-                }
-            } catch (error) {
-                console.error('[SAVE COMPANY] Error:', error);
-            }
+            localStorage.removeItem('corvus_token');
+            sessionStorage.removeItem('corvus_token');
+            window.location.href = '/auth/';
         });
 
-        function showMessage(text, type, elementId) {
-            const div = document.getElementById(elementId);
-            div.className = `message ${type}`;
-            div.textContent = text;
-            setTimeout(() => div.style.display = 'none', 3000);
-        }
+        document.getElementById('messagesLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/chat/';
+        });
 
-        function goToMessages() {
-            document.querySelectorAll('.tab-button')[2].click();
-        }
-
-        function logout() {
-            localStorage.removeItem('corvus_token');
-            window.location.href = '/auth';
-        }
+        window.addEventListener('load', loadCandidates);
     </script>
 </body>
 </html>

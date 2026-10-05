@@ -1,189 +1,298 @@
-import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
+# Consolidación 12 → 8 Funciones Serverless — Instrucciones de Deploy
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-const resendApiKey = process.env.RESEND_API_KEY;
+**Estado:** ✅ Completado  
+**Fecha:** 05/10/2026  
+**Funciones eliminadas:** `verify.js`, `moderation.js`, `fit.js`, `upgrade-plan.js`, `mercado/index.js`
 
-if (!supabaseUrl || !supabaseServiceKey || !resendApiKey) {
-    throw new Error('Missing environment variables');
+---
+
+## 📋 Resumen de cambios
+
+### Consolidaciones ejecutadas:
+
+| Consolidación | Archivos origen | Archivo final | Líneas | Cambios principales |
+|---|---|---|---|---|
+| Auth | `auth.js` + `verify.js` | `api/auth.js` | 174 | action: 'login' / 'register' / 'verify' |
+| Perfil | `profile.js` + `moderation.js` | `api/profile.js` | 242 | Contact CRUD + email notifications + PATCH aceptar/rechazar |
+| Corvus | `corvus.js` + `fit.js` | `api/corvus.js` | 164 | action: 'analyze_fit' / 'generate_jd' |
+| Payments | `upgrade-plan.js` + `mercado/index.js` | `api/payments.js` | 190 | query.webhook=true para notificación / POST para crear pago |
+
+**Resultado:** 12 funciones → 8 funciones + 4 slots libres ✅
+
+---
+
+## 🚀 Instrucciones de Deploy
+
+### PASO 1: Hacer backup (seguridad)
+```bash
+git stash
+# O: git checkout -b consolidacion-backup
+```
+
+### PASO 2: Reemplazar archivos en `/api/`
+
+#### A. Reemplazar archivos consolidados:
+1. **`/api/auth.js`** — Copiar contenido de `auth.js` generado
+   - Elimina `verify.js` (ya no lo necesitás)
+   
+2. **`/api/profile.js`** — Copiar contenido de `profile.js` generado
+   - Elimina `moderation.js` (ya no lo necesitás)
+   
+3. **`/api/corvus.js`** — Copiar contenido de `corvus.js` generado
+   - Elimina `fit.js` (ya no lo necesitás)
+   
+4. **`/api/payments.js`** — Copiar contenido de `payments.js` generado
+   - Elimina `upgrade-plan.js` (ya no lo necesitás)
+   - Elimina la carpeta `mercado/` completa
+
+#### B. Mantener sin cambios:
+- `/api/candidates.js` ✅
+- `/api/chat.js` ✅
+- `/api/feedback.js` ✅
+- `/api/metrics.js` ✅
+
+### PASO 3: Actualizar package.json (si es necesario)
+Verificar que tenga estas dependencias:
+```json
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.x",
+    "@anthropic-ai/sdk": "^0.x",
+    "resend": "^0.x"
+  }
+}
+```
+
+---
+
+## 🔧 Cambios en Endpoints
+
+### Login / Register / Verify
+**Cambio:** Todo en `/api/auth` con `action` parameter
+
+```javascript
+// Antes: POST /api/auth, POST /api/verify
+// Ahora: POST /api/auth + action
+POST /api/auth {
+  "action": "login",
+  "email": "...",
+  "password": "..."
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const resend = new Resend(resendApiKey);
-
-function validatePassword(password) {
-    if (password.length < 8) {
-        throw new Error('Contraseña debe tener mínimo 8 caracteres');
-    }
-    if (!/[A-Z]/.test(password)) {
-        throw new Error('Contraseña debe tener al menos 1 mayúscula');
-    }
-    if (!/[0-9]/.test(password)) {
-        throw new Error('Contraseña debe tener al menos 1 número');
-    }
+POST /api/auth {
+  "action": "register",
+  "email": "...",
+  "password": "...",
+  "nombre": "...",
+  "role": "..."
 }
 
-function generateVerificationToken() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+POST /api/auth {
+  "action": "verify",
+  "token": "...",
+  "email": "..."
+}
+```
+
+### Perfil / Contacto / Email
+**Cambio:** `/api/profile` consolida todo
+
+```javascript
+// GET — Perfil
+GET /api/profile (auth requerida)
+
+// GET — Solicitudes ENVIADAS (recruiter)
+GET /api/profile?type=contact_requests
+
+// GET — Solicitudes RECIBIDAS (candidato)
+GET /api/profile?type=received_requests
+
+// POST — Crear solicitud de contacto
+POST /api/profile {
+  "action": "contact_create",
+  "candidate_email": "...",
+  "message": "...",
+  "company": "..."
 }
 
-async function handleLogin(email, password) {
-    console.log('[AUTH] Login request:', email);
-
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', email.toLowerCase())
-        .single();
-
-    if (profileError || !profile) {
-        console.log('[AUTH] Email not found:', email);
-        throw new Error('Email o contraseña incorrectos');
-    }
-
-    // VERIFICAR QUE EMAIL ESTÉ VERIFICADO
-    if (!profile.email_verified) {
-        console.log('[AUTH] Email not verified:', email);
-        throw new Error('Por favor verifica tu email antes de ingresar. Revisa tu bandeja de entrada.');
-    }
-
-    if (profile.password_hash !== password) {
-        console.log('[AUTH] Invalid password');
-        throw new Error('Email o contraseña incorrectos');
-    }
-
-    console.log('[AUTH] ✅ Login successful:', email);
-    return {
-        email: profile.email,
-        nombre: profile.nombre,
-        role: profile.role,
-        company: profile.company
-    };
+// POST — Actualizar perfil
+POST /api/profile {
+  "nombre": "...",
+  "rubro": "...",
+  "visible": true,
+  ...
 }
 
-async function handleRegister(email, password, nombre, role) {
-    console.log('[AUTH] Register request:', email, role);
+// PATCH — Aceptar/rechazar solicitud
+PATCH /api/profile {
+  "request_id": "...",
+  "status": "accepted" | "rejected"
+}
+```
 
-    validatePassword(password);
+### Análisis CV + JD
+**Cambio:** `/api/corvus` con `action` parameter
 
-    const { data: existing } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('email', email.toLowerCase())
-        .single();
-
-    if (existing) {
-        console.log('[AUTH] Email already exists:', email);
-        throw new Error('Este email ya está registrado');
-    }
-
-    // CREAR USUARIO CON email_verified: false
-    const { data: newProfile, error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-            email: email.toLowerCase(),
-            nombre: nombre,
-            role: role,
-            password_hash: password,
-            email_verified: false,
-            company: null,
-            rubro: null,
-            seniority: null
-        })
-        .select();
-
-    if (insertError) {
-        console.error('[AUTH] Insert error:', insertError);
-        throw new Error('Error al registrar usuario: ' + insertError.message);
-    }
-
-    // GENERAR TOKEN DE VERIFICACIÓN
-    const verificationToken = generateVerificationToken();
-    const expiresAt = new Date(Date.now() + 3600000); // 1 hora
-
-    const { error: tokenError } = await supabase
-        .from('email_verification_tokens')
-        .insert({
-            user_id: newProfile[0].id,
-            email: email.toLowerCase(),
-            token: verificationToken,
-            expires_at: expiresAt.toISOString()
-        });
-
-    if (tokenError) {
-        console.error('[AUTH] Token creation error:', tokenError);
-        throw new Error('Error al generar token de verificación');
-    }
-
-    // ENVIAR EMAIL CON LINK DE VERIFICACIÓN
-    const verificationUrl = `https://corvustalent.com.ar/verify?token=${verificationToken}&email=${encodeURIComponent(email)}`;
-    
-    try {
-        await resend.emails.send({
-            from: 'corvus.talent@gmail.com',
-            to: email.toLowerCase(),
-            subject: '🦅 Verifica tu email en Corvus Talent',
-            html: `
-                <h2>¡Bienvenido a Corvus Talent!</h2>
-                <p>Hola ${nombre},</p>
-                <p>Para completar tu registro, necesitas verificar tu email. Haz click en el botón de abajo:</p>
-                <p>
-                    <a href="${verificationUrl}" style="background: #0a1628; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none; display: inline-block;">
-                        ✅ Verificar Email
-                    </a>
-                </p>
-                <p>O copia este link en tu navegador:</p>
-                <p><code>${verificationUrl}</code></p>
-                <p><small>Este link expira en 1 hora.</small></p>
-                <hr>
-                <p><small>Si no creaste una cuenta, ignora este email.</small></p>
-            `
-        });
-        console.log('[AUTH] Verification email sent to:', email);
-    } catch (emailError) {
-        console.error('[AUTH] Email sending error:', emailError);
-        // Continuar de todas formas — el usuario puede solicitar reenvío
-    }
-
-    console.log('[AUTH] ✅ Register successful:', email);
-    return {
-        email: newProfile[0].email,
-        nombre: newProfile[0].nombre,
-        role: newProfile[0].role,
-        message: 'Cuenta creada. Revisa tu email para verificar tu dirección.'
-    };
+```javascript
+// Análisis CV vs JD (antiguo /api/fit)
+POST /api/corvus {
+  "action": "analyze_fit",
+  "cv": "...",
+  "job_title": "...",
+  "job_description": "..."
 }
 
-export default async function handler(req, res) {
-    console.log('[API AUTH] Method:', req.method, 'Action:', req.body?.action);
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
-    try {
-        const { action, email, password, nombre, role } = req.body;
-
-        let user;
-
-        if (action === 'login') {
-            if (!email || !password) {
-                return res.status(400).json({ error: 'Email y contraseña requeridos' });
-            }
-            user = await handleLogin(email, password);
-        } else if (action === 'register') {
-            if (!email || !password || !nombre || !role) {
-                return res.status(400).json({ error: 'Email, contraseña, nombre y rol requeridos' });
-            }
-            user = await handleRegister(email, password, nombre, role);
-        } else {
-            return res.status(400).json({ error: 'Action desconocida' });
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        console.error('[API AUTH] Error:', error.message);
-        res.status(400).json({ error: error.message });
-    }
+// Generar JD (antiguo /api/corvus)
+POST /api/corvus {
+  "action": "generate_jd",
+  "title": "...",
+  "industry": "...",
+  "seniority": "...",
+  ...
 }
+```
+
+### Pagos
+**Cambio:** `/api/payments` consolida todo
+
+```javascript
+// Crear pago (antiguo /api/upgrade-plan)
+POST /api/payments {
+  "plan": "Esencial ATS" | "Pro Estratégico" | "Premium Pitch"
+}
+// Retorna: { init_point, preference_id }
+
+// Webhook MercadoPago (antiguo /api/mercado)
+GET /api/payments?webhook=true&data={"id": "123"}
+// MercadoPago enviará notificación automáticamente
+```
+
+---
+
+## ✅ Checklist de Deploy
+
+- [ ] Copiar `auth.js` a `/api/auth.js`
+- [ ] Eliminar `/api/verify.js`
+- [ ] Copiar `profile.js` a `/api/profile.js`
+- [ ] Eliminar `/api/moderation.js`
+- [ ] Copiar `corvus.js` a `/api/corvus.js`
+- [ ] Eliminar `/api/fit.js`
+- [ ] Copiar `payments.js` a `/api/payments.js`
+- [ ] Eliminar `/api/upgrade-plan.js`
+- [ ] Eliminar carpeta `/api/mercado/`
+- [ ] Verificar `package.json` dependencias
+- [ ] `git add . && git commit -m "Consolidar 12→8 funciones"` 
+- [ ] `git push` → Vercel redespliega automáticamente
+- [ ] Verificar en Vercel que quedan 8 funciones (sin las eliminadas)
+- [ ] Testear auth, perfil, contacto, análisis, pagos
+
+---
+
+## 🧪 Testing
+
+### 1. Login
+```javascript
+fetch('/api/auth', {
+  method: 'POST',
+  body: JSON.stringify({
+    action: 'login',
+    email: 'alejandro.leitner@gmail.com',
+    password: 'password123'
+  })
+})
+```
+
+### 2. Perfil
+```javascript
+fetch('/api/profile', {
+  headers: { 'Authorization': 'Bearer alejandro.leitner@gmail.com' }
+})
+```
+
+### 3. Crear solicitud de contacto
+```javascript
+fetch('/api/profile', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer recruiter@example.com' },
+  body: JSON.stringify({
+    action: 'contact_create',
+    candidate_email: 'alejandro.leitner@gmail.com',
+    message: 'Tenemos un rol para ti',
+    company: 'Tech Co'
+  })
+})
+```
+
+### 4. Análisis CV
+```javascript
+fetch('/api/corvus', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer alejandro.leitner@gmail.com' },
+  body: JSON.stringify({
+    action: 'analyze_fit',
+    cv: 'Experiencia: 6 años en IT...',
+    job_title: 'Senior Backend Dev',
+    job_description: 'Buscamos...'
+  })
+})
+```
+
+### 5. Pago
+```javascript
+fetch('/api/payments', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer alejandro.leitner@gmail.com' },
+  body: JSON.stringify({
+    plan: 'Premium Pitch'
+  })
+})
+```
+
+---
+
+## 🚨 Rollback (en caso de error)
+
+```bash
+git revert HEAD
+# O:
+git checkout main
+git reset --hard origin/main
+```
+
+---
+
+## 📊 Resultado Final
+
+**Antes:** 
+```
+1. auth.js
+2. verify.js
+3. candidates.js
+4. chat.js
+5. corvus.js
+6. feedback.js
+7. fit.js
+8. mercado/index.js
+9. metrics.js
+10. moderation.js
+11. profile.js
+12. upgrade-plan.js
+```
+
+**Después (8/12):**
+```
+1. auth.js (login + register + verify)
+2. candidates.js
+3. chat.js
+4. corvus.js (analyze_fit + generate_jd)
+5. feedback.js
+6. metrics.js
+7. payments.js (create payment + webhook)
+8. profile.js (get + post + patch + contact CRUD + emails)
+
+🟢 4 SLOTS LIBRES para nuevas funciones
+```
+
+---
+
+**¡Listo para deploy! 🚀**

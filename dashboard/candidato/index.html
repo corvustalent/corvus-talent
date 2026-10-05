@@ -67,15 +67,8 @@
             border-radius: 4px;
             border-left: 3px solid white;
         }
-        .banner-step h3 {
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            opacity: 0.9;
-        }
-        .banner-step p {
-            font-size: 0.85rem;
-            opacity: 0.85;
-        }
+        .banner-step h3 { font-size: 0.9rem; margin-bottom: 0.25rem; opacity: 0.9; }
+        .banner-step p { font-size: 0.85rem; opacity: 0.85; }
         
         .quick-access {
             display: grid;
@@ -185,10 +178,6 @@
             font-weight: 400;
         }
         
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-        }
         button[type="submit"], button[type="button"] {
             background: #0a1628;
             color: white;
@@ -264,7 +253,6 @@
     </header>
 
     <div class="container">
-        <!-- BANNER ONBOARDING -->
         <div class="banner">
             <h2>¡Bienvenido a Corvus Talent!</h2>
             <div class="banner-steps">
@@ -283,13 +271,11 @@
             </div>
         </div>
 
-        <!-- QUICK ACCESS -->
         <div class="quick-access">
             <a href="/corvit" class="quick-access-btn">🎯 Corvit — Entrevistas</a>
             <a href="/corvus-fit" class="quick-access-btn">📊 Corvus Fit — Análisis CV</a>
         </div>
 
-        <!-- TABS -->
         <div class="tabs">
             <div class="tab-buttons">
                 <button class="tab-button active" data-tab="perfil">👤 Mi Perfil</button>
@@ -299,7 +285,6 @@
                 <button class="tab-button" data-tab="mensajes">💬 Mensajes</button>
             </div>
 
-            <!-- TAB 1: MI PERFIL -->
             <div class="tab-content active" id="tab-perfil">
                 <div class="tab-inner">
                     <h2>Información Personal</h2>
@@ -348,12 +333,6 @@
                                 <label>Rubro/Industria</label>
                                 <select id="perfil-rubro">
                                     <option value="">Selecciona un rubro</option>
-                                    <option value="Backend">Backend</option>
-                                    <option value="Frontend">Frontend</option>
-                                    <option value="Full Stack">Full Stack</option>
-                                    <option value="DevOps">DevOps</option>
-                                    <option value="QA">QA</option>
-                                    <option value="Data">Data</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -376,7 +355,6 @@
                 </div>
             </div>
 
-            <!-- TAB 2: QUÉ BUSCO -->
             <div class="tab-content" id="tab-busco">
                 <div class="tab-inner">
                     <h2>Preferencias Laborales</h2>
@@ -421,39 +399,13 @@
                         </div>
 
                         <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Rubros de Interés</h3>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-backend" value="Backend">
-                                <label for="rubro-backend">Backend</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-frontend" value="Frontend">
-                                <label for="rubro-frontend">Frontend</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-fullstack" value="Full Stack">
-                                <label for="rubro-fullstack">Full Stack</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-devops" value="DevOps">
-                                <label for="rubro-devops">DevOps</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-qa" value="QA">
-                                <label for="rubro-qa">QA</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="rubro-data" value="Data">
-                                <label for="rubro-data">Data</label>
-                            </div>
-                        </div>
+                        <div class="checkbox-group" id="rubros-container"></div>
 
                         <button type="submit" style="margin-top: 1.5rem;">💾 Guardar Preferencias</button>
                     </form>
                 </div>
             </div>
 
-            <!-- TAB 3: MIS ANÁLISIS -->
             <div class="tab-content" id="tab-analisis">
                 <div class="tab-inner">
                     <h2>Mis Análisis Corvus Fit</h2>
@@ -461,7 +413,6 @@
                 </div>
             </div>
 
-            <!-- TAB 4: SOLICITUDES -->
             <div class="tab-content" id="tab-solicitudes">
                 <div class="tab-inner">
                     <h2>Solicitudes de Contacto</h2>
@@ -469,7 +420,6 @@
                 </div>
             </div>
 
-            <!-- TAB 5: MENSAJES -->
             <div class="tab-content" id="tab-mensajes">
                 <div class="tab-inner">
                     <h2>Mensajes</h2>
@@ -478,7 +428,6 @@
             </div>
         </div>
 
-        <!-- VISIBILIDAD PARA RECRUITERS -->
         <div style="background: white; padding: 2rem; margin-top: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
             <h2 style="margin-bottom: 1rem;">Visibilidad para Recruiters</h2>
             <div class="toggle-switch">
@@ -494,14 +443,33 @@
     </div>
 
     <script>
-        // PROVINCIAS Y CIUDADES (CASCADA)
+        // 24 PROVINCIAS DE ARGENTINA + CIUDADES
         const ubicaciones = {
             Argentina: {
-                "Buenos Aires": ["La Plata", "Lomas de Zamora", "La Matanza"],
-                "Santa Fe": ["Rosario", "Santa Fe", "Rafaela"],
-                "Córdoba": ["Córdoba", "Río Cuarto", "Lanus"],
+                "Buenos Aires": ["La Plata", "Lomas de Zamora", "La Matanza", "Almirante Brown"],
+                "Catamarca": ["San Fernando del Valle", "Belén", "Tinogasta"],
+                "Chaco": ["Resistencia", "Corrientes", "Charata"],
+                "Chubut": ["Comodoro Rivadavia", "Puerto Madryn", "Trelew"],
+                "CABA": ["San Isidro", "Belgrano", "San Telmo"],
+                "Córdoba": ["Córdoba", "Río Cuarto", "Jesús María"],
+                "Corrientes": ["Corrientes", "Paso de la Cruz", "Goya"],
+                "Entre Ríos": ["Paraná", "Concepción del Uruguay", "Gualeguaychú"],
+                "Formosa": ["Formosa", "Clorinda", "Ingeniero Juárez"],
+                "Jujuy": ["San Salvador de Jujuy", "Palpalá", "Purmamarca"],
+                "La Pampa": ["Santa Rosa", "General Pico", "Victorica"],
+                "La Rioja": ["La Rioja", "Chamical", "Aimogasta"],
                 "Mendoza": ["Mendoza", "Godoy Cruz", "Las Heras"],
-                "Antioquia": ["Medellín", "Envigado", "Sabaneta"]
+                "Misiones": ["Posadas", "Oberá", "Puerto Iguazú"],
+                "Neuquén": ["Neuquén", "Zapala", "San Martín de los Andes"],
+                "Río Negro": ["Viedma", "San Carlos de Bariloche", "El Bolsón"],
+                "Salta": ["Salta", "Orán", "Tartagal"],
+                "San Juan": ["San Juan", "Chimbas", "Ullum"],
+                "San Luis": ["San Luis", "Merlo", "La Toma"],
+                "Santa Cruz": ["Río Gallegos", "El Calafate", "El Chaltén"],
+                "Santa Fe": ["Rosario", "Santa Fe", "Rafaela"],
+                "Santiago del Estero": ["Santiago del Estero", "La Banda", "Frías"],
+                "Tierra del Fuego": ["Ushuaia", "Río Grande", "Tolhuin"],
+                "Tucumán": ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo"]
             },
             Chile: {
                 "Metropolitana": ["Santiago", "Las Condes", "Providencia"],
@@ -517,10 +485,16 @@
             }
         };
 
-        // VARIABLES GLOBALES
+        // 31+ RUBROS VARIADOS
+        const RUBROS_TODOS = [
+            "Backend", "Frontend", "Full Stack", "DevOps", "QA / Testing", "Data Science", "Data Engineering", "Ciberseguridad", "Sistemas", "Infraestructura",
+            "Marketing Digital", "Community Manager", "Content Creator", "Ventas", "Comercial", "Recursos Humanos", "Administración", "Finanzas", "Contabilidad", "Operaciones", "Logística",
+            "UX/UI Design", "Diseño Gráfico", "Diseño Web", "Motion Graphics", "Producción de Contenidos",
+            "Consultoría", "Educación", "Legal", "Proyectos", "Product Manager", "Business Analyst", "Growth Hacking"
+        ];
+
         let userEmail = null;
 
-        // INICIALIZACIÓN
         window.addEventListener('load', () => {
             const token = localStorage.getItem('corvus_token');
             if (!token) {
@@ -529,28 +503,31 @@
             }
             userEmail = token;
             document.getElementById('user-name').textContent = userEmail.split('@')[0];
-            
+            populateRubrosCheckboxes();
             loadProfile();
             setupTabButtons();
             setupCountrySelect();
             setupVisibilityToggle();
         });
 
+        function populateRubrosCheckboxes() {
+            const container = document.getElementById('rubros-container');
+            container.innerHTML = RUBROS_TODOS.map(rubro => {
+                const id = `rubro-${rubro.toLowerCase().replace(/[\s/]/g, '-')}`;
+                return `<div class="checkbox-item"><input type="checkbox" id="${id}" value="${rubro}"><label for="${id}">${rubro}</label></div>`;
+            }).join('');
+        }
+
         function setupTabButtons() {
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const tabName = e.target.dataset.tab;
-                    switchTab(tabName);
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(`tab-${tabName}`).classList.add('active');
                 });
             });
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-            document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
         function setupCountrySelect() {
@@ -562,7 +539,6 @@
                 const pais = paisSelect.value;
                 provinciaSelect.innerHTML = '<option value="">Selecciona una provincia</option>';
                 ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
-
                 if (pais && ubicaciones[pais]) {
                     Object.keys(ubicaciones[pais]).forEach(provincia => {
                         const opt = document.createElement('option');
@@ -577,7 +553,6 @@
                 const pais = paisSelect.value;
                 const provincia = provinciaSelect.value;
                 ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
-
                 if (pais && provincia && ubicaciones[pais][provincia]) {
                     ubicaciones[pais][provincia].forEach(ciudad => {
                         const opt = document.createElement('option');
@@ -594,25 +569,13 @@
                 const response = await fetch('/api/profile', {
                     headers: { 'Authorization': `Bearer ${userEmail}` }
                 });
-
                 if (response.ok) {
                     const profile = await response.json();
-                    
                     document.getElementById('perfil-nombre').value = profile.nombre || '';
                     document.getElementById('perfil-email').value = profile.email || '';
                     document.getElementById('perfil-telefono').value = profile.telefono || '';
                     document.getElementById('perfil-linkedin').value = profile.linkedin || '';
                     document.getElementById('perfil-pais').value = profile.pais || '';
-                    document.getElementById('perfil-rubro').value = profile.rubro || '';
-                    document.getElementById('perfil-seniority').value = profile.seniority || '';
-                    document.getElementById('perfil-notas').value = profile.notas || '';
-
-                    document.getElementById('busco-modalidad').value = profile.modalidad || '';
-                    document.getElementById('busco-seniority').value = profile.seniority_deseado || '';
-                    document.getElementById('busco-disponibilidad').value = profile.disponibilidad || '';
-                    document.getElementById('busco-salario-ars').value = profile.salario_ars || '';
-                    document.getElementById('busco-salario-usd').value = profile.salario_usd || '';
-
                     if (profile.pais) {
                         document.getElementById('perfil-pais').dispatchEvent(new Event('change'));
                         setTimeout(() => {
@@ -625,15 +588,13 @@
                             }
                         }, 100);
                     }
-
                     if (profile.rubros_interes && Array.isArray(profile.rubros_interes)) {
                         profile.rubros_interes.forEach(rubro => {
-                            const id = `rubro-${rubro.toLowerCase().replace(/\s+/g, '')}`;
+                            const id = `rubro-${rubro.toLowerCase().replace(/[\s/]/g, '-')}`;
                             const checkbox = document.getElementById(id);
                             if (checkbox) checkbox.checked = true;
                         });
                     }
-
                     if (profile.visible) {
                         document.getElementById('visibility-toggle').classList.add('active');
                     }
@@ -643,10 +604,8 @@
             }
         }
 
-        // GUARDAR PERFIL
         document.getElementById('perfil-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const data = {
                 nombre: document.getElementById('perfil-nombre').value,
                 telefono: document.getElementById('perfil-telefono').value,
@@ -658,7 +617,6 @@
                 seniority: document.getElementById('perfil-seniority').value,
                 notas: document.getElementById('perfil-notas').value
             };
-
             try {
                 const response = await fetch('/api/profile', {
                     method: 'POST',
@@ -668,28 +626,18 @@
                     },
                     body: JSON.stringify(data)
                 });
-
                 const msgDiv = document.getElementById('perfil-message');
-                if (response.ok) {
-                    msgDiv.className = 'message success';
-                    msgDiv.textContent = '✅ Perfil guardado correctamente';
-                } else {
-                    msgDiv.className = 'message error';
-                    msgDiv.textContent = '❌ Error al guardar perfil';
-                }
+                msgDiv.className = response.ok ? 'message success' : 'message error';
+                msgDiv.textContent = response.ok ? '✅ Guardado correctamente' : '❌ Error';
                 setTimeout(() => msgDiv.style.display = 'none', 3000);
             } catch (error) {
                 console.error('[SAVE] Error:', error);
             }
         });
 
-        // GUARDAR PREFERENCIAS
         document.getElementById('busco-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const rubrosInteres = Array.from(document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked'))
-                .map(cb => cb.value);
-
+            const rubrosInteres = Array.from(document.querySelectorAll('#rubros-container input[type="checkbox"]:checked')).map(cb => cb.value);
             const data = {
                 modalidad: document.getElementById('busco-modalidad').value,
                 seniority_deseado: document.getElementById('busco-seniority').value,
@@ -698,7 +646,6 @@
                 salario_usd: parseInt(document.getElementById('busco-salario-usd').value) || null,
                 rubros_interes: rubrosInteres
             };
-
             try {
                 const response = await fetch('/api/profile', {
                     method: 'POST',
@@ -708,15 +655,9 @@
                     },
                     body: JSON.stringify(data)
                 });
-
                 const msgDiv = document.getElementById('busco-message');
-                if (response.ok) {
-                    msgDiv.className = 'message success';
-                    msgDiv.textContent = '✅ Preferencias guardadas correctamente';
-                } else {
-                    msgDiv.className = 'message error';
-                    msgDiv.textContent = '❌ Error al guardar preferencias';
-                }
+                msgDiv.className = response.ok ? 'message success' : 'message error';
+                msgDiv.textContent = response.ok ? '✅ Guardado correctamente' : '❌ Error';
                 setTimeout(() => msgDiv.style.display = 'none', 3000);
             } catch (error) {
                 console.error('[SAVE] Error:', error);
@@ -728,7 +669,6 @@
             toggle.addEventListener('click', async () => {
                 toggle.classList.toggle('active');
                 const visible = toggle.classList.contains('active');
-
                 try {
                     await fetch('/api/profile', {
                         method: 'POST',

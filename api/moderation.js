@@ -1,4 +1,4 @@
-// /api/moderation.js — Contact requests CRUD
+// /api/moderation.js — Contact requests CRUD con mejor error handling
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -7,21 +7,15 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-// Extrae el email del token (que es simplemente el email)
 function getEmailFromToken(token) {
   if (!token) return null;
-  
-  // El token es solo el email, puede estar en formato:
-  // - "email@example.com" (simple)
-  // - "email@example.com|algo" (legacy, sacamos la parte antes del |)
   
   token = token.trim();
   
   if (token.includes('|')) {
-    return token.split('|')[0];
+    return token.split('|')[0].trim();
   }
   
-  // Validar que sea un email válido
   if (token.includes('@')) {
     return token;
   }
@@ -29,9 +23,7 @@ function getEmailFromToken(token) {
   return null;
 }
 
-// Extrae el token de Authorization header, body, o cookies
 function extractToken(req) {
-  // 1. Authorization header: "Bearer email@example.com"
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
@@ -39,13 +31,11 @@ function extractToken(req) {
     return token;
   }
   
-  // 2. Body (para POST/PATCH)
   if (req.body && req.body.token) {
     console.log('[extractToken] From body.token:', req.body.token);
     return req.body.token;
   }
   
-  // 3. Cookies
   const cookies = req.headers.cookie || '';
   const match = cookies.match(/corvus_token=([^;]+)/);
   if (match) {
@@ -87,7 +77,6 @@ async function sendEmailNotification(email, subject, htmlContent) {
 }
 
 export default async function handler(req, res) {
-  // Validar método
   if (req.method === 'GET') {
     return handleGET(req, res);
   } else if (req.method === 'POST') {
@@ -99,10 +88,8 @@ export default async function handler(req, res) {
   }
 }
 
-// GET /api/moderation?type=received|sent
 async function handleGET(req, res) {
   try {
-    // Extraer token
     const token = extractToken(req);
     const email = getEmailFromToken(token);
     
@@ -111,49 +98,35 @@ async function handleGET(req, res) {
       return res.status(401).json({ error: 'Invalid token' });
     }
     
-    console.log('[GET] Fetching contact requests for:', email);
+    const type = req.query.type || 'received';
+    console.log('[GET] Fetching', type, 'requests for:', email);
     
-    // Determinar si quiere recibidas o enviadas
-    const type = req.query.type || 'received'; // 'received' o 'sent'
+    let query = supabase
+      .from('contact_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
     
     if (type === 'received') {
-      // Solicitudes RECIBIDAS (el usuario es el candidato)
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select('*')
-        .eq('candidate_email', email)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('[GET] Supabase error:', error);
-        return res.status(500).json({ error: error.message });
-      }
-      
-      console.log('[GET] Found', data.length, 'received requests');
-      return res.status(200).json(data);
-    } else {
-      // Solicitudes ENVIADAS (el usuario es el recruiter)
-      const { data, error } = await supabase
-        .from('contact_requests')
-        .select('*')
-        .eq('recruiter_email', email)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('[GET] Supabase error:', error);
-        return res.status(500).json({ error: error.message });
-      }
-      
-      console.log('[GET] Found', data.length, 'sent requests');
-      return res.status(200).json(data);
+      query = query.eq('candidate_email', email);
+    } else if (type === 'sent') {
+      query = query.eq('recruiter_email', email);
     }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('[GET] Supabase error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+    
+    console.log('[GET] Found', data ? data.length : 0, type, 'requests');
+    return res.status(200).json(data || []);
   } catch (error) {
     console.error('[GET] Unexpected error:', error);
     res.status(500).json({ error: error.message });
   }
 }
 
-// POST /api/moderation — Enviar solicitud de contacto
 async function handlePOST(req, res) {
   try {
     const token = extractToken(req);
@@ -172,7 +145,6 @@ async function handlePOST(req, res) {
     
     console.log('[POST] Recruiter', recruiter_email, 'sending request to', candidate_email);
     
-    // Insertar en contact_requests
     const { data, error } = await supabase
       .from('contact_requests')
       .insert({
@@ -191,14 +163,12 @@ async function handlePOST(req, res) {
     
     const request = data[0];
     
-    // Obtener datos del recruiter
     const { data: recruiterData } = await supabase
       .from('profiles')
       .select('nombre, company')
       .eq('email', recruiter_email)
       .single();
     
-    // Enviar email al candidato
     const recruiterName = recruiterData?.nombre || 'Un recruiter';
     const recruiterCompany = recruiterData?.company || company || 'Una empresa';
     
@@ -222,7 +192,6 @@ async function handlePOST(req, res) {
   }
 }
 
-// PATCH /api/moderation — Responder solicitud
 async function handlePATCH(req, res) {
   try {
     const token = extractToken(req);
@@ -241,12 +210,11 @@ async function handlePATCH(req, res) {
     
     console.log('[PATCH] Candidate', candidate_email, 'responding to request', request_id, 'with', status);
     
-    // Actualizar status
     const { data, error } = await supabase
       .from('contact_requests')
       .update({ status })
       .eq('id', request_id)
-      .eq('candidate_email', candidate_email) // Validar que le pertenece
+      .eq('candidate_email', candidate_email)
       .select();
     
     if (error) {
@@ -261,11 +229,9 @@ async function handlePATCH(req, res) {
     
     const request = data[0];
     
-    // Si fue aceptada, enviar email al recruiter
     if (status === 'accepted') {
       const recruiterEmail = request.recruiter_email;
       
-      // Obtener datos del candidato
       const { data: candidateData } = await supabase
         .from('profiles')
         .select('nombre')

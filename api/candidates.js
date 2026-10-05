@@ -3,116 +3,67 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
+if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase credentials');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+function getEmailFromToken(authHeader) {
+    if (!authHeader) return null;
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') return null;
+    return parts[1];
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+    console.log('[API CANDIDATES] Method:', req.method);
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'No autorizado' });
+    if (req.method !== 'GET') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
+    try {
+        const email = getEmailFromToken(req.headers.authorization);
+        if (!email) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.split(' ')[1]);
-  if (authError || !user) return res.status(401).json({ error: 'Sesión inválida' });
+        console.log('[CANDIDATES] Recruiter:', email);
 
-  // Verificar que es recruiter
-  const { data: recruiterProfile } = await supabase
-    .from('profiles').select('role').eq('id', user.id).single();
-  if (recruiterProfile?.role !== 'recruiter') return res.status(403).json({ error: 'Acceso denegado' });
+        // OBTENER TODOS LOS CANDIDATOS VISIBLES
+        const { data: candidates, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('role', 'candidato')
+            .eq('visible', true)
+            .order('created_at', { ascending: false });
 
-  const { rubro, seniority, modalidad, disponibilidad, min_score } = req.query;
+        if (error) {
+            console.error('[CANDIDATES] Error:', error);
+            return res.status(500).json({ error: error.message });
+        }
 
-  // Obtener candidatos visibles con su mejor score
-  let query = supabase
-    .from('profiles')
-    .select(`
-      id, nombre, apellido, rubro, seniority, ubicacion,
-      email_contacto, telefono, linkedin, genero,
-      mostrar_email, mostrar_telefono, mostrar_linkedin, mostrar_genero,
-      tipo_puesto, modalidad, seniority_deseado, disponibilidad,
-      rubros_interes, notas
-    `)
-    .eq('visible', true)
-    .eq('role', 'candidato');
+        console.log('[CANDIDATES] Found:', candidates?.length || 0);
 
-  if (rubro) query = query.eq('rubro', rubro);
-  if (seniority) query = query.eq('seniority', seniority);
-  if (modalidad) query = query.eq('modalidad', modalidad);
-  if (disponibilidad) query = query.eq('disponibilidad', disponibilidad);
+        // FILTRAR CAMPOS SENSIBLES
+        const safe = candidates.map(c => ({
+            id: c.id,
+            nombre: c.nombre,
+            rubro: c.rubro,
+            seniority: c.seniority,
+            pais: c.pais,
+            provincia: c.provincia,
+            modalidad: c.modalidad,
+            disponibilidad: c.disponibilidad,
+            cv_fit_score: c.cv_fit_score || 0,
+            linkedin: c.linkedin || null
+        }));
 
-  const { data: candidates, error } = await query;
-  if (error) return res.status(500).json({ error: error.message });
+        res.status(200).json(safe);
 
-  // Para cada candidato obtener su mejor score y badges
-  const candidatesWithScores = await Promise.all(
-    (candidates || []).map(async c => {
-      const { data: analyses } = await supabase
-        .from('fit_analyses')
-        .select('score')
-        .eq('user_id', c.id)
-        .order('score', { ascending: false })
-        .limit(1);
-
-      const bestScore = analyses?.[0]?.score || null;
-
-      // CALCULAR BADGES
-      const badges = [];
-
-      // Badge 1: Perfil completo (5+ campos)
-      const requiredFields = ['nombre', 'apellido', 'rubro', 'seniority', 'ubicacion'];
-      const filledCount = requiredFields.filter(f => c[f]).length;
-      if (filledCount >= 5) {
-        badges.push({
-          id: 'profile_complete',
-          icon: '✅',
-          name: 'Perfil completo',
-          color: '#4ADE80'
-        });
-      }
-
-      // Badge 2: Analizado (≥1 análisis)
-      if (analyses && analyses.length > 0) {
-        badges.push({
-          id: 'analyzed',
-          icon: '📊',
-          name: 'Analizado',
-          color: '#3B82F6'
-        });
-      }
-
-      // Badge 3: Activo (visible = true, pero ya está filtrado)
-      badges.push({
-        id: 'active',
-        icon: '🎯',
-        name: 'Activo',
-        color: '#8FA8C8'
-      });
-
-      // Badge 4: Score alto (max score ≥75)
-      if (bestScore && bestScore >= 75) {
-        badges.push({
-          id: 'high_score',
-          icon: '🔥',
-          name: 'Score alto',
-          color: '#F59E0B'
-        });
-      }
-
-      return { ...c, best_score: bestScore, badges: badges };
-    })
-  );
-
-  // Filtrar por score mínimo si se especificó
-  const filtered = min_score
-    ? candidatesWithScores.filter(c => (c.best_score || 0) >= parseInt(min_score))
-    : candidatesWithScores;
-
-  // Ordenar por score descendente
-  filtered.sort((a, b) => (b.best_score || 0) - (a.best_score || 0));
-
-  return res.status(200).json({ candidates: filtered });
+    } catch (error) {
+        console.error('[API CANDIDATES] Error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
 }

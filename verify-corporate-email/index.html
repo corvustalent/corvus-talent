@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificar Email Corporativo — Corvus Talent</title>
+  <title>Verificar Email — Corvus Talent</title>
   <style>
     * {
       margin: 0;
@@ -12,81 +12,97 @@
     }
 
     body {
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0A1628 0%, #19273B 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #0A1628 0%, #152132 100%);
       color: #BABDC2;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 1.5rem;
     }
 
     .container {
       background: #19273B;
-      border: 1px solid rgba(143, 168, 200, 0.2);
+      border: 1px solid rgba(143, 168, 200, 0.15);
       border-radius: 12px;
-      padding: 3rem;
-      max-width: 500px;
+      padding: 2.5rem;
+      max-width: 450px;
       width: 100%;
       text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     h1 {
       color: #FFFFFF;
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
     }
 
-    .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    p {
-      color: #BABDC2;
-      font-size: 0.95rem;
-      line-height: 1.6;
+    .subtitle {
+      color: #8FA8C8;
+      font-size: 0.9rem;
       margin-bottom: 1.5rem;
     }
 
     .status-box {
       background: #0A1628;
       border-left: 3px solid #8FA8C8;
-      padding: 1.5rem;
+      padding: 1.75rem;
       border-radius: 6px;
       margin: 2rem 0;
-      min-height: 80px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(143, 168, 200, 0.3);
+      border-top-color: #8FA8C8;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .status-message {
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: #BABDC2;
-      margin-bottom: 0.5rem;
+      line-height: 1.5;
     }
 
     .status-sub {
       font-size: 0.85rem;
       color: #656D78;
+      margin-top: 0.75rem;
     }
 
-    .spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid #8FA8C8;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin: 0 auto 1rem;
+    .badge {
+      display: inline-block;
+      background: rgba(143, 168, 200, 0.1);
+      border: 1px solid rgba(143, 168, 200, 0.3);
+      color: #8FA8C8;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      font-weight: 500;
     }
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .btn {
@@ -101,18 +117,19 @@
       display: inline-block;
       transition: all 0.3s ease;
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .btn:hover {
       background: #A8BFD8;
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
 
     .btn-secondary {
       background: transparent;
       color: #8FA8C8;
       border: 1px solid #8FA8C8;
+      padding: 0.65rem 1.25rem;
     }
 
     .btn-secondary:hover {
@@ -127,106 +144,114 @@
       color: #F87171;
     }
 
-    .badge {
-      display: inline-block;
-      background: rgba(143, 168, 200, 0.1);
-      color: #8FA8C8;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-    }
-
     .footer {
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(143, 168, 200, 0.2);
-      font-size: 0.85rem;
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(143, 168, 200, 0.1);
+      font-size: 0.8rem;
       color: #656D78;
     }
 
     .footer a {
       color: #8FA8C8;
       text-decoration: none;
+      transition: color 0.3s;
     }
 
     .footer a:hover {
-      text-decoration: underline;
+      color: #FFFFFF;
+    }
+
+    .icon-big {
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    .error-badge {
+      background: rgba(248, 113, 113, 0.1);
+      border-left-color: #F87171;
+    }
+
+    .success-badge {
+      background: rgba(76, 175, 80, 0.1);
+      border-left-color: #4CAF50;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div id="content">
-      <div class="icon">🔍</div>
+      <div class="logo">🦅</div>
       <h1>Verificando tu email...</h1>
+      <p class="subtitle">Un momento, estamos confirmando tu dirección</p>
+      
       <div class="status-box">
         <div class="spinner"></div>
-        <p class="status-message">Un momento, estamos verificando tu email corporativo.</p>
+        <p class="status-message">Validando tu token de verificación</p>
       </div>
     </div>
 
     <div class="footer">
-      <a href="https://corvustalent.com.ar/">Volver a Corvus Talent</a>
+      <a href="https://corvustalent.com.ar/">← Volver a Corvus Talent</a>
     </div>
   </div>
 
   <script>
     async function verifyEmail() {
-      // Obtener token de URL
       const params = new URLSearchParams(window.location.search);
       const token = params.get('token');
+      const email = params.get('email');
 
-      if (!token) {
-        showError('❌ Token inválido o no proporcionado', 'Por favor, intenta desde el email de verificación nuevamente.');
+      if (!token || !email) {
+        showError('Parámetros inválidos', 'El link de verificación no es válido. Revisa el email nuevamente.');
         return;
       }
 
       try {
-        const response = await fetch('/api/verify-corporate-email', {
+        const response = await fetch('/api/verify', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            action: 'verify-token',
-            token: token
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, email })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          if (response.status === 404) {
-            showError('❌ Token expirado o inválido', 'Los tokens expiran en 24 horas. Por favor, solicita uno nuevo desde tu dashboard.');
-          } else if (response.status === 400 && data.error.includes('expired')) {
-            showError('❌ Token expirado', 'Los tokens expiran en 24 horas. Por favor, solicita uno nuevo desde tu dashboard.');
-          } else {
-            showError('❌ Error en la verificación', data.error || 'Algo salió mal. Intenta de nuevo.');
-          }
+          showError(
+            data.error || 'Verificación fallida',
+            'El token puede haber expirado (válido por 1 hora) o es inválido.'
+          );
           return;
         }
 
-        showSuccess('✓ Email verificado correctamente', 'Tu email corporativo está verificado. Los candidatos verán un badge de confianza 🔵 en tu perfil.');
+        showSuccess(
+          '¡Verificado!',
+          data.message || 'Tu email ha sido confirmado correctamente.'
+        );
       } catch (error) {
         console.error('Error:', error);
-        showError('❌ Error de conexión', 'No pudimos conectar con el servidor. Intenta de nuevo.');
+        showError('Error de conexión', 'No pudimos conectar con el servidor. Intenta de nuevo.');
       }
     }
 
     function showSuccess(title, message) {
       const content = document.getElementById('content');
       content.innerHTML = `
-        <div class="icon success">✓</div>
-        <h1 class="success">¡Verificación exitosa!</h1>
-        <div class="status-box">
-          <p class="status-message success">${title}</p>
-          <p class="status-sub">${message}</p>
-          <div class="badge">Email verificado 🔵</div>
+        <div class="icon-big success">✓</div>
+        <h1 class="success">${title}</h1>
+        <p class="subtitle" style="color: #BABDC2;">Tu email está verificado</p>
+        
+        <div class="status-box success-badge">
+          <p class="status-message success">${message}</p>
+          <div class="badge" style="border-color: #4CAF50; color: #4CAF50; background: rgba(76, 175, 80, 0.1);">
+            ✓ Email verificado
+          </div>
         </div>
-        <p style="margin-top: 2rem;">Tu perfil ahora muestra que eres un recruiter verificado. Los candidatos confían más en recruiters verificados.</p>
-        <div style="margin-top: 2rem;">
-          <a href="https://corvustalent.com.ar/dashboard/recruiter/" class="btn">Ir a mi Dashboard</a>
+
+        <div class="button-group">
+          <a href="/auth" class="btn">Iniciar Sesión</a>
+          <a href="/" class="btn btn-secondary">Ir a Inicio</a>
         </div>
       `;
     }
@@ -234,19 +259,22 @@
     function showError(title, message) {
       const content = document.getElementById('content');
       content.innerHTML = `
-        <div class="icon error">⚠️</div>
+        <div class="icon-big error">✕</div>
         <h1 class="error">${title}</h1>
-        <div class="status-box">
+        <p class="subtitle" style="color: #BABDC2;">La verificación no se pudo completar</p>
+        
+        <div class="status-box error-badge">
           <p class="status-message error">${message}</p>
+          <p class="status-sub">Si el problema persiste, solicita un nuevo link de verificación.</p>
         </div>
-        <div style="margin-top: 2rem;">
-          <a href="https://corvustalent.com.ar/dashboard/recruiter/" class="btn">Volver al Dashboard</a>
-          <a href="https://corvustalent.com.ar/" class="btn btn-secondary" style="margin-left: 1rem;">Ir a Inicio</a>
+
+        <div class="button-group">
+          <a href="/auth/signup" class="btn">Registrarse nuevamente</a>
+          <a href="/" class="btn btn-secondary">Volver a inicio</a>
         </div>
       `;
     }
 
-    // Ejecutar verificación al cargar
     document.addEventListener('DOMContentLoaded', verifyEmail);
   </script>
 </body>

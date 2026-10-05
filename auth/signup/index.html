@@ -58,9 +58,7 @@
             transition: background 0.3s;
             margin-top: 0.5rem;
         }
-        button:hover {
-            background: #152132;
-        }
+        button:hover { background: #152132; }
         button:disabled {
             background: #999;
             cursor: not-allowed;
@@ -81,13 +79,19 @@
             margin-bottom: 1rem;
             display: none;
         }
+        .info {
+            background: #e5eef5;
+            color: #0a1628;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
         a {
             color: #8fa8c8;
             text-decoration: none;
         }
-        a:hover {
-            text-decoration: underline;
-        }
+        a:hover { text-decoration: underline; }
         .link-section {
             text-align: center;
             margin-top: 1rem;
@@ -102,8 +106,9 @@
         
         <div class="error" id="error-msg"></div>
         <div class="success" id="success-msg"></div>
+        <div class="info" id="info-msg"></div>
         
-        <form id="signup-form">
+        <form id="signup-form" style="display: none;">
             <div class="form-group">
                 <label for="nombre">Nombre</label>
                 <input type="text" id="nombre" name="nombre" required>
@@ -129,6 +134,11 @@
             
             <button type="submit" id="submit-btn">Crear Cuenta</button>
         </form>
+
+        <div style="text-align: center; padding: 2rem;" id="loading-state">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+            <p>Cargando...</p>
+        </div>
         
         <div class="link-section">
             <a href="/auth">¿Ya tienes cuenta? Inicia sesión</a>
@@ -144,17 +154,34 @@
         const submitBtn = document.getElementById('submit-btn');
         const errorDiv = document.getElementById('error-msg');
         const successDiv = document.getElementById('success-msg');
+        const infoDiv = document.getElementById('info-msg');
+        const loadingState = document.getElementById('loading-state');
+
+        // MOSTRAR FORM AL CARGAR
+        window.addEventListener('load', () => {
+            loadingState.style.display = 'none';
+            form.style.display = 'block';
+        });
 
         function showError(msg) {
             errorDiv.textContent = msg;
             errorDiv.style.display = 'block';
             successDiv.style.display = 'none';
+            infoDiv.style.display = 'none';
         }
 
         function showSuccess(msg) {
             successDiv.textContent = msg;
             successDiv.style.display = 'block';
             errorDiv.style.display = 'none';
+            infoDiv.style.display = 'none';
+        }
+
+        function showInfo(msg) {
+            infoDiv.textContent = msg;
+            infoDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
         }
 
         function setLoading(loading) {
@@ -176,9 +203,7 @@
 
                 const response = await fetch('/api/auth', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'register',
                         email: email,
@@ -195,32 +220,39 @@
 
                 if (!response.ok) {
                     console.error('[SIGNUP] Error:', data.error);
-                    showError(`Error: ${data.error || 'Registro fallido'}`);
+                    showError(`❌ ${data.error || 'Registro fallido'}`);
                     setLoading(false);
                     return;
                 }
 
                 console.log('[SIGNUP] ✅ Registro exitoso');
 
-                showSuccess('✅ Cuenta creada exitosamente. Redirigiendo al login...');
+                // MOSTRAR MENSAJES DE VERIFICACIÓN
+                form.style.display = 'none';
+                showInfo(`
+                    ✅ Cuenta creada exitosamente.\n\n
+                    Hemos enviado un email de verificación a ${email}.\n\n
+                    Por favor verifica tu email haciendo click en el link para poder ingresar.
+                `);
+
+                // REDIRIGIR EN 5 SEGUNDOS
                 setTimeout(() => {
                     window.location.href = '/auth';
-                }, 2000);
+                }, 5000);
+
             } catch (error) {
                 console.error('[SIGNUP] Unexpected error:', error);
-                showError('Error: ' + error.message);
+                showError('❌ Error: ' + error.message);
                 setLoading(false);
             }
         });
 
         // Check if already logged in
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('corvus_token');
-            if (token) {
-                console.log('[LOAD] Usuario ya logueado, redirigiendo');
-                window.location.href = '/dashboard/candidato';
-            }
-        });
+        const token = localStorage.getItem('corvus_token');
+        if (token) {
+            console.log('[LOAD] Usuario ya logueado, redirigiendo');
+            window.location.href = '/dashboard/candidato';
+        }
     </script>
 </body>
 </html>

@@ -215,6 +215,69 @@
         const token = localStorage.getItem('corvus_token') || sessionStorage.getItem('corvus_token');
         if (!token) window.location.href = '/auth/';
 
+        // LISTA COMPLETA DE 31 RUBROS
+        const RUBROS_COMPLETOS = [
+            'Desarrollo Backend',
+            'Desarrollo Frontend',
+            'Desarrollo Full Stack',
+            'DevOps',
+            'Data Science',
+            'Data Analytics',
+            'Data Engineering',
+            'QA Manual',
+            'QA Automation',
+            'Diseño UI/UX',
+            'Product Manager',
+            'Project Manager',
+            'Scrum Master',
+            'Business Analyst',
+            'IT Support',
+            'IT Security',
+            'Database Administrator',
+            'System Administrator',
+            'Mobile Developer',
+            'Ingeniero Civil',
+            'Ingeniero Mecánico',
+            'Contador',
+            'Abogado',
+            'Marketing',
+            'Ventas',
+            'Recursos Humanos',
+            'Finanzas',
+            'Logística',
+            'Operaciones',
+            'Consultoría',
+            'Otro'
+        ];
+
+        // TODAS LAS CIUDADES DE ARGENTINA POR PROVINCIA
+        const CIUDADES_ARGENTINA = {
+            'Buenos Aires': ['CABA', 'La Plata', 'Quilmes', 'Avellaneda', 'Lomas de Zamora', 'Almirante Brown', 'Presidente Perón', 'Bahía Blanca', 'Mar del Plata', 'La Matanza', 'Merlo', 'San Martín', 'Moreno', 'Morón', 'Hurlingham', 'San Isidro', 'San Andrés de Giles', 'San Antonio de Areco'],
+            'Santa Fe': ['Rosario', 'Santa Fe', 'Rafaela', 'Reconquista', 'Venado Tuerto', 'Santo Tomé', 'Coronda', 'San Cristóbal', 'Gálvez', 'Firmat', 'Cañada de Gómez', 'Sunchales', 'Casilda', 'Fray Luis Beltrán', 'Arroyo Seco'],
+            'Córdoba': ['Córdoba', 'Río Cuarto', 'Villa Mercedes', 'San Francisco', 'Jesús María', 'Morteros', 'Huinca Renancó', 'Laboulaye', 'Campana', 'Bell Ville', 'Pilar', 'Las Varillas', 'Montecristo', 'Oncativo'],
+            'Mendoza': ['Mendoza', 'San Rafael', 'General Alvear', 'Godoy Cruz', 'Guaymallén', 'Maipú', 'Las Heras', 'Luján de Cuyo', 'Lavalle', 'Tunuyán', 'San Martín'],
+            'Tucumán': ['San Miguel de Tucumán', 'Concepción', 'Monteros', 'Tafí del Valle', 'Chicligasta', 'La Cocha', 'Lules', 'Alderetes', 'Famaillá', 'Burruyacú'],
+            'Salta': ['Salta', 'San Salvador de Jujuy', 'Tartagal', 'General Güemes', 'Rosario de Lerma', 'La Caldera', 'Metán', 'El Carril', 'Venta y Media'],
+            'Misiones': ['Oberá', 'Eldorado', 'Puerto Iguazú', 'Corrientes', 'Posadas', 'Aristóbulo del Valle', 'Jardín América', 'San Ignacio'],
+            'Corrientes': ['Corrientes', 'Mercedes', 'Paso de la Cruz', 'Gobernador Virasoro', 'Ituzaingó', 'Saladas', 'Goya', 'Empedrado'],
+            'Entre Ríos': ['Paraná', 'Concordia', 'Gualeguaychú', 'Victoria', 'Concepción del Uruguay', 'La Paz', 'Rosario del Tala', 'Nogoyá', 'Viedma'],
+            'La Pampa': ['Santa Rosa', 'General Pico', 'Victorica', 'Quemú Quemú', 'Guanaco', 'Macachín', 'Anguil'],
+            'Chubut': ['Rawson', 'Puerto Madryn', 'Comodoro Rivadavia', 'Trelew', 'Esquel', 'Gaiman', 'Punta Tombo', 'Los Antiguos'],
+            'Santa Cruz': ['Río Gallegos', 'El Calafate', 'Perito Moreno', 'Punta Arenas', 'Gobernador Gregores', 'Dolavon'],
+            'Tierra del Fuego': ['Ushuaia', 'Río Grande', 'Tolhuin', 'Porvenir'],
+            'Neuquén': ['Neuquén', 'San Martín de los Andes', 'Junín de los Andes', 'Zapala', 'Villa La Angostura', 'Chos Malal', 'Picún Leufú'],
+            'Río Negro': ['Viedma', 'San Carlos de Bariloche', 'General Roca', 'Cipolletti', 'Choele Choel', 'Cinco Saltos', 'Ingeniero Jacobacci', 'El Bolsón'],
+            'Formosa': ['Formosa', 'Clorinda', 'Ingeniero Juárez', 'Pirané', 'El Colorado', 'Posta Cambio'],
+            'Catamarca': ['San Fernando del Valle de Catamarca', 'Belén', 'Tinogasta', 'Santa María', 'Andalgalá', 'San Isidro de Lules'],
+            'La Rioja': ['La Rioja', 'Chilecito', 'Chamical', 'Aimogasta', 'Villa Unión', 'Famatina'],
+            'San Juan': ['San Juan', 'Deán Funes', 'Caucete', 'Iglesia', 'Jáchal', 'Rawson', 'Pocito', 'Angaco'],
+            'San Luis': ['San Luis', 'Villa Mercedes', 'Merlo', 'La Toma', 'Gobernador Dupuy', 'Saladillo'],
+            'Jujuy': ['San Salvador de Jujuy', 'Palpalá', 'Libertador General San Martín', 'Perico', 'Monterrico', 'El Carmen', 'Purmamarca'],
+            'Santiago del Estero': ['Santiago del Estero', 'La Banda', 'Termas de Río Hondo', 'Bandereta', 'Frías', 'Loreto'],
+            'Chaco': ['Resistencia', 'Barranqueras', 'Corrientes', 'Fontana', 'Avia Terai', 'Roque Sáenz Peña', 'Presidencia Roque Sáenz Peña'],
+            'Sulima': ['Comodrivago', 'Siná', 'Tigre', 'Puerto Casado', 'Embarcación']
+        };
+
         function switchTab(e, tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
@@ -239,6 +302,9 @@
                 document.getElementById('modalidad').value = profile.modalidad || '';
                 document.getElementById('disponibilidad').value = profile.disponibilidad || '';
                 
+                // Cargar rubros
+                loadRubros();
+
                 // Cargar provincias y ciudades
                 await loadProvincias();
                 if (profile.provincia) {
@@ -252,23 +318,24 @@
                     document.getElementById('visibilityToggle').classList.add('active');
                 }
 
-                loadRubros();
                 loadReceivedRequests();
             } catch (err) {
                 console.error('Error loading profile:', err);
             }
         }
 
-        async function loadRubros() {
-            const rubros = ['Desarrollo', 'DevOps', 'Data', 'QA', 'Diseño', 'Product', 'Otro'];
+        function loadRubros() {
             const select = document.getElementById('rubro');
-            rubros.forEach(rubro => {
-                if (!select.querySelector(`option[value="${rubro}"]`)) {
-                    const option = document.createElement('option');
-                    option.value = rubro;
-                    option.textContent = rubro;
-                    select.appendChild(option);
-                }
+            // Limpiar opciones existentes (excepto la primera)
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            // Agregar todos los rubros
+            RUBROS_COMPLETOS.forEach(rubro => {
+                const option = document.createElement('option');
+                option.value = rubro;
+                option.textContent = rubro;
+                select.appendChild(option);
             });
         }
 
@@ -278,7 +345,7 @@
             select.innerHTML = '<option value="">-- Selecciona --</option>';
 
             const provincias = pais === 'Argentina' 
-                ? ['Buenos Aires', 'Santa Fe', 'Córdoba', 'Mendoza', 'Tucumán', 'Salta', 'Misiones', 'Corrientes', 'Entre Ríos', 'La Pampa', 'Chubut', 'Santa Cruz', 'Tierra del Fuego', 'Neuquén', 'Río Negro', 'Formosa', 'Catamarca', 'La Rioja', 'San Juan', 'San Luis', 'Jujuy', 'Santiago del Estero', 'Chaco', 'Sulima']
+                ? Object.keys(CIUDADES_ARGENTINA).sort()
                 : [];
 
             provincias.forEach(prov => {
@@ -294,12 +361,7 @@
             const select = document.getElementById('ciudad');
             select.innerHTML = '<option value="">-- Selecciona --</option>';
 
-            const ciudadesMap = {
-                'Santa Fe': ['Rosario', 'Santa Fe', 'Rafaela', 'Reconquista', 'Venado Tuerto'],
-                'Buenos Aires': ['CABA', 'La Plata', 'Quilmes', 'Avellaneda', 'Lomas de Zamora']
-            };
-
-            const ciudades = ciudadesMap[provincia] || [];
+            const ciudades = CIUDADES_ARGENTINA[provincia] || [];
             ciudades.forEach(ciudad => {
                 const option = document.createElement('option');
                 option.value = ciudad;
@@ -336,9 +398,14 @@
                 if (!res.ok) throw new Error('Error al guardar');
                 
                 document.getElementById('profileSuccess').textContent = '✓ Cambios guardados';
-                setTimeout(() => document.getElementById('profileSuccess').textContent = '', 3000);
+                document.getElementById('buscoSuccess').textContent = '✓ Preferencias guardadas';
+                setTimeout(() => {
+                    document.getElementById('profileSuccess').textContent = '';
+                    document.getElementById('buscoSuccess').textContent = '';
+                }, 3000);
             } catch (err) {
                 document.getElementById('profileError').textContent = err.message;
+                document.getElementById('buscoError').textContent = err.message;
             }
         }
 

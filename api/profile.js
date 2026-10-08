@@ -1,4 +1,4 @@
-// /api/profile.js — Perfil + Contact Requests + Email Notifications (CONSOLIDADO)
+// /api/profile.js — Perfil + Contact Requests + Email Notifications (CONSOLIDADO + FIXED)
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -6,6 +6,16 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+// Campos permitidos para actualizar en profiles
+const ALLOWED_UPDATE_FIELDS = [
+  'nombre', 'apellido', 'telefono', 'linkedin',
+  'pais', 'provincia', 'ciudad',
+  'rubro', 'seniority', 'seniority_deseado',
+  'modalidad', 'disponibilidad',
+  'salario_ars', 'salario_usd',
+  'visible', 'descripcion', 'company', 'notas'
+];
 
 function extractToken(req) {
   const authHeader = req.headers.authorization;
@@ -66,7 +76,10 @@ async function handleGET(req, res) {
         .select('*')
         .eq('recruiter_email', email)
         .order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) {
+        console.error('[GET contact_requests] Error:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
       return res.status(200).json(data || []);
     }
 
@@ -77,7 +90,10 @@ async function handleGET(req, res) {
         .select('*')
         .eq('candidate_email', email)
         .order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) {
+        console.error('[GET received_requests] Error:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
       return res.status(200).json(data || []);
     }
 
@@ -88,11 +104,14 @@ async function handleGET(req, res) {
       .eq('email', email)
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) {
+      console.error('[GET profile] Error:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
     if (!data) return res.status(404).json({ error: 'Profile not found' });
     return res.status(200).json(data);
   } catch (error) {
-    console.error('[GET] Error:', error);
+    console.error('[GET] Unhandled error:', error);
     res.status(500).json({ error: error.message });
   }
 }
@@ -133,7 +152,10 @@ async function handlePOST(req, res) {
         })
         .select();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) {
+        console.error('[contact_create] Insert error:', error.message);
+        return res.status(500).json({ error: error.message });
+      }
 
       // Obtener datos del candidato para el email
       const { data: candidateProfile } = await supabase
@@ -169,10 +191,27 @@ async function handlePOST(req, res) {
       return res.status(201).json(data[0]);
     }
 
-    // POST: actualizar perfil del usuario
-    const updates = req.body;
-    delete updates.email;
-    delete updates.action;
+    // POST: actualizar perfil del usuario (CON VALIDACIÓN)
+    const updates = {};
+    
+    // Filtrar solo campos permitidos y excluir nulls/vacíos innecesarios
+    for (const [key, value] of Object.entries(req.body)) {
+      if (key === 'email' || key === 'action') continue; // Nunca actualizar email
+      if (!ALLOWED_UPDATE_FIELDS.includes(key)) {
+        console.warn(`[POST] Campo ignorado (no permitido): ${key}`);
+        continue;
+      }
+      // Permitir false/0 pero no undefined
+      if (value !== undefined && value !== '') {
+        updates[key] = value;
+      }
+    }
+
+    console.log('[POST] Actualizando perfil de', email, 'con:', Object.keys(updates).join(', '));
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
 
     const { data, error } = await supabase
       .from('profiles')
@@ -181,11 +220,14 @@ async function handlePOST(req, res) {
       .select()
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
-    if (!data) return res.status(404).json({ error: 'Profile not found' });
+    if (error) {
+      console.error('[POST] Update error:', error.message, 'Code:', error.code);
+      return res.status(500).json({ error: error.message, code: error.code });
+    }
+    if (!data) return res.status(404).json({ error: 'Profile not found after update' });
     return res.status(200).json(data);
   } catch (error) {
-    console.error('[POST] Error:', error);
+    console.error('[POST] Unhandled error:', error);
     res.status(500).json({ error: error.message });
   }
 }
@@ -201,6 +243,8 @@ async function handlePATCH(req, res) {
       return res.status(400).json({ error: 'request_id and valid status required' });
     }
 
+    console.log('[PATCH] Updating request', request_id, 'to status:', status);
+
     // Actualizar solicitud
     const { data, error } = await supabase
       .from('contact_requests')
@@ -209,8 +253,11 @@ async function handlePATCH(req, res) {
       .eq('candidate_email', email)
       .select();
 
-    if (error) return res.status(500).json({ error: error.message });
-    if (!data || data.length === 0) return res.status(404).json({ error: 'Request not found' });
+    if (error) {
+      console.error('[PATCH] Update error:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
+    if (!data || data.length === 0) return res.status(404).json({ error: 'Request not found or not authorized' });
 
     const request = data[0];
 
@@ -236,7 +283,7 @@ async function handlePATCH(req, res) {
 
     return res.status(200).json(request);
   } catch (error) {
-    console.error('[PATCH] Error:', error);
+    console.error('[PATCH] Unhandled error:', error);
     res.status(500).json({ error: error.message });
   }
 }
